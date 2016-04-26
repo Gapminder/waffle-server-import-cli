@@ -1,0 +1,26 @@
+{
+  "name": "ddf-to-ws-import-cli-tool",
+  "version": "0.0.1",
+  "description": "DDF to WS import CLI tool",
+  "main": "index.js",
+  "scripts": {
+    "server": "node server.js",
+    "cli": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/valor-software/ddf-to-ws-import-cli-tool.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/valor-software/ddf-to-ws-import-cli-tool/issues"
+  },
+  "homepage": "https://github.com/valor-software/ddf-to-ws-import-cli-tool#readme",
+  "dependencies": {
+    "contentful": "3.3.5",
+    "inquirer": "1.0.2",
+    "request": "2.72.0",
+    "router": "^1.1.4"
+  }
+}

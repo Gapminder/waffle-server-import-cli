@@ -1,0 +1,4 @@
+# WebStroms project files
+.idea
+*.log
+node_modules
