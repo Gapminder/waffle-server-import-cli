@@ -5,9 +5,11 @@ var stepAuthentificationLogin = require('./steps/authentification-login');
 var stepAuthentificationPassword = require('./steps/authentification-password');
 var stepChooseFlow = require('./steps/choose-flow');
 
-var stepImportTranslations = require('./steps/flow-import-translations');
-var stepImportDataSet = require('./steps/flow-import-dataset');
-var stepPublishDataSet = require('./steps/flow-publish-dataset');
+var flowImportTranslations = require('./steps/flow-import-translations');
+var flowImportDataSet = require('./steps/flow-import-dataset');
+
+var stepPublishDataSetNonPublished = require('./steps/flow-publish-dataset-non-published');
+var flowPublishDataSetVersion = require('./steps/flow-publish-dataset-version');
 
 var wayImportTranslationContentfulSpaceId = require('./steps/way-import-translation-contentful-spaceid');
 var wayImportTranslationContentfulAccessToken = require('./steps/way-import-translation-contentful-accesstoken');
@@ -29,34 +31,39 @@ exitStrategyChooseFlow[stepExit.step.choices[0]] = stepChooseFlow;
 exitStrategyChooseFlow[stepExit.step.choices[1]] = false;
 stepExit.setNextStrategy(exitStrategyChooseFlow);
 
-/************************************** STEP :: Contentful ************************************************************/
+/************************************** STEP :: Import Translation :: Contentful **************************************/
 
-wayImportTranslationContentfulAccessToken.setNext(false);
+// ToDo :: CLARIFY FLOW
+wayImportTranslationContentfulAccessToken.setNext(stepExit);
 wayImportTranslationContentfulSpaceId.setNext(wayImportTranslationContentfulAccessToken);
 
-/************************************** STEP :: Filesystem ************************************************************/
+/************************************** STEP :: Import Translation :: Filesystem **************************************/
 
 wayImportTranslationFilesystemDatasets.setNext(stepExit);
 wayImportTranslationFilesystemFilelist.setNext(wayImportTranslationFilesystemDatasets);
 wayImportTranslationFilesystemPath.setNext(wayImportTranslationFilesystemFilelist);
 
-/************************************** STEP :: Choose Flow ***********************************************************/
+/************************************** STEP :: Publish DataSet *******************************************************/
 
-var flowStrategyChooseFlow = {};
-flowStrategyChooseFlow[stepImportTranslations.step.choices[0]] = wayImportTranslationContentfulSpaceId;
-flowStrategyChooseFlow[stepImportTranslations.step.choices[1]] = wayImportTranslationFilesystemPath;
-flowStrategyChooseFlow[stepImportTranslations.step.choices[3]] = stepChooseFlow;
-
-stepImportTranslations.setNextStrategy(flowStrategyChooseFlow);
-stepImportDataSet.setNext(false);
-stepPublishDataSet.setNext(false);
+flowPublishDataSetVersion.setNext(stepExit);
 
 /************************************** STEP :: Choose Flow ***********************************************************/
 
 var flowStrategyChooseFlow = {};
-flowStrategyChooseFlow[stepChooseFlow.step.choices[0]] = stepImportTranslations;
-flowStrategyChooseFlow[stepChooseFlow.step.choices[1]] = stepImportDataSet;
-flowStrategyChooseFlow[stepChooseFlow.step.choices[2]] = stepPublishDataSet;
+flowStrategyChooseFlow[flowImportTranslations.step.choices[0]] = wayImportTranslationContentfulSpaceId;
+flowStrategyChooseFlow[flowImportTranslations.step.choices[1]] = wayImportTranslationFilesystemPath;
+flowStrategyChooseFlow[flowImportTranslations.step.choices[3]] = stepChooseFlow;
+
+flowImportTranslations.setNextStrategy(flowStrategyChooseFlow);
+flowImportDataSet.setNext(stepExit);
+stepPublishDataSetNonPublished.setNext(flowPublishDataSetVersion);
+
+/************************************** STEP :: Choose Flow ***********************************************************/
+
+var flowStrategyChooseFlow = {};
+flowStrategyChooseFlow[stepChooseFlow.step.choices[0]] = flowImportTranslations;
+flowStrategyChooseFlow[stepChooseFlow.step.choices[1]] = flowImportDataSet;
+flowStrategyChooseFlow[stepChooseFlow.step.choices[2]] = stepPublishDataSetNonPublished;
 flowStrategyChooseFlow[stepChooseFlow.step.choices[4]] = false;
 
 stepChooseFlow.setNextStrategy(flowStrategyChooseFlow);
@@ -66,7 +73,7 @@ stepChooseFlow.setNextStrategy(flowStrategyChooseFlow);
 stepAuthentificationPassword.setNext(stepChooseFlow);
 stepAuthentificationLogin.setNext(stepAuthentificationPassword);
 
-/************************************** RUN ***************************************************************************/
+/************************************** PROCESS ***********************************************************************/
 
 startAction.run(holder);
 

@@ -30,8 +30,6 @@ step.prototype.process = function (inputValue) {
 
   fs.readdir(inputValue, function(error, files){
 
-    console.log("translation-filesystem-path:", error, files);
-
     if (error) {
       return done(null, error.message);
     }
