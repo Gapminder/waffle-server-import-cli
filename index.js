@@ -20,7 +20,7 @@ var stepExit = require('./steps/exit');
 /************************************** SET UP :: First Action ********************************************************/
 
 var startAction = stepAuthentificationLogin;
-var startAction = stepChooseFlow;
+//var startAction = stepChooseFlow;
 
 /************************************** SET UP :: Last Action *********************************************************/
 

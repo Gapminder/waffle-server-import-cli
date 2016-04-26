@@ -22,6 +22,7 @@ var question = {
 
 var fs = require('fs');
 var holder = require('./../model/value-holder');
+var path = require('path');
 
 step.prototype.process = function (inputValue) {
 
@@ -29,16 +30,25 @@ step.prototype.process = function (inputValue) {
 
   fs.readdir(inputValue, function(error, files){
 
+    console.log("translation-filesystem-path:", error, files);
+
     if (error) {
-      done(null, error.message);
+      return done(null, error.message);
     }
-    if(files.length < 1) {
-      done(null, 'Empty folder');
+
+    // clear folders
+    var filesOnly = files.filter(function (file) {
+      var fileLocation = path.join(inputValue, file);
+      return path.extname(file) == '.json' && fs.statSync(fileLocation).isFile();
+    });
+
+    if(filesOnly.length < 1) {
+      return done(null, 'Empty folder or No JSON files found');
     }
 
     holder.setResult('translation-filesystem-files', {
       'path': inputValue,
-      'list': files
+      'list': filesOnly
     });
 
     done(null, true);
