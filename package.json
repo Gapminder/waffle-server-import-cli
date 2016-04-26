@@ -1,0 +1,43 @@
+{
+  "name": "waffle-server-import-cli",
+  "version": "2.3.0",
+  "description": "WS import CLI",
+  "main": "index.js",
+  "bin": {
+    "ws-importer-cli": "index_cli.js"
+  },
+  "scripts": {
+    "start": "npm run cli",
+    "cli": "node index.js",
+    "diff": "node index_diff.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/valor-software/waffle-server-import-cli.git"
+  },
+  "author": "Valor-Software",
+  "license": "GPL-3.0",
+  "contributors": [
+    {
+      "name": "Vyacheslav Panchenko",
+      "email": "vyacheslav.panchenko@valor-software.com"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/valor-software/waffle-server-import-cli/issues"
+  },
+  "homepage": "https://github.com/valor-software/waffle-server-import-cli#readme",
+  "dependencies": {
+    "JSONStream": "1.1.2",
+    "async": "2.0.0-rc.3",
+    "contentful": "3.3.5",
+    "csvtojson": "0.5.3",
+    "daff": "1.3.16",
+    "ddf-validation": "^0.12.3",
+    "inquirer": "1.0.2",
+    "lodash": "4.11.1",
+    "router": "1.1.4",
+    "simple-git": "1.37.0",
+    "superagent": "2.0.0"
+  }
+}

@@ -1,0 +1,101 @@
+{
+
+  "ws-choose": {
+    "type": "step::static-multi",
+    "back": false,
+    "exit": true,
+    "start": true,
+    "next": {
+      "ws-list-add": "ws-list-add",
+      "ws-list-choose": "ws-list-choose"
+    }
+  },
+
+  "ws-list-add": {
+    "type": "step::static-single",
+    "next": "ws-choose"
+  },
+
+  "ws-list-choose": {
+    "type": "step::dynamic",
+    "back": "ws-choose"
+  },
+
+  "authentication-login": {
+    "type": "step::static-single",
+    "next": "authentication-password"
+  },
+
+  "authentication-password": {
+    "type": "step::static-single",
+    "next": "choose-flow"
+  },
+
+  "choose-flow": {
+    "type": "step::static-multi",
+    "back": false,
+    "exit": true,
+    "next": {
+      "register-repository": "register-repository",
+      "dataset-choose-import": "dataset-choose-import",
+      "dataset-choose-update": "dataset-choose-update",
+      "results-overview": "choose-flow",
+      "dataset-choose-check-state": "dataset-choose-check-state",
+      "dataset-choose-rollback": "dataset-choose-rollback",
+      "dataset-choose-default": "dataset-choose-default"
+    }
+  },
+
+  "register-repository": {
+    "type": "step::static-single",
+    "next": "choose-flow"
+  },
+
+  "dataset-choose-import": {
+    "type": "step::dynamic",
+    "back": "choose-flow",
+    "next": "dataset-choose-import-hash"
+  },
+
+  "dataset-choose-import-hash": {
+    "type": "step::dynamic",
+    "back": "dataset-choose-import",
+    "next": "choose-flow"
+  },
+
+  "dataset-choose-update": {
+    "type": "step::dynamic",
+    "back": "choose-flow",
+    "next": "dataset-choose-update-hash"
+  },
+
+  "dataset-choose-update-hash": {
+    "type": "step::dynamic",
+    "back": "dataset-choose-update",
+    "next": "choose-flow"
+  },
+
+  "dataset-choose-check-state": {
+    "type": "step::dynamic",
+    "back": "choose-flow",
+    "next": "choose-flow"
+  },
+
+  "dataset-choose-rollback": {
+    "type": "step::dynamic",
+    "back": "choose-flow",
+    "next": "choose-flow"
+  },
+
+  "dataset-choose-default": {
+    "type": "step::dynamic",
+    "back": "choose-flow",
+    "next": "dataset-choose-default-version"
+  },
+
+  "dataset-choose-default-version": {
+    "type": "step::dynamic",
+    "back": "dataset-choose-default",
+    "next": "choose-flow"
+  }
+}
