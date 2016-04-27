@@ -21,7 +21,7 @@ var question = {
 /**************************************************************************************************************/
 
 var holder = require('./../model/value-holder');
-var request = require('request');
+var request = require('request-defaults');
 
 step.prototype.process = function (inputValue) {
   var done = this.async();
@@ -30,7 +30,7 @@ step.prototype.process = function (inputValue) {
     'dataset_id': inputValue
   };
 
-  request.post(
+  request.api.post(
     'http://localhost:3010/get-data-set-non-published-version',
     {form: dataNonPublished},
     function (error, response, body) {

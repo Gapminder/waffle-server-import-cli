@@ -1,3 +1,7 @@
+var request = require('request-defaults');
+request.api = request.defaults({timeout: 30*1000});
+
+
 
 var holder = require('./model/value-holder');
 
@@ -76,5 +80,4 @@ stepAuthentificationLogin.setNext(stepAuthentificationPassword);
 /************************************** PROCESS ***********************************************************************/
 
 startAction.run(holder);
-
 // flow.start(AuthStep).then(WporlStep).if(SuccesStep, FailStep).end(Step);

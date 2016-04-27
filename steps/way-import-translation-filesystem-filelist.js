@@ -22,7 +22,7 @@ var question = {
 
 var fs = require('fs');
 var holder = require('./../model/value-holder');
-var request = require('request');
+var request = require('request-defaults');
 
 step.prototype.process = function (inputValue) {
   var done = this.async();
@@ -40,7 +40,7 @@ step.prototype.process = function (inputValue) {
     // save loaded data from file
     holder.setResult('translation-filesystem-data', rawData);
 
-    request.post(
+    request.api.post(
       'http://localhost:3010/get-data-set-published',
       //{form: data},
       function (error, response, body) {

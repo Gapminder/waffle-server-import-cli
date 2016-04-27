@@ -21,7 +21,7 @@ var question = {
 /**************************************************************************************************************/
 
 var holder = require('./../model/value-holder');
-var request = require('request');
+var request = require('request-defaults');
 
 step.prototype.process = function (inputValue) {
   var done = this.async();
@@ -31,7 +31,7 @@ step.prototype.process = function (inputValue) {
     'version': inputValue
   };
 
-  request.post(
+  request.api.post(
     'http://localhost:3010/publish-dataset',
     {form: dataPublish},
     function (error, response, body) {

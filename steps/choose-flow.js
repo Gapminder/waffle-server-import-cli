@@ -29,14 +29,14 @@ var question = {
 /**************************************************************************************************************/
 
 var holder = require('./../model/value-holder');
-var request = require('request');
+var request = require('request-defaults');
 
 step.prototype.process = function (inputValue) {
   var done = this.async();
 
   if(inputValue == 'Publish DataSet') {
 
-    request.post(
+    request.api.post(
       'http://localhost:3010/get-data-set-non-published',
       //{form: data},
       function (error, response, body) {

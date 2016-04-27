@@ -20,7 +20,7 @@
   "dependencies": {
     "contentful": "3.3.5",
     "inquirer": "1.0.2",
-    "request": "2.72.0",
-    "router": "^1.1.4"
+    "router": "1.1.4",
+    "request-defaults": "1.2.0"
   }
 }

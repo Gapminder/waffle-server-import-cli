@@ -21,7 +21,7 @@ var question = {
 /**************************************************************************************************************/
 
 var holder = require('./../model/value-holder');
-var request = require('request');
+var request = require('request-defaults');
 
 step.prototype.process = function (inputValue) {
   var done = this.async();
@@ -39,7 +39,7 @@ step.prototype.process = function (inputValue) {
 
   // 1 :: import translation
 
-  request.post(
+  request.api.post(
     'http://localhost:3010/translations-import',
     {form: dataImport},
     function (error, response, body) {
@@ -51,7 +51,7 @@ step.prototype.process = function (inputValue) {
           'dataset_id': dataSetId
         };
 
-        request.post(
+        request.api.post(
           'http://localhost:3010/translations-publish',
           {form: dataPublish},
           function (error, response, body) {
