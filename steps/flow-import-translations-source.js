@@ -11,10 +11,18 @@ util.inherits(step, stepBase);
 
 /**************************************************************************************************************/
 
+var inquirer = require('inquirer');
+
 var question = {
-  'name': 'flow-import-dataset',
-  'type': 'input',
-  'message': 'Flow Import Dataset'
+  'name': 'flow-import-translations-source',
+  'type': 'list',
+  'message': 'Import source',
+  'choices': [
+    '[external] contentful.com',
+    '[internal] file system',
+    new inquirer.Separator(),
+    'Back'
+  ]
 };
 
 /**************************************************************************************************************/

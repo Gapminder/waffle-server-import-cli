@@ -1,16 +1,16 @@
+var holder = require('./model/value-holder');
 var request = require('request-defaults');
+
 request.api = request.defaults({timeout: 30*1000});
 
-
-
-var holder = require('./model/value-holder');
+/************************************** REQUIRE STEPS *****************************************************************/
 
 var stepAuthentificationLogin = require('./steps/authentification-login');
 var stepAuthentificationPassword = require('./steps/authentification-password');
 var stepChooseFlow = require('./steps/choose-flow');
 
-var flowImportTranslations = require('./steps/flow-import-translations');
-var flowImportDataSet = require('./steps/flow-import-dataset');
+var flowImportTranslationsSource = require('./steps/flow-import-translations-source');
+var flowImportDataSetPath = require('./steps/flow-import-dataset-path');
 
 var stepPublishDataSetNonPublished = require('./steps/flow-publish-dataset-non-published');
 var flowPublishDataSetVersion = require('./steps/flow-publish-dataset-version');
@@ -54,19 +54,19 @@ flowPublishDataSetVersion.setNext(stepExit);
 /************************************** STEP :: Choose Flow ***********************************************************/
 
 var flowStrategyChooseFlow = {};
-flowStrategyChooseFlow[flowImportTranslations.step.choices[0]] = wayImportTranslationContentfulSpaceId;
-flowStrategyChooseFlow[flowImportTranslations.step.choices[1]] = wayImportTranslationFilesystemPath;
-flowStrategyChooseFlow[flowImportTranslations.step.choices[3]] = stepChooseFlow;
+flowStrategyChooseFlow[flowImportTranslationsSource.step.choices[0]] = wayImportTranslationContentfulSpaceId;
+flowStrategyChooseFlow[flowImportTranslationsSource.step.choices[1]] = wayImportTranslationFilesystemPath;
+flowStrategyChooseFlow[flowImportTranslationsSource.step.choices[3]] = stepChooseFlow;
 
-flowImportTranslations.setNextStrategy(flowStrategyChooseFlow);
-flowImportDataSet.setNext(stepExit);
+flowImportTranslationsSource.setNextStrategy(flowStrategyChooseFlow);
+flowImportDataSetPath.setNext(stepExit);
 stepPublishDataSetNonPublished.setNext(flowPublishDataSetVersion);
 
 /************************************** STEP :: Choose Flow ***********************************************************/
 
 var flowStrategyChooseFlow = {};
-flowStrategyChooseFlow[stepChooseFlow.step.choices[0]] = flowImportTranslations;
-flowStrategyChooseFlow[stepChooseFlow.step.choices[1]] = flowImportDataSet;
+flowStrategyChooseFlow[stepChooseFlow.step.choices[0]] = flowImportTranslationsSource;
+flowStrategyChooseFlow[stepChooseFlow.step.choices[1]] = flowImportDataSetPath;
 flowStrategyChooseFlow[stepChooseFlow.step.choices[2]] = stepPublishDataSetNonPublished;
 flowStrategyChooseFlow[stepChooseFlow.step.choices[4]] = false;
 

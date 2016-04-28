@@ -12,20 +12,19 @@ util.inherits(step, stepBase);
 /**************************************************************************************************************/
 
 var question = {
-  'name': 'way-import-translation-filesystem-path',
+  'name': 'flow-import-dataset-path',
   'type': 'input',
-  'default': './../vizabi/.data/translation/',
-  'message': 'Filesystem asks for "Full path" to folder with translations'
+  'default': './../ddf--gapminder_world/output/ddf-full-stub/',
+  'message': 'Filesystem asks for "Full path" to folder with DDF'
 };
 
 /**************************************************************************************************************/
 
 var fs = require('fs');
 var path = require('path');
-var holder = require('./../model/value-holder');
+var importDdfService = require('./../service/import-ddf');
 
 step.prototype.process = function (inputValue) {
-
   var done = this.async();
 
   fs.readdir(inputValue, function(error, files){
@@ -37,19 +36,22 @@ step.prototype.process = function (inputValue) {
     // clear folders
     var filesOnly = files.filter(function (file) {
       var fileLocation = path.join(inputValue, file);
-      return path.extname(file) == '.json' && fs.statSync(fileLocation).isFile();
+      return path.extname(file) == '.csv' && fs.statSync(fileLocation).isFile();
     });
 
     if(filesOnly.length < 1) {
-      return done(null, 'Empty folder or No JSON files found');
+      return done(null, 'Empty folder or No CSV files found');
     }
 
-    holder.setResult('translation-filesystem-files', {
-      'path': inputValue,
-      'list': filesOnly
-    });
+    importDdfService.process(filesOnly, function(error, result){
 
-    done(null, true);
+      if(error) {
+        return done(null, "Something went wrong");
+      }
+
+      return done(null, true);
+    })
+
   });
 };
 

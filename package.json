@@ -18,9 +18,10 @@
   },
   "homepage": "https://github.com/valor-software/ddf-to-ws-import-cli-tool#readme",
   "dependencies": {
+    "async": "2.0.0-rc.3",
     "contentful": "3.3.5",
     "inquirer": "1.0.2",
-    "router": "1.1.4",
-    "request-defaults": "1.2.0"
+    "request-defaults": "1.2.0",
+    "router": "1.1.4"
   }
 }
