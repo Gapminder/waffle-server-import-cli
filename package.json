@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "WS import CLI",
   "main": "index.js",
-  "bin" : {
-    "ws-cli" : "./index.js"
+  "bin": {
+    "ws-cli": "./index.js"
   },
   "scripts": {
     "server": "node server.js",
@@ -25,6 +25,7 @@
     "contentful": "3.3.5",
     "csvtojson": "0.5.3",
     "inquirer": "1.0.2",
+    "lodash": "4.11.1",
     "request-defaults": "1.2.0",
     "router": "1.1.4"
   }

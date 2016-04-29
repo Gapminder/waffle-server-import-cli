@@ -49,6 +49,7 @@ step.prototype.process = function (inputValue) {
         return done(null, "Something went wrong");
       }
 
+      console.log("Import status::",result);
       return done(null, true);
     })
 
