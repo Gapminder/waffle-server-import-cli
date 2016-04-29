@@ -4,7 +4,12 @@ var async = require("async");
 var _ = require('lodash');
 var path = require("path");
 var holder = require('./../model/value-holder');
+var request = require('request-defaults');
 var Converter = require('csvtojson').Converter;
+
+var tempDefaultTimeout = 1250;
+var fs = require("fs");
+var util = require("util");
 
 /******************************************** DEFINITION **************************************************************/
 
@@ -54,11 +59,9 @@ DdfImporter.prototype.createConcepts = function (pipe, callback) {
 
     this._loadConcepts.bind(this),
     this._createConcepts.bind(this),
-    this._getAllConcepts.bind(this),
     this._addConceptDrillups.bind(this),
     this._addConceptDrilldowns.bind(this),
-    this._addConceptDomains.bind(this),
-    this._getAllConcepts.bind(this)
+    this._addConceptDomains.bind(this)
 
   ], (err, res) => {
     pipe.concepts = res.concepts;
@@ -95,7 +98,7 @@ DdfImporter.prototype.createDataPoints = function (pipe, callback) {
   return callback(null, pipe);
 };
 
-/******************************************** PRIVATE *****************************************************************/
+/******************************************** FUNCTIONS :: CONCEPTS :: SUB TASKS **************************************/
 
 DdfImporter.prototype._loadConcepts = function (pipe, callback) {
 
@@ -113,8 +116,6 @@ DdfImporter.prototype._loadConcepts = function (pipe, callback) {
         return callback("All concept gid's should be unique within the dataset!");
       }
 
-      console.log(concepts);
-
       pipe.raw = {
         concepts: concepts,
         drillups: reduceUniqueNestedValues(concepts, 'properties.drill_up'),
@@ -122,27 +123,121 @@ DdfImporter.prototype._loadConcepts = function (pipe, callback) {
         domains: reduceUniqueNestedValues(concepts, 'properties.domain')
       };
 
-      console.log(pipe);
-
       return callback(error, pipe);
     }
   );
 };
 
-DdfImporter.prototype._createConcepts = function(pipe, callback) { console.log("++ _createConcepts"); return callback(null, pipe); };
-DdfImporter.prototype._getAllConcepts = function(pipe, callback) { console.log("++ _getAllConcepts"); return callback(null, pipe); };
-DdfImporter.prototype._addConceptDrillups = function(pipe, callback) { console.log("++ _addConceptDrillups"); return callback(null, pipe); };
-DdfImporter.prototype._addConceptDrilldowns = function(pipe, callback) { console.log("++ _addConceptDrilldowns"); return callback(null, pipe); };
-DdfImporter.prototype._addConceptDomains = function(pipe, callback) { console.log("++ _addConceptDomains"); return callback(null, pipe); };
-DdfImporter.prototype._getAllConcepts = function(pipe, callback) { console.log("++ _getAllConcepts"); return callback(null, pipe); };
+DdfImporter.prototype._createConcepts = function(pipe, callback) {
 
-DdfImporter.prototype._processOriginalEntities = function(pipe, callback) { console.log("++ _processOriginalEntities"); return callback(null, pipe); };
-DdfImporter.prototype._findAllOriginalEntities = function(pipe, callback) { console.log("++ _findAllOriginalEntities"); return callback(null, pipe); };
-DdfImporter.prototype._createEntitiesBasedOnOriginalEntities = function(pipe, callback) { console.log("++ _createEntitiesBasedOnOriginalEntities"); return callback(null, pipe); };
-DdfImporter.prototype._clearOriginalEntities = function(pipe, callback) { console.log("++ _clearOriginalEntities"); return callback(null, pipe); };
-DdfImporter.prototype._findAllEntities = function(pipe, callback) { console.log("++ _findAllEntities"); return callback(null, pipe); };
-DdfImporter.prototype._addEntityChildOf = function(pipe, callback) { console.log("++ _addEntityChildOf"); return callback(null, pipe); };
-DdfImporter.prototype._findAllEntities = function(pipe, callback) { console.log("++ _findAllEntities"); return callback(null, pipe); };
+  console.log("++ _createConcepts +", pipe.raw.concepts.length);
+
+  request.api.post(
+      'http://localhost:3010/ddf-import--create-concepts',
+      {
+        body: {
+          'data': pipe.raw.concepts
+        }
+      },
+      function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          return callback(null, pipe);
+        } else {
+          return callback('Server Error. Please try again later.');
+        }
+      }
+  );
+};
+
+DdfImporter.prototype._addConceptDrillups = function(pipe, callback) {
+
+  console.log("++ _addConceptDrillups +", pipe.raw.drillups.length);
+
+  request.api.post(
+      'http://localhost:3010/ddf-import--add-concept-drillups',
+      {
+        body: {
+          'data': pipe.raw.drillups
+        }
+      },
+      function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          return callback(null, pipe);
+        } else {
+          return callback('Server Error. Please try again later.');
+        }
+      }
+  );
+};
+
+DdfImporter.prototype._addConceptDrilldowns = function(pipe, callback) {
+
+  console.log("++ _addConceptDrilldowns +", pipe.raw.drilldowns.length);
+
+  request.api.post(
+      'http://localhost:3010/ddf-import--add-concept-drilldowns',
+      {
+        body: {
+          'data': pipe.raw.drilldowns
+        }
+      },
+      function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          return callback(null, pipe);
+        } else {
+          return callback('Server Error. Please try again later.');
+        }
+      }
+  );
+};
+
+DdfImporter.prototype._addConceptDomains = function(pipe, callback) {
+
+  console.log("++ _addConceptDomains +", pipe.raw.domains.length);
+
+  request.api.post(
+      'http://localhost:3010/ddf-import--add-concept-domains',
+      {
+        body: {
+          'data': pipe.raw.domains
+        }
+      },
+      function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          return callback(null, pipe);
+        } else {
+          return callback('Server Error. Please try again later.');
+        }
+      }
+  );
+};
+
+/******************************************** FUNCTIONS :: ENTITIES :: SUB TASKS **************************************/
+
+DdfImporter.prototype._processOriginalEntities = function(pipe, callback) {
+  fs.writeFileSync('log.log', util.inspect(pipe, {depth: 4}), 'utf-8');
+  setTimeout(function(){ console.log("++ _processOriginalEntities"); return callback(null, pipe); }, tempDefaultTimeout);
+};
+DdfImporter.prototype._findAllOriginalEntities = function(pipe, callback) {
+  setTimeout(function(){ console.log("++ _findAllOriginalEntities"); return callback(null, pipe); }, tempDefaultTimeout);
+};
+DdfImporter.prototype._createEntitiesBasedOnOriginalEntities = function(pipe, callback) {
+  setTimeout(function(){ console.log("++ _createEntitiesBasedOnOriginalEntities"); return callback(null, pipe); }, tempDefaultTimeout);
+};
+DdfImporter.prototype._clearOriginalEntities = function(pipe, callback) {
+  setTimeout(function(){ console.log("++ _clearOriginalEntities"); return callback(null, pipe); }, tempDefaultTimeout);
+};
+DdfImporter.prototype._findAllEntities = function(pipe, callback) {
+  setTimeout(function(){ console.log("++ _findAllEntities"); return callback(null, pipe); }, tempDefaultTimeout);
+};
+DdfImporter.prototype._addEntityChildOf = function(pipe, callback) {
+  setTimeout(function(){ console.log("++ _addEntityChildOf"); return callback(null, pipe); }, tempDefaultTimeout);
+};
+DdfImporter.prototype._findAllEntities = function(pipe, callback) {
+  setTimeout(function(){ console.log("++ _findAllEntities"); return callback(null, pipe); }, tempDefaultTimeout);
+};
+
+/******************************************** FUNCTIONS :: PRIVATE ****************************************************/
 
 DdfImporter.prototype._readCsvFile = function (file, options, callback) {
 
@@ -163,7 +258,7 @@ DdfImporter.prototype._readCsvFile = function (file, options, callback) {
   });
 };
 
-/**/
+/******************************************** To Do :: HELPERS ********************************************************/
 
 function mapDdfConceptsToWsModel (pipe) {
 

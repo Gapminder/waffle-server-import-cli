@@ -42,22 +42,18 @@ step.prototype.process = function (inputValue) {
 
     request.api.post(
       'http://localhost:3010/get-data-set-published',
-      //{form: data},
+      {},
       function (error, response, body) {
         if (!error && response.statusCode == 200) {
-          if(body && body.length) {
-
-            var datasetsRaw = JSON.parse(body);
-            var datasetsReady = datasetsRaw.map(function(value) {
+          if(body) {
+            var datasetsReady = body.map(function(value) {
               return value.dsId;
             });
-
             holder.setResult('translation-filesystem-datasets', datasetsReady);
             done(null, true);
           } else {
             done(null, 'Datasets were not found.');
           }
-
         } else {
           done(null, 'Server Error. Please try again later.');
         }

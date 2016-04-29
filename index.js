@@ -1,7 +1,10 @@
 var holder = require('./model/value-holder');
 var request = require('request-defaults');
 
-request.api = request.defaults({timeout: 30*1000});
+request.api = request.defaults({
+  timeout: 30*1000,
+  json: true
+});
 
 /************************************** REQUIRE STEPS *****************************************************************/
 

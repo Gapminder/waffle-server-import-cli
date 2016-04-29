@@ -31,29 +31,29 @@ step.prototype.process = function (inputValue) {
   var translationId = translationFile.replace('.json', '');
   var dataSetId = inputValue;
 
-  var dataImport = {
-    'language': translationId,
-    'dataset_id': dataSetId,
-    'data': translationData
-  };
-
   // 1 :: import translation
 
   request.api.post(
     'http://localhost:3010/translations-import',
-    {form: dataImport},
+    {
+      body: {
+        'language': translationId,
+        'dataset_id': dataSetId,
+        'data': translationData
+      }
+    },
     function (error, response, body) {
       if (!error && response.statusCode == 200) {
 
         // 2 :: publish translation
 
-        var dataPublish = {
-          'dataset_id': dataSetId
-        };
-
         request.api.post(
           'http://localhost:3010/translations-publish',
-          {form: dataPublish},
+          {
+            body: {
+              'dataset_id': dataSetId
+            }
+          },
           function (error, response, body) {
             if (!error && response.statusCode == 200) {
               done(null, true);

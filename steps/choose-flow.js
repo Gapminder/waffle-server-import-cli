@@ -42,12 +42,10 @@ step.prototype.process = function (inputValue) {
       //{form: data},
       function (error, response, body) {
         if (!error && response.statusCode == 200) {
-          if(body && body.length) {
-            var datasetsRaw = JSON.parse(body);
-            var datasetsReady = datasetsRaw.map(function(value) {
+          if(body) {
+            var datasetsReady = body.map(function(value) {
               return value.dsId;
             });
-
             holder.setResult('publish-dataset-non-published', datasetsReady);
             done(null, true);
           } else {

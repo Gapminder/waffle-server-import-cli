@@ -1,6 +1,7 @@
 var http = require('http');
 var Router = require('router');
 var qs = require('querystring');
+var fs = require('fs');
 
 var router = Router();
 
@@ -134,6 +135,120 @@ router.post("/publish-dataset", function (request, response) {
   });
 });
 
+router.post("/ddf-import--create-concepts", function (request, response) {
+
+  var dataRequest = '';
+  request.on('data', function(chunk) {
+    dataRequest += chunk;
+  });
+  request.on('end', function() {
+    /*
+     *   POST params:
+     *
+     *     - data [concepts, Array]
+     */
+
+    var post = qs.parse(dataRequest);
+    console.log("ddf-import--create-concepts::ok");
+
+    var data = {'status': 'ok'};
+    response.setHeader('Content-Type', 'application/json; charset=utf-8');
+    response.end(JSON.stringify(data));
+
+  });
+});
+
+router.post("/ddf-import--add-concept-drillups", function (request, response) {
+
+  var dataRequest = '';
+  request.on('data', function(chunk) {
+    dataRequest += chunk;
+  });
+  request.on('end', function() {
+    /*
+     *   POST params:
+     *
+     *     - data [drillups, Array]
+     */
+
+    var post = qs.parse(dataRequest);
+    console.log("ddf-import--add-concept-drillups::ok");
+
+    var data = {'status': 'ok'};
+    response.setHeader('Content-Type', 'application/json; charset=utf-8');
+    response.end(JSON.stringify(data));
+
+  });
+});
+
+router.post("/ddf-import--add-concept-drillups", function (request, response) {
+
+  var dataRequest = '';
+  request.on('data', function(chunk) {
+    dataRequest += chunk;
+  });
+  request.on('end', function() {
+    /*
+     *   POST params:
+     *
+     *     - data [drillups, Array]
+     */
+
+    var post = qs.parse(dataRequest);
+    console.log("ddf-import--add-concept-drillups::ok");
+
+    var data = {'status': 'ok'};
+    response.setHeader('Content-Type', 'application/json; charset=utf-8');
+    response.end(JSON.stringify(data));
+
+  });
+});
+
+router.post("/ddf-import--add-concept-drilldowns", function (request, response) {
+
+  var dataRequest = '';
+  request.on('data', function(chunk) {
+    dataRequest += chunk;
+  });
+  request.on('end', function() {
+    /*
+     *   POST params:
+     *
+     *     - data [drilldowns, Array]
+     */
+
+    var post = qs.parse(dataRequest);
+    console.log("ddf-import--add-concept-drilldowns::ok");
+
+    var data = {'status': 'ok'};
+    response.setHeader('Content-Type', 'application/json; charset=utf-8');
+    response.end(JSON.stringify(data));
+
+  });
+});
+
+router.post("/ddf-import--add-concept-domains", function (request, response) {
+
+  var dataRequest = '';
+  request.on('data', function(chunk) {
+    dataRequest += chunk;
+  });
+  request.on('end', function() {
+    /*
+     *   POST params:
+     *
+     *     - data [domains, Array]
+     */
+
+    var post = qs.parse(dataRequest);
+    console.log("ddf-import--add-concept-domains::ok");
+
+    var data = {'status': 'ok'};
+    response.setHeader('Content-Type', 'application/json; charset=utf-8');
+    response.end(JSON.stringify(data));
+
+  });
+});
 
 
 var server = http.createServer(function(req, res) {

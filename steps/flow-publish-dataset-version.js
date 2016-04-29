@@ -26,18 +26,18 @@ var request = require('request-defaults');
 step.prototype.process = function (inputValue) {
   var done = this.async();
 
-  var dataPublish = {
-    'dataset_id': holder.get('flow-publish-dataset-non-published', false),
-    'version': inputValue
-  };
-
   request.api.post(
     'http://localhost:3010/publish-dataset',
-    {form: dataPublish},
+    {
+      body: {
+        'dataset_id': holder.get('flow-publish-dataset-non-published', false),
+        'version': inputValue
+      }
+    },
     function (error, response, body) {
 
       if (!error && response.statusCode == 200) {
-        if(body && body.length) {
+        if(body) {
           done(null, true);
         } else {
           done(null, 'Server Error. Please try again later.');
