@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "DDF to WS import CLI tool",
   "main": "index.js",
+  "bin" : {
+    "ws-cli" : "./index.js"
+  },
   "scripts": {
     "server": "node server.js",
     "cli": "node index.js"
@@ -20,7 +23,7 @@
   "dependencies": {
     "async": "2.0.0-rc.3",
     "contentful": "3.3.5",
-    "csvtojson": "^0.5.3",
+    "csvtojson": "0.5.3",
     "inquirer": "1.0.2",
     "request-defaults": "1.2.0",
     "router": "1.1.4"
