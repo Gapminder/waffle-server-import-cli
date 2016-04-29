@@ -43,7 +43,7 @@ step.prototype.process = function (inputValue) {
       return done(null, 'Empty folder or No CSV files found');
     }
 
-    importDdfService.process(filesOnly, function(error, result){
+    importDdfService.process(inputValue, filesOnly, function(error, result){
 
       if(error) {
         return done(null, "Something went wrong");

@@ -17,6 +17,7 @@ var question = {
   'name': 'choose-flow',
   'type': 'list',
   'message': 'Choose Flow',
+  'default': 'Import DataSet',
   'choices': [
     'Import Translations',
     'Import DataSet',

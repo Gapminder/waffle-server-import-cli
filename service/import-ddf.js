@@ -1,18 +1,30 @@
 'use strict';
 
 var async = require("async");
+var path = require("path");
+var holder = require('./../model/value-holder');
+var Converter = require('csvtojson').Converter;
+var defaultTimeout = 750;
 
-var importDDF = function () {
-  this.callback = function() {
+/******************************************************** DEFINITION **************************************************/
 
-  };
+var importDDFClass = function () {
+
+  this.files = [];
+  this.path = '';
+  this.callback = function() {};
+
   return this;
 };
 
-importDDF.prototype.process = function (files, callback) {
+/******************************************************** FUNCTIONS ***************************************************/
+
+importDDFClass.prototype.process = function (path, files, callback) {
 
   console.log("\nImportDDF, got Files:");
+
   this.files = files;
+  this.path = path;
 
   this.files.map(function(file, index){
     console.log((index + 1) + ") " + file);
@@ -21,6 +33,7 @@ importDDF.prototype.process = function (files, callback) {
   // async flow
 
   async.waterfall([
+    this.loadFileConcepts,
     this.createConcepts,
     this.addConceptDrillups,
     this.addConceptDrilldowns,
@@ -32,57 +45,91 @@ importDDF.prototype.process = function (files, callback) {
   });
 };
 
-importDDF.prototype.createConcepts = function (callback) {
-  setTimeout(function(){
-    console.log("importDDF, createConcepts");
+importDDFClass.prototype.loadFileConcepts = function (callback) {
+  console.log("+ importDDF, loadFileConcepts");
+
+  var filePath = path.resolve(importDdf.path, 'ddf--concepts.csv');
+  console.log("filePath", filePath);
+
+  importDdf._readCsvFile(filePath, {}, function(error, data){
+    console.log("loadFileConcepts::data", data[0]);
     callback(null);
-  }, 1000);
+  });
 };
 
-importDDF.prototype.addConceptDrillups = function (callback) {
+importDDFClass.prototype.createConcepts = function (callback) {
   setTimeout(function(){
-    console.log("importDDF, addConceptDrillups");
+    console.log("+ importDDF, createConcepts");
     callback(null);
-  }, 1500);
+  }, defaultTimeout);
 };
 
-importDDF.prototype.addConceptDrilldowns = function (callback) {
+importDDFClass.prototype.addConceptDrillups = function (callback) {
   setTimeout(function(){
-    console.log("importDDF, addConceptDrilldowns");
+    console.log("+ importDDF, addConceptDrillups");
+    callback(null);
+  }, defaultTimeout);
+};
+
+importDDFClass.prototype.addConceptDrilldowns = function (callback) {
+  setTimeout(function(){
+    console.log("+ importDDF, addConceptDrilldowns");
 
     if(getRandResult()) {
       callback(true);
     } else {
       callback(null);
     }
-  }, 500);
+  }, defaultTimeout);
 };
 
-importDDF.prototype.addConceptDomains = function (callback) {
+importDDFClass.prototype.addConceptDomains = function (callback) {
   setTimeout(function(){
-    console.log("importDDF, addConceptDomains");
+    console.log("+ importDDF, addConceptDomains");
     callback(null);
-  }, 1500);
+  }, defaultTimeout);
 };
 
-importDDF.prototype.createEntities = function (callback) {
+importDDFClass.prototype.createEntities = function (callback) {
   setTimeout(function(){
-    console.log("importDDF, createEntities");
+    console.log("+ importDDF, createEntities");
     callback(null);
-  }, 250);
+  }, defaultTimeout);
 };
 
-importDDF.prototype.createDataPoints = function (callback) {
+importDDFClass.prototype.createDataPoints = function (callback) {
   setTimeout(function(){
-    console.log("importDDF, createDataPoints");
+    console.log("+ importDDF, createDataPoints");
     callback(null);
-  }, 750);
+  }, defaultTimeout);
 };
 
-module.exports = new importDDF();
+/******************************************************** PRIVATE *****************************************************/
 
-/* TEMP */
+importDDFClass.prototype._readCsvFile = function (file, options, callback) {
+
+  const converter = new Converter(Object.assign({}, {
+    workerNum: 1,
+    flatKeys: true
+  }, options));
+
+  converter.fromFile(file, (err, data) => {
+    if (err && err.toString().indexOf("cannot be found.") > -1) {
+      console.log("Warning", err);
+    }
+    if (err && err.toString().indexOf("cannot be found.") === -1) {
+      console.log("Error", err);
+    }
+
+    return callback(null, data);
+  });
+};
 
 var getRandResult = function () {
   return !(Math.random()+.5|0);
-}
+};
+
+/******************************************************** EXPORT ******************************************************/
+
+var importDdf = new importDDFClass();
+module.exports = importDdf;
