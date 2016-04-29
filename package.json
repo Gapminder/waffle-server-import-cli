@@ -1,7 +1,7 @@
 {
-  "name": "ddf-to-ws-import-cli-tool",
+  "name": "waffle-server-import-cli",
   "version": "0.0.1",
-  "description": "DDF to WS import CLI tool",
+  "description": "WS import CLI",
   "main": "index.js",
   "bin" : {
     "ws-cli" : "./index.js"
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/valor-software/ddf-to-ws-import-cli-tool.git"
+    "url": "git+https://github.com/valor-software/waffle-server-import-cli.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/valor-software/ddf-to-ws-import-cli-tool/issues"
+    "url": "https://github.com/valor-software/waffle-server-import-cli/issues"
   },
-  "homepage": "https://github.com/valor-software/ddf-to-ws-import-cli-tool#readme",
+  "homepage": "https://github.com/valor-software/waffle-server-import-cli#readme",
   "dependencies": {
     "async": "2.0.0-rc.3",
     "contentful": "3.3.5",

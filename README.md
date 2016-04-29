@@ -1,1 +1,1 @@
-# DDF to WS import CLI tool
+# Waffle Server import CLI
