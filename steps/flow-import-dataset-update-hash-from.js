@@ -11,34 +11,29 @@ util.inherits(step, stepBase);
 
 /**************************************************************************************************************/
 
+var inquirer = require('inquirer');
+
 var question = {
-  'name': 'way-import-translation-contentful-accesstoken',
-  'type': 'input',
-  'default': 'xxx',
-  'message': 'Contentful asks for "ACCESS_TOKEN"'
+  'name': 'flow-import-dataset-update-hash-from',
+  'type': 'list',
+  'message': 'Git commit, state FROM',
+  'choices': []
 };
 
 /**************************************************************************************************************/
 
 var holder = require('./../model/value-holder');
-var contentfulService = require('./../service/contentful');
 
 step.prototype.process = function (inputValue) {
   var done = this.async();
+  done(null, true);
+};
 
-  var accessSpace = holder.get('way-import-translation-contentful-spaceid');
-  var accessToken = inputValue;
+// Define Hook
 
-  contentfulService
-    .init(accessSpace, accessToken)
-    .get('book')
-    .then(function (contentType) {
-      console.log("success");
-      console.log(util.inspect(contentType, {depth: null}));
-      done(null, true);
-    }, function(error) {
-      done(null, error.message);
-    });
+step.prototype.prepare = function () {
+  var prevStepResult = holder.getResult('flow-import-dataset-choose', []);
+  this.step.choices = prevStepResult;
 };
 
 /**************************************************************************************************************/

@@ -14,6 +14,7 @@ util.inherits(step, stepBase);
 var question = {
   'name': 'way-import-translation-contentful-spaceid',
   'type': 'input',
+  'default': 'xxx',
   'message': 'Contentful asks for "SPACE_ID"'
 };
 

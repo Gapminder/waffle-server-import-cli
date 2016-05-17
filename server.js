@@ -1,3 +1,5 @@
+require('shelljs/global');
+
 var http = require('http');
 var Router = require('router');
 var qs = require('querystring');
@@ -249,6 +251,38 @@ router.post("/ddf-import--add-concept-domains", function (request, response) {
 
   });
 });
+
+router.post("/get-data-set-for-update", function (request, response) {
+
+  var dataRequest = '';
+  request.on('data', function(chunk) {
+    dataRequest += chunk;
+  });
+  request.on('end', function() {
+
+    var gitFolder = '--git-dir=./../temp-ddf-csv-dummy-data/.git';
+    var commandGitCmd = 'git ' + gitFolder + ' log --oneline';
+    var resultGitCmd = exec(commandGitCmd, {silent: true}).stdout;
+
+    var commitList = resultGitCmd.split("\n").filter(function(value){
+      return !!value;
+    });
+
+    var data = {
+      'list': commitList
+    };
+
+    console.log("get-data-set-for-update::ok");
+
+    response.setHeader('Content-Type', 'application/json; charset=utf-8');
+    response.end(JSON.stringify(data));
+
+  });
+});
+
+
+
+
 
 
 var server = http.createServer(function(req, res) {
