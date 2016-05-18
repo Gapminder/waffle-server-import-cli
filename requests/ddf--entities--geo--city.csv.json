@@ -1,0 +1,44 @@
+{
+  "header": {
+    "create": [
+      "another_new_column"
+    ],
+    "remove": [],
+    "update": []
+  },
+  "body": {
+    "create": [
+      {
+        "city": "UA_31",
+        "name": "Lviv",
+        "country": "ukr",
+        "main_religion_2008": "christian",
+        "is--city": "TRUE",
+        "latitude": "51.51",
+        "longitude": "30.3",
+        "another_new_column": "another new value"
+      }
+    ],
+    "remove": [
+      {
+        "city": "UZ_TO"
+      }
+    ],
+    "update": [
+      {
+        "gid": "city",
+        "city": "hkg",
+        "data": {
+          "another_new_column": "another new value"
+        }
+      },
+      {
+        "gid": "city",
+        "city": "UA_30",
+        "data": {
+          "another_new_column": "another new value"
+        }
+      }
+    ]
+  }
+}

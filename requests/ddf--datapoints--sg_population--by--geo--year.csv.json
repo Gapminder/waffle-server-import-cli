@@ -1,0 +1,27 @@
+{
+  "header": {
+    "create": [],
+    "remove": [],
+    "update": []
+  },
+  "body": {
+    "create": [
+      {
+        "geo": "zwe",
+        "year": "2100",
+        "sg_population": "101"
+      },
+      {
+        "geo": "abc",
+        "year": "2100",
+        "sg_population": "100"
+      }
+    ],
+    "remove": [
+      {
+        "geo": "abw"
+      }
+    ],
+    "update": []
+  }
+}
