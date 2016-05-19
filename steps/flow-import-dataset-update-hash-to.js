@@ -50,8 +50,6 @@ step.prototype.process = function (inputValue) {
     return !!value && value.indexOf(".csv") != -1;
   });
 
-  console.log("gitDiffFileList:", gitDiffFileList);
-
   var dataRequest = {};
 
   gitDiffFileList.forEach(function(fileName, index){
@@ -149,6 +147,8 @@ step.prototype.process = function (inputValue) {
       diffResultGidField = diffResultColumns[0];
     }
 
+    var isDataPointsFile = fileName.indexOf("--datapoints--") != -1 ? true : false;
+
 
     if(diffResult.length) {
 
@@ -179,7 +179,19 @@ step.prototype.process = function (inputValue) {
 
             // removed
             var dataRowRemoved = {};
-            dataRowRemoved[diffResultGidField] = value[0];
+
+            // check that file with datapoints
+            if(isDataPointsFile) {
+              diffResultColumns.forEach(function(columnValue, columnIndex){
+                if(fileDiffData.header.remove.indexOf(columnValue) == -1) {
+                  // ready columns
+                  dataRowRemoved[columnValue] = value[columnIndex];
+                }
+              });
+            } else {
+              dataRowRemoved[diffResultGidField] = value[0];
+            }
+
             fileDiffData.body.remove.push(dataRowRemoved);
 
           } else if (modificationType == '+') {
@@ -202,19 +214,34 @@ step.prototype.process = function (inputValue) {
 
           } else if (modificationType == '->') {
 
-            // updated
+            // updated, only changed cell
+            var dataRow = {};
 
-            /*
             value.forEach(function(valueCell, indexCell){
               var modificationSeparatorPosition = valueCell.indexOf('->');
-              var readyValueCell = valueCell;
-              if(modificationType == '->' && modificationSeparatorPosition != -1) {
-                readyValueCell = valueCell.substring(modificationSeparatorPosition + 2);
-              }
-              fileDiffData.header.create.push(diffResultColumns[index + 1]);
-            });
-            */
+              var columnKey = diffResultColumns[indexCell];
 
+              if(modificationSeparatorPosition != -1) {
+                var readyValueCell = valueCell.substring(modificationSeparatorPosition + 2);
+                dataRow[columnKey] = readyValueCell;
+              } else if (isDataPointsFile) {
+                dataRow[columnKey] = valueCell;
+              }
+            });
+
+            var conceptValueSearchFor = value[0];
+            var conceptValueTypeIndex = conceptValueSearchFor.indexOf('->');
+
+            if(conceptValueTypeIndex != -1) {
+              conceptValueSearchFor = value[0].substring(0, conceptValueTypeIndex)
+            }
+
+            var dataRowUpdated = {};
+            dataRowUpdated["gid"] = diffResultGidField;
+            dataRowUpdated[diffResultGidField] = conceptValueSearchFor;
+            dataRowUpdated["data"] = dataRow;
+
+            fileDiffData.body.update.push(dataRowUpdated);
           }
         }
 
