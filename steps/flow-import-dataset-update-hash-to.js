@@ -50,11 +50,27 @@ step.prototype.process = function (inputValue) {
     return !!value && value.indexOf(".csv") != -1;
   });
 
+  var commandGitDiffByFiles = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-status';
+  var resultGitDiffByFiles = exec(commandGitDiffByFiles, {silent: true}).stdout;
+
+  var gitDiffFileStatus = {};
+  resultGitDiffByFiles.split("\n").filter(function(value) {
+    return !!value && value.indexOf(".csv") != -1;
+  }).map(function(rawFile) {
+    var fileStat = rawFile.split("\t");
+    gitDiffFileStatus[fileStat[1]] = fileStat[0];
+  });
+
   var dataRequest = {};
 
   gitDiffFileList.forEach(function(fileName, index){
 
-    console.log("File #" + index, fileName);
+    // skip changes for removed files
+    if(gitDiffFileStatus[fileName] && gitDiffFileStatus[fileName] == "D") {
+      return;
+    }
+
+    // console.log("File #" + index, fileName);
 
     var diffResult = [];
     var commandGitShowFrom = 'git ' + gitFolder + ' show ' + hashFrom + ':' + fileName;
@@ -286,12 +302,14 @@ step.prototype.process = function (inputValue) {
 
   });
 
-  // git diff 9f2e28d 5a4cacb --name-only
-  // git show 5a4cacb:output/ddf-full-stub/ddf--concepts.csv
+  var result = {
+    'files': gitDiffFileStatus,
+    'changes': dataRequest
+  };
 
-  setTimeout(function () {
-    done(null, true);
-  }, 10000);
+  fs.writeFileSync("./requests/operation-result.json", JSON.stringify(result));
+  done(null, true);
+
 };
 
 // Define Hook
