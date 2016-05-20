@@ -184,7 +184,10 @@ step.prototype.process = function (inputValue) {
             // check that file with datapoints
             if(isDataPointsFile) {
               diffResultColumns.forEach(function(columnValue, columnIndex){
-                if(fileDiffData.header.remove.indexOf(columnValue) == -1) {
+                if(
+                    fileDiffData.header.remove.indexOf(columnValue) == -1 &&
+                    fileDiffData.header.create.indexOf(columnValue) == -1
+                ) {
                   // ready columns
                   dataRowRemoved[columnValue] = value[columnIndex];
                 }
@@ -202,9 +205,9 @@ step.prototype.process = function (inputValue) {
             var dataRowOrigin = {};
             diffResultHeader.forEach(function(columnValue, columnIndex) {
               var columnKey = diffResultColumns[columnIndex];
-              if (columnValue == '+++') {
+              if (fileDiffData.header.create.indexOf(columnKey) != -1) {
                 dataRow[columnKey] = value[columnIndex];
-              } else if (fileDiffData.header.remove.indexOf(columnKey) == -1) {
+              } else {
                 dataRowOrigin[columnKey] = value[columnIndex];
               }
             });
@@ -240,7 +243,9 @@ step.prototype.process = function (inputValue) {
 
               } else if (isDataPointsFile) {
                 dataRow[columnKey] = valueCell;
-                dataRowOrigin[columnKey] = valueCell;
+                if(fileDiffData.header.create.indexOf(columnKey) == -1) {
+                  dataRowOrigin[columnKey] = valueCell;
+                }
               }
             });
 
