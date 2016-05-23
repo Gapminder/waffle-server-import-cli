@@ -1,6 +1,6 @@
 # Data structure for Incremental Update via Cli-tool
 
-## Base Protocol Structure
+## 1. Base Protocol Structure
 ```
 {
     'files': {},
@@ -8,7 +8,7 @@
 };
 ```
 
-## Structure of section : `files`
+### 1.1 Structure of section : `files`
 ```
 {
     ...
@@ -24,9 +24,9 @@
 
 `'A'` - Added;
 
-`'D'` - Deleted
+`'D'` - Deleted.
 
-## Structure of section : `changes`
+### 1.2 Structure of section : `changes`
 ```
 {
     ...
@@ -52,9 +52,9 @@
 
 `'change'` - used, when row should be totally overwritten;
 
-## Structure of section : `changes / header`
+## 2. Structure of section : `changes / header`
 
-### Structure of section : `create`
+### 2.1 Structure of section : `create`
 ```
 [
     ...
@@ -63,7 +63,7 @@
 ]
 ```
 
-### Structure of section : `remove`
+### 2.2 Structure of section : `remove`
 ```
 [
     ...
@@ -72,7 +72,7 @@
 ]
 ```
 
-### Structure of section : `update`
+### 2.3 Structure of section : `update`
 ```
 [
     ...
@@ -83,8 +83,8 @@
 ]
 ```
 
-## Structure of section : `changes / body`
-### Structure of section : `create`
+## 3. Structure of section : `changes / body`
+### 3.1 Structure of section : `create`
 ```
 [
     ...
@@ -97,7 +97,7 @@
 ]
 ```
 
-## Structure of section : `remove` (**General**-case)
+### 3.2 Structure of section : `remove` (**General**-case)
 ```
 [
     ...
@@ -108,7 +108,7 @@
 ]
 ```
 
-## Structure of section : `remove` (**DataPoint**-case)
+### 3.3 Structure of section : `remove` (**DataPoint**-case)
 ```
 [
     ...
@@ -122,7 +122,7 @@
 ```
 
 
-## Structure of section : `update`  (**General**-case)
+### 3.4 Structure of section : `update`  (**General**-case)
 ```
 [
     ...
@@ -143,7 +143,7 @@
 
 `data-update` - contain only pairs that would be added
 
-## Structure of section : `update`  (**DataPoint**-case)
+### 3.5 Structure of section : `update`  (**DataPoint**-case)
 ```
 [
     ...
@@ -169,7 +169,7 @@
 
 `data-update` - contain only pairs that would be updated
 
-## Structure of section : `change` (**General**-case)
+### 3.6 Structure of section : `change` (**General**-case)
 ```
 [
     ...
@@ -190,7 +190,7 @@
 
 `data-update` - contain only pairs that would be updated
 
-## Structure of section : `update`  (**DataPoint**-case)
+### 3.7 Structure of section : `update`  (**DataPoint**-case)
 ```
 [
     ...
@@ -215,3 +215,55 @@
 `data-origin` - used to define uniq item
 
 `data-update` - contain only pairs that would be updated
+
+## 4. Use cases
+### 4.1 Concept File
+### 4.1.1 Added `*`
+- Insert New Documents (from: current version, to: oo), as Default Import Algorithm;
+
+### 4.1.2 Removed `*`
+- Update All Documents (to: current version);
+
+### 4.1.3 Modified
+#### 4.1.3.1 header
+##### 4.1.3.1.1 header / create
+- Update All Documents with pair ({"new property":""});
+*operation could be skipped, since all changes already collected in body section for each row*
+
+##### 4.1.3.1.2 header / remove
+- Remove from All Documents pair ({"removed property":"any value"});
+
+##### 4.1.3.1.3 header / update
+- Update All Documents replacing pair ({"updated property":"old value"} by "modified property");
+
+#### 4.1.3.2 body
+##### 4.1.3.2.1 body / create
+- Insert New Document (from: current version, to: oo);
+
+##### 4.1.3.2.2 body / remove
+- Update Document' (to: current version);
+- Resolve DrillUp, DrillDown relations;
+- Resolve DataPoint relations (update related Datapoints with (to: current version);
+-- Update related Datapoints (to: current version);
+-- Create copies of updated DataPoints (from: current version);
+- Resolve type: measure;
+-- Update related Datapoints (to: current version);
+-- Create copies of updated DataPoints (from: current version);
+- Resolve type: time/domain;
+-- Resolve dependencies domain/ES/Entities/DataPoints;
+
+##### 4.1.3.2.3 body / update
+- Update Old Document' (to: current version);
+- Insert Document'' based on Document', data enlarged with pairs from `data-update` array (from: current version, to: oo);
+
+##### 4.1.3.2.3 body / change
+- Update Old Document' (to: current version)
+- Insert New Document'' replacing data with `data-update` structure (from: current version, to: oo)
+
+
+
+### 4.2 Entity File
+ToDo
+
+### 4.3 DataPoint File
+ToDo
