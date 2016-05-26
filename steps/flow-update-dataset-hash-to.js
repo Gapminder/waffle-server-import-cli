@@ -42,9 +42,12 @@ step.prototype.process = function (inputValue) {
 
   /* STEP :: get diff by hashes */
 
-  let gitFolder = '--git-dir=./../temp-ddf-csv-dummy-data/.git';
+  let sourceFolder = holder.getResult('flow-update-folder', '');
+  console.log(sourceFolder);
+
+  let gitFolder = '--git-dir=./../' + sourceFolder + '/.git';
   let commandGitDiff = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
-  let resultGitDiff = exec(commandGitDiff, {silent: true}).stdout;
+  let resultGitDiff = exec(commandGitDiff, {silent: false}).stdout;
 
   let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
     return !!value && value.indexOf(".csv") != -1;
@@ -318,7 +321,7 @@ step.prototype.process = function (inputValue) {
 // Define Hook
 
 step.prototype.prepare = function () {
-  let prevStepResult = holder.getResult('flow-import-dataset-choose', []);
+  let prevStepResult = holder.getResult('flow-update-dataset-choose', []);
   this.step.choices = prevStepResult;
 };
 

@@ -14,31 +14,15 @@ util.inherits(step, stepBase);
 var inquirer = require('inquirer');
 
 var question = {
-  'name': 'choose-flow',
+  'name': 'flow-import-dataset-choose',
   'type': 'list',
-  'message': 'Choose Flow',
-  'default': 0,
+  'message': 'DataSet Action',
+  'default': 'Update (version of existed DataSet)',
   'choices': [
-    {
-      name: 'Import DataSet',
-      value: 1
-    },
-    {
-      name: 'Update DataSet',
-      value: 2
-    },
-    {
-      name: 'Import Translations',
-      value: 3,
-      disabled: 'disabled'
-    },
-    {
-      name: 'Publish DataSet',
-      value: 4,
-      disabled: 'disabled'
-    },
+    'Import (create new DataSet)',
+    'Update (version of existed DataSet)',
     new inquirer.Separator(),
-    'Exit'
+    'Back'
   ]
 };
 
@@ -48,23 +32,21 @@ var holder = require('./../model/value-holder');
 var request = require('request-defaults');
 
 step.prototype.process = function (inputValue) {
-  var done = this.async();
 
-  if(inputValue == 4) {
+  var done = this.async();
+    
+  if(inputValue == 'Update (version of existed DataSet)') {
 
     request.api.post(
-      'http://localhost:3010/get-data-set-non-published',
+      'http://localhost:3010/get-data-set-for-update',
       //{form: data},
       function (error, response, body) {
         if (!error && response.statusCode == 200) {
           if(body) {
-            var datasetsReady = body.map(function(value) {
-              return value.dsId;
-            });
-            holder.setResult('publish-dataset-non-published', datasetsReady);
+            holder.setResult('flow-import-dataset-choose', body.list);
             done(null, true);
           } else {
-            done(null, 'Non-published Data Sets were not found.');
+            done(null, 'No Data were found on Server Side.');
           }
         } else {
           done(null, 'Server Error. Please try again later.');
@@ -73,7 +55,6 @@ step.prototype.process = function (inputValue) {
     );
 
   } else {
-    // setTimeout(function(){ done(null, true); }, 2000);
     done(null, true);
   }
 };

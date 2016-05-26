@@ -16,16 +16,16 @@ var inquirer = require('inquirer');
 var sourceList = [
   {
     github: 'git@github.com:valor-software/ddf--gapminder_world-stub-1.git',
-    commit: 'aafed7d4dcda8d736f317e0cd3eaff009275cbb6'
+    folder: 'ddf--gapminder_world-stub-1'
   },
   {
     github: 'git@github.com:valor-software/ddf--gapminder_world-stub-2.git',
-    commit: 'e4eaa8ef84c7f56325f86967351a7004cb175651'
+    folder: 'ddf--gapminder_world-stub-2'
   }
 ];
 
 var question = {
-  'name': 'flow-import-dataset-choose',
+  'name': 'flow-update-dataset-choose',
   'type': 'list',
   'message': 'List of DataSet Repositories (github.com)',
   'choices': [
@@ -46,10 +46,7 @@ var question = {
 
 var holder = require('./../model/value-holder');
 var request = require('request-defaults');
-var inquirerUi = new inquirer.ui.BottomBar();
-
-var intervalId;
-var consoleState = 'Loading: ';
+require('shelljs/global');
 
 step.prototype.process = function (inputValue) {
 
@@ -57,21 +54,29 @@ step.prototype.process = function (inputValue) {
 
   if(!!sourceList[inputValue]) {
 
-    // /api/ddf/import/repo?github=git@github.com:valor-software/ddf--gapminder_world-stub-1.git&commit=aafed7d4dcda8d736f317e0cd3eaff009275cbb6
+    holder.setResult('flow-update-folder', sourceList[inputValue].folder);
+    var res = exec("cd ../" + sourceList[inputValue].folder, {silent: true});
 
-    var consoleProgress = '';
-    intervalId = setInterval(function(){
-      consoleProgress += '.';
-      inquirerUi.updateBottomBar(consoleState + consoleProgress);
-    }, 500);
+    // folder not found
+    if(!!res.stderr) {
+      exec("cd ../ && git clone " + sourceList[inputValue].github, {silent: true});
+    }
 
-    request.api.get(
-      'http://localhost:3010/ws-import-dataset',
+    request.api.post(
+      'http://localhost:3010/get-data-set-for-update',
       {form: sourceList[inputValue]},
       function (error, response, body) {
-        question.choices[inputValue]['disabled'] = "done";
-        clearInterval(intervalId);
-        done(null, true);
+
+        if (!error && response.statusCode == 200) {
+          if(body) {
+            holder.setResult('flow-update-dataset-choose', body.list);
+            done(null, true);
+          } else {
+            done(null, 'No Data were found on Server Side.');
+          }
+        } else {
+          done(null, 'Server Error. Please try again later.');
+        }
       }
     );
 

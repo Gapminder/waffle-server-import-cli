@@ -1,5 +1,7 @@
-var holder = require('./model/value-holder');
-var request = require('request-defaults');
+'use strict';
+
+let holder = require('./model/value-holder');
+let request = require('request-defaults');
 
 request.api = request.defaults({
   timeout: 30*1000,
@@ -8,36 +10,34 @@ request.api = request.defaults({
 
 /************************************** REQUIRE STEPS *****************************************************************/
 
-var stepAuthentificationLogin = require('./steps/authentification-login');
-var stepAuthentificationPassword = require('./steps/authentification-password');
-var stepChooseFlow = require('./steps/choose-flow');
+let stepAuthentificationLogin = require('./steps/authentification-login');
+let stepAuthentificationPassword = require('./steps/authentification-password');
+let stepChooseFlow = require('./steps/choose-flow');
 
-var flowImportTranslationsSource = require('./steps/flow-import-translations-source');
+let flowImportTranslationsSource = require('./steps/flow-import-translations-source');
 
-var flowImportDataSetChoose = require('./steps/flow-import-dataset-choose');
-var flowImportDataSetPath = require('./steps/flow-import-dataset-path');
-var flowImportDataSetUpdateHashFrom = require('./steps/flow-import-dataset-update-hash-from');
-var flowImportDataSetUpdateHashTo = require('./steps/flow-import-dataset-update-hash-to');
+let flowUpdateDataSetChoose = require('./steps/flow-update-dataset-choose');
 
-var stepPublishDataSetNonPublished = require('./steps/flow-publish-dataset-non-published');
-var flowPublishDataSetVersion = require('./steps/flow-publish-dataset-version');
+let flowImportDataSetChoose = require('./steps/flow-import-dataset-choose');
+let flowImportDataSetPath = require('./steps/flow-import-dataset-path');
 
-var wayImportTranslationContentfulSpaceId = require('./steps/way-import-translation-contentful-spaceid');
-var wayImportTranslationContentfulAccessToken = require('./steps/way-import-translation-contentful-accesstoken');
-var wayImportTranslationFilesystemPath = require('./steps/way-import-translation-filesystem-path');
-var wayImportTranslationFilesystemFilelist = require('./steps/way-import-translation-filesystem-filelist');
-var wayImportTranslationFilesystemDatasets = require('./steps/way-import-translation-filesystem-datasets');
+let flowUpdateDataSetHashFrom = require('./steps/flow-update-dataset-hash-from');
+let flowUpdateDataSetHashTo = require('./steps/flow-update-dataset-hash-to');
 
-var stepExit = require('./steps/exit');
+let stepPublishDataSetNonPublished = require('./steps/flow-publish-dataset-non-published');
+let flowPublishDataSetVersion = require('./steps/flow-publish-dataset-version');
 
-/************************************** SET UP :: First Action ********************************************************/
+let wayImportTranslationContentfulSpaceId = require('./steps/way-import-translation-contentful-spaceid');
+let wayImportTranslationContentfulAccessToken = require('./steps/way-import-translation-contentful-accesstoken');
+let wayImportTranslationFilesystemPath = require('./steps/way-import-translation-filesystem-path');
+let wayImportTranslationFilesystemFilelist = require('./steps/way-import-translation-filesystem-filelist');
+let wayImportTranslationFilesystemDatasets = require('./steps/way-import-translation-filesystem-datasets');
 
-var startAction = stepAuthentificationLogin;
-//var startAction = stepChooseFlow;
+let stepExit = require('./steps/exit');
 
 /************************************** SET UP :: Last Action *********************************************************/
 
-var stepExitStrategy = {};
+let stepExitStrategy = {};
 stepExitStrategy[stepExit.step.choices[0]] = stepChooseFlow;
 stepExitStrategy[stepExit.step.choices[1]] = false;
 stepExit.setNextStrategy(stepExitStrategy);
@@ -61,7 +61,7 @@ stepPublishDataSetNonPublished.setNext(flowPublishDataSetVersion);
 
 /************************************** STEP :: Import Translations ***************************************************/
 
-var flowImportTranslationsSourceStrategy = {};
+let flowImportTranslationsSourceStrategy = {};
 flowImportTranslationsSourceStrategy[flowImportTranslationsSource.step.choices[0]] = wayImportTranslationContentfulSpaceId;
 flowImportTranslationsSourceStrategy[flowImportTranslationsSource.step.choices[1]] = wayImportTranslationFilesystemPath;
 flowImportTranslationsSourceStrategy[flowImportTranslationsSource.step.choices[3]] = stepChooseFlow;
@@ -69,26 +69,46 @@ flowImportTranslationsSourceStrategy[flowImportTranslationsSource.step.choices[3
 flowImportTranslationsSource.setNextStrategy(flowImportTranslationsSourceStrategy);
 flowImportDataSetPath.setNext(stepExit);
 
+/************************************** STEP :: Update DataSet ********************************************************/
+
+flowUpdateDataSetHashTo.setNext(stepChooseFlow);
+flowUpdateDataSetHashFrom.setNext(flowUpdateDataSetHashTo);
+
+let flowUpdateDataSetChooseStrategy = {};
+flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[0].value] = flowUpdateDataSetHashFrom;
+flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[1].value] = flowUpdateDataSetHashFrom;
+flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[3]] = stepChooseFlow;
+
+flowUpdateDataSetChoose.setNextStrategy(flowUpdateDataSetChooseStrategy);
 
 /************************************** STEP :: Import DataSet ********************************************************/
 
-flowImportDataSetUpdateHashTo.setNext(stepExit);
-flowImportDataSetUpdateHashFrom.setNext(flowImportDataSetUpdateHashTo);
+/*
+flowUpdateDataSetHashTo.setNext(stepExit);
+flowUpdateDataSetHashFrom.setNext(flowUpdateDataSetHashTo);
 
-var flowImportDataSetChooseStrategy = {};
+let flowImportDataSetChooseStrategy = {};
 flowImportDataSetChooseStrategy[flowImportDataSetChoose.step.choices[0]] = flowImportDataSetPath;
-flowImportDataSetChooseStrategy[flowImportDataSetChoose.step.choices[1]] = flowImportDataSetUpdateHashFrom;
+flowImportDataSetChooseStrategy[flowImportDataSetChoose.step.choices[1]] = flowUpdateDataSetHashFrom;
+flowImportDataSetChooseStrategy[flowImportDataSetChoose.step.choices[3]] = stepChooseFlow;
+*/
+
+let flowImportDataSetChooseStrategy = {};
+
+flowImportDataSetChooseStrategy[flowImportDataSetChoose.step.choices[0].value] = stepChooseFlow;
+flowImportDataSetChooseStrategy[flowImportDataSetChoose.step.choices[1].value] = stepChooseFlow;
 flowImportDataSetChooseStrategy[flowImportDataSetChoose.step.choices[3]] = stepChooseFlow;
 
 flowImportDataSetChoose.setNextStrategy(flowImportDataSetChooseStrategy);
 
 /************************************** STEP :: Choose Flow ***********************************************************/
 
-var stepChooseFlowStrategy = {};
-stepChooseFlowStrategy[stepChooseFlow.step.choices[0]] = flowImportTranslationsSource;
-stepChooseFlowStrategy[stepChooseFlow.step.choices[1]] = flowImportDataSetChoose;
-stepChooseFlowStrategy[stepChooseFlow.step.choices[2]] = stepPublishDataSetNonPublished;
-stepChooseFlowStrategy[stepChooseFlow.step.choices[4]] = false;
+let stepChooseFlowStrategy = {};
+stepChooseFlowStrategy[stepChooseFlow.step.choices[0].value] = flowImportDataSetChoose;
+stepChooseFlowStrategy[stepChooseFlow.step.choices[1].value] = flowUpdateDataSetChoose;
+stepChooseFlowStrategy[stepChooseFlow.step.choices[2].value] = flowImportTranslationsSource;
+stepChooseFlowStrategy[stepChooseFlow.step.choices[3].value] = stepPublishDataSetNonPublished;
+stepChooseFlowStrategy[stepChooseFlow.step.choices[5]] = false;
 
 stepChooseFlow.setNextStrategy(stepChooseFlowStrategy);
 
@@ -98,6 +118,11 @@ stepAuthentificationPassword.setNext(stepChooseFlow);
 stepAuthentificationLogin.setNext(stepAuthentificationPassword);
 
 /************************************** PROCESS ***********************************************************************/
+
+/************************************** SET UP :: First Action ********************************************************/
+
+//let startAction = stepAuthentificationLogin;
+let startAction = stepChooseFlow;
 
 startAction.run(holder);
 // flow.start(AuthStep).then(WporlStep).if(SuccesStep, FailStep).end(Step);

@@ -260,7 +260,10 @@ router.post("/get-data-set-for-update", function (request, response) {
   });
   request.on('end', function() {
 
-    var gitFolder = '--git-dir=./../temp-ddf-csv-dummy-data/.git';
+    var params = qs.parse(dataRequest);
+
+
+    var gitFolder = '--git-dir=./../' + params['folder'] + '/.git';
     var commandGitCmd = 'git ' + gitFolder + ' log --oneline';
     var resultGitCmd = exec(commandGitCmd, {silent: true}).stdout;
 
@@ -280,6 +283,26 @@ router.post("/get-data-set-for-update", function (request, response) {
   });
 });
 
+router.get("/ws-import-dataset", function (request, response) {
+
+  var dataRequest = '';
+  request.on('data', function(chunk) {
+    dataRequest += chunk;
+  });
+  request.on('end', function() {
+
+    var params = qs.parse(dataRequest);
+    console.log("ws-import-dataset::ok");
+
+    setTimeout(function(){
+
+      response.setHeader('Content-Type', 'application/json; charset=utf-8');
+      response.end(JSON.stringify({}));
+
+    }, 3000);
+
+  });
+});
 
 
 

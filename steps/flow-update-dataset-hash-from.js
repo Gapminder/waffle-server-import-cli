@@ -32,7 +32,7 @@ step.prototype.process = function (inputValue) {
 // Define Hook
 
 step.prototype.prepare = function () {
-  var prevStepResult = holder.getResult('flow-import-dataset-choose', []);
+  var prevStepResult = holder.getResult('flow-update-dataset-choose', []);
   this.step.choices = prevStepResult;
 };
 
