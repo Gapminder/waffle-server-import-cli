@@ -269,13 +269,18 @@ router.post("/get-data-set-for-update", function (request, response) {
 
     var commitList = resultGitCmd.split("\n").filter(function(value){
       return !!value;
+    }).map(function(value){
+      return {
+        name: value,
+        value: value
+      };
     });
 
     var data = {
       'list': commitList
     };
 
-    console.log("get-data-set-for-update::ok");
+    console.log("get-data-set-for-update::ok", commitList);
 
     response.setHeader('Content-Type', 'application/json; charset=utf-8');
     response.end(JSON.stringify(data));

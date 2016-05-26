@@ -1,7 +1,7 @@
 'use strict';
 
-var stepBase = require('./../model/base-step');
-var util = require('util');
+let stepBase = require('./../model/base-step');
+let util = require('util');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -11,9 +11,9 @@ util.inherits(step, stepBase);
 
 /**************************************************************************************************************/
 
-var inquirer = require('inquirer');
+let inquirer = require('inquirer');
 
-var question = {
+let question = {
   'name': 'flow-import-dataset-update-hash-from',
   'type': 'list',
   'message': 'Git commit, state FROM',
@@ -22,18 +22,24 @@ var question = {
 
 /**************************************************************************************************************/
 
-var holder = require('./../model/value-holder');
+let holder = require('./../model/value-holder');
 
 step.prototype.process = function (inputValue) {
-  var done = this.async();
+  let done = this.async();
   done(null, true);
 };
 
 // Define Hook
 
 step.prototype.prepare = function () {
-  var prevStepResult = holder.getResult('flow-update-dataset-choose', []);
-  this.step.choices = prevStepResult;
+  let prevStepResult = holder.getResult('flow-update-dataset-choose', []);
+  //let filteredArray = prevStepResult.slice();
+  let filteredArray = JSON.parse(JSON.stringify(prevStepResult));
+
+  // disable first (means last commit)
+  filteredArray[0]['disabled'] = "unavailable";
+
+  this.step.choices = filteredArray;
 };
 
 /**************************************************************************************************************/

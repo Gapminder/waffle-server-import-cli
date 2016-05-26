@@ -353,8 +353,31 @@ step.prototype.process = function (inputValue) {
 // Define Hook
 
 step.prototype.prepare = function () {
+
   let prevStepResult = holder.getResult('flow-update-dataset-choose', []);
-  this.step.choices = prevStepResult;
+  //let filteredArray = prevStepResult.slice();
+  let filteredArray = JSON.parse(JSON.stringify(prevStepResult));
+
+  let answerHashFrom = holder.get('flow-import-dataset-update-hash-from', false);
+
+  let answerHashFromIndex = false;
+
+  filteredArray.forEach(function(item, index) {
+    if(item.value == answerHashFrom) {
+      answerHashFromIndex = index;
+    }
+  });
+
+  filteredArray.forEach(function(value, index, source){
+    if(answerHashFromIndex === index) {
+      source[index]['disabled'] = "from";
+    }
+    if(answerHashFromIndex < index) {
+      source[index]['disabled'] = "unavailable";
+    }
+  });
+
+  this.step.choices = filteredArray;
 };
 
 /**************************************************************************************************************/
