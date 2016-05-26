@@ -27,10 +27,13 @@ require('shelljs/global');
 const holder = require('./../model/value-holder');
 const daff = require('daff');
 const fs = require('fs');
-
+const request = require('request-defaults');
+const cliProgress = require('./../service/ui-progress');
 
 step.prototype.process = function (inputValue) {
   let done = this.async();
+
+  cliProgress.start();
 
   /* STEP :: prepare data, find hashes */
   
@@ -42,12 +45,12 @@ step.prototype.process = function (inputValue) {
 
   /* STEP :: get diff by hashes */
 
-  let sourceFolder = holder.getResult('flow-update-folder', '');
-  console.log(sourceFolder);
+  let sourceFolder = holder.getResult('flow-update-selected-repo', '').folder;
+  let sourceUrl = holder.getResult('flow-update-selected-repo', '').github;
 
   let gitFolder = '--git-dir=./../' + sourceFolder + '/.git';
   let commandGitDiff = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
-  let resultGitDiff = exec(commandGitDiff, {silent: false}).stdout;
+  let resultGitDiff = exec(commandGitDiff, {silent: true}).stdout;
 
   let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
     return !!value && value.indexOf(".csv") != -1;
@@ -313,8 +316,37 @@ step.prototype.process = function (inputValue) {
     'changes': dataRequest
   };
 
-  fs.writeFileSync("./requests/operation-result.json", JSON.stringify(result));
-  done(null, true);
+
+  let resultFileName = "./requests/operation-result.json";
+  let resultFilePath = fs.realpathSync(resultFileName);
+
+
+  fs.writeFileSync(resultFileName, JSON.stringify(result));
+
+  /*
+
+    Request to WS :: Incremental update
+
+    GET: /api/ddf/incremental-update/repo
+
+      PARAM: path,        [/full/path/to/output_file.json]
+      PARAM: githubUrl,   [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
+
+   */
+
+  let CHANGE_ROUTE_WS_UPDATE = 'http://localhost:3010/ws-update-incremental';
+
+  request.api.get(
+    CHANGE_ROUTE_WS_UPDATE,
+    {form: {
+      'path': resultFilePath,
+      'githubUrl': sourceUrl
+    }},
+    function (error, response, body) {
+      cliProgress.stop();
+      done(null, true);
+    }
+  );
 
 };
 
@@ -328,14 +360,3 @@ step.prototype.prepare = function () {
 /**************************************************************************************************************/
 
 module.exports = new step(question);
-
-
-
-function sleep(milliseconds) {
-  let start = new Date().getTime();
-  for (let i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
-  }
-}

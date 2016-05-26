@@ -54,7 +54,7 @@ step.prototype.process = function (inputValue) {
 
   if(!!sourceList[inputValue]) {
 
-    holder.setResult('flow-update-folder', sourceList[inputValue].folder);
+    holder.setResult('flow-update-selected-repo', sourceList[inputValue]);
     var res = exec("cd ../" + sourceList[inputValue].folder, {silent: true});
 
     // folder not found

@@ -46,7 +46,8 @@ var question = {
 
 var holder = require('./../model/value-holder');
 var request = require('request-defaults');
-var inquirerUi = new inquirer.ui.BottomBar();
+var cliProgress = require('./../service/ui-progress');
+
 
 var intervalId;
 var consoleState = 'Loading: ';
@@ -57,20 +58,26 @@ step.prototype.process = function (inputValue) {
 
   if(!!sourceList[inputValue]) {
 
-    // /api/ddf/import/repo?github=git@github.com:valor-software/ddf--gapminder_world-stub-1.git&commit=aafed7d4dcda8d736f317e0cd3eaff009275cbb6
+    /*
 
-    var consoleProgress = '';
-    intervalId = setInterval(function(){
-      consoleProgress += '.';
-      inquirerUi.updateBottomBar(consoleState + consoleProgress);
-    }, 500);
+      Request to WS :: Import Dataset
 
+      GET: /api/ddf/import/repo
+
+        PARAM: github,    [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
+        PARAM: commit,    [aafed7d4dcda8d736f317e0cd3eaff009275cbb6]
+
+    */
+
+    let CHANGE_ROUTE_WS_IMPORT = 'http://localhost:3010/ws-import-dataset';
+
+    cliProgress.start();
     request.api.get(
-      'http://localhost:3010/ws-import-dataset',
+      CHANGE_ROUTE_WS_IMPORT,
       {form: sourceList[inputValue]},
       function (error, response, body) {
         question.choices[inputValue]['disabled'] = "done";
-        clearInterval(intervalId);
+        cliProgress.stop();
         done(null, true);
       }
     );

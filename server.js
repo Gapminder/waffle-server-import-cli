@@ -304,8 +304,26 @@ router.get("/ws-import-dataset", function (request, response) {
   });
 });
 
+router.get("/ws-update-incremental", function (request, response) {
 
+  var dataRequest = '';
+  request.on('data', function(chunk) {
+    dataRequest += chunk;
+  });
+  request.on('end', function() {
 
+    var params = qs.parse(dataRequest);
+    console.log("ws-import-dataset::ok", params);
+
+    setTimeout(function(){
+
+      response.setHeader('Content-Type', 'application/json; charset=utf-8');
+      response.end(JSON.stringify({}));
+
+    }, 3000);
+
+  });
+});
 
 
 var server = http.createServer(function(req, res) {
