@@ -1,7 +1,7 @@
 'use strict';
 
-var stepBase = require('./../model/base-step');
-var util = require('util');
+let stepBase = require('./../model/base-step');
+let util = require('util');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -11,9 +11,9 @@ util.inherits(step, stepBase);
 
 /**************************************************************************************************************/
 
-var inquirer = require('inquirer');
+let inquirer = require('inquirer');
 
-var question = {
+let question = {
   'name': 'flow-import-dataset-update-hash-to',
   'type': 'list',
   'message': 'Git commit, state TO',
@@ -30,51 +30,53 @@ const fs = require('fs');
 
 
 step.prototype.process = function (inputValue) {
-  var done = this.async();
+  let done = this.async();
 
   /* STEP :: prepare data, find hashes */
   
-  var answerHashFrom = holder.get('flow-import-dataset-update-hash-from', false);
-  var answerHashTo = inputValue;
+  let answerHashFrom = holder.get('flow-import-dataset-update-hash-from', false);
+  let answerHashTo = inputValue;
 
-  var hashFrom = answerHashFrom.split(" ")[0];
-  var hashTo = answerHashTo.split(" ")[0];
+  let hashFrom = answerHashFrom.split(" ")[0];
+  let hashTo = answerHashTo.split(" ")[0];
 
   /* STEP :: get diff by hashes */
 
-  var gitFolder = '--git-dir=./../temp-ddf-csv-dummy-data/.git';
-  var commandGitDiff = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
-  var resultGitDiff = exec(commandGitDiff, {silent: true}).stdout;
+  let gitFolder = '--git-dir=./../temp-ddf-csv-dummy-data/.git';
+  let commandGitDiff = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
+  let resultGitDiff = exec(commandGitDiff, {silent: true}).stdout;
 
-  var gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
+  let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
     return !!value && value.indexOf(".csv") != -1;
   });
 
-  var commandGitDiffByFiles = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-status';
-  var resultGitDiffByFiles = exec(commandGitDiffByFiles, {silent: true}).stdout;
+  let commandGitDiffByFiles = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-status';
+  let resultGitDiffByFiles = exec(commandGitDiffByFiles, {silent: true}).stdout;
 
-  var gitDiffFileStatus = {};
+  let gitDiffFileStatus = {};
   resultGitDiffByFiles.split("\n").filter(function(value) {
     return !!value && value.indexOf(".csv") != -1;
   }).map(function(rawFile) {
-    var fileStat = rawFile.split("\t");
+    let fileStat = rawFile.split("\t");
     gitDiffFileStatus[fileStat[1]] = fileStat[0];
   });
 
-  var dataRequest = {};
+  let dataRequest = {};
 
   gitDiffFileList.forEach(function(fileName, index){
 
-    // skip changes for removed files
+    // disable changes for removed files
+    /*
     if(gitDiffFileStatus[fileName] && gitDiffFileStatus[fileName] == "D") {
       return;
     }
+    */
 
     // console.log("File #" + index, fileName);
 
-    var diffResult = [];
-    var commandGitShowFrom = 'git ' + gitFolder + ' show ' + hashFrom + ':' + fileName;
-    var commandGitShowTo = 'git ' + gitFolder + ' show ' + hashTo + ':' + fileName;
+    let diffResult = [];
+    let commandGitShowFrom = 'git ' + gitFolder + ' show ' + hashFrom + ':' + fileName;
+    let commandGitShowTo = 'git ' + gitFolder + ' show ' + hashTo + ':' + fileName;
 
     const fileDataFrom = exec(commandGitShowFrom, {silent: true}).stdout;
     const fileDataTo = exec(commandGitShowTo, {silent: true}).stdout;
@@ -82,21 +84,21 @@ step.prototype.process = function (inputValue) {
     const tableFrom = new daff.Csv().makeTable(fileDataFrom);
     const tableTo = new daff.Csv().makeTable(fileDataTo);
 
-    var filesDiff = daff.compareTables(tableFrom,tableTo).align();
+    let filesDiff = daff.compareTables(tableFrom,tableTo).align();
 
-    var flags = new daff.CompareFlags();
+    let flags = new daff.CompareFlags();
     flags.show_unchanged = true;
     flags.show_unchanged_columns = true;
     flags.always_show_header = true;
 
-    var highlighter = new daff.TableDiff(filesDiff, flags);
+    let highlighter = new daff.TableDiff(filesDiff, flags);
     highlighter.hilite(diffResult);
 
     fs.writeFileSync("./requests/diff--" + fileName + ".json", JSON.stringify(diffResult));
 
     /* Prepare Data Structure */
 
-    var fileDiffData = {
+    let fileDiffData = {
 
       "header": {
         "create": [],
@@ -117,9 +119,9 @@ step.prototype.process = function (inputValue) {
 
     /* Slice Groupd of Changes */
 
-    var firsDiffRow = diffResult.shift();
-    var diffResultHeader = [];
-    var diffResultColumns = [];
+    let firsDiffRow = diffResult.shift();
+    let diffResultHeader = [];
+    let diffResultColumns = [];
 
     if(firsDiffRow[0] == '!') {
 
@@ -143,7 +145,7 @@ step.prototype.process = function (inputValue) {
               fileDiffData.header.remove.push(diffResultColumns[index + 1]);
             } else {
               // modified
-              var oldColumn = value.substring(1, value.length - 1);
+              let oldColumn = value.substring(1, value.length - 1);
               fileDiffData.header.update.push({
                 oldColumn: diffResultColumns[index + 1]
               });
@@ -158,13 +160,13 @@ step.prototype.process = function (inputValue) {
       diffResultColumns = firsDiffRow;
     }
 
-    var diffResultGidField;
+    let diffResultGidField;
     if(diffResultColumns[0] == "@@") {
       diffResultColumns.shift();
       diffResultGidField = diffResultColumns[0];
     }
 
-    var isDataPointsFile = fileName.indexOf("--datapoints--") != -1 ? true : false;
+    let isDataPointsFile = fileName.indexOf("--datapoints--") != -1 ? true : false;
 
 
     if(diffResult.length) {
@@ -173,14 +175,14 @@ step.prototype.process = function (inputValue) {
 
         // simple-way, collect all data (mean full row) for update
 
-        var modificationType = value.shift();
+        let modificationType = value.shift();
 
         if(modificationType != '') {
 
           if (modificationType == '+++') {
 
             // added
-            var dataRow = {};
+            let dataRow = {};
             diffResultColumns.forEach(function(columnValue, columnIndex){
               if(fileDiffData.header.remove.indexOf(columnValue) == -1) {
                 // ready columns
@@ -195,13 +197,14 @@ step.prototype.process = function (inputValue) {
           } else if (modificationType == '---') {
 
             // removed
-            var dataRowRemoved = {};
+            let dataRowRemoved = {};
 
             // check that file with datapoints
             if(isDataPointsFile) {
               diffResultColumns.forEach(function(columnValue, columnIndex){
                 if(
-                    fileDiffData.header.remove.indexOf(columnValue) == -1 &&
+                    // disable changes for removed files
+                    // fileDiffData.header.remove.indexOf(columnValue) == -1 &&
                     fileDiffData.header.create.indexOf(columnValue) == -1
                 ) {
                   // ready columns
@@ -217,10 +220,10 @@ step.prototype.process = function (inputValue) {
           } else if (modificationType == '+') {
 
             // updated, only added columns
-            var dataRow = {};
-            var dataRowOrigin = {};
+            let dataRow = {};
+            let dataRowOrigin = {};
             diffResultHeader.forEach(function(columnValue, columnIndex) {
-              var columnKey = diffResultColumns[columnIndex];
+              let columnKey = diffResultColumns[columnIndex];
               if (fileDiffData.header.create.indexOf(columnKey) != -1) {
                 dataRow[columnKey] = value[columnIndex];
               } else {
@@ -228,7 +231,7 @@ step.prototype.process = function (inputValue) {
               }
             });
 
-            var dataRowUpdated = {};
+            let dataRowUpdated = {};
             dataRowUpdated["gid"] = diffResultGidField;
             dataRowUpdated[diffResultGidField] = value[0];
             dataRowUpdated["data-update"] = dataRow;
@@ -242,17 +245,17 @@ step.prototype.process = function (inputValue) {
           } else if (modificationType == '->') {
 
             // updated, only changed cell
-            var dataRow = {};
-            var dataRowOrigin = {};
+            let dataRow = {};
+            let dataRowOrigin = {};
 
             value.forEach(function(valueCell, indexCell){
-              var modificationSeparatorPosition = valueCell.indexOf('->');
-              var columnKey = diffResultColumns[indexCell];
+              let modificationSeparatorPosition = valueCell.indexOf('->');
+              let columnKey = diffResultColumns[indexCell];
 
               if(modificationSeparatorPosition != -1) {
 
-                var readyValueCell = valueCell.substring(modificationSeparatorPosition + 2);
-                var readyValueCellOrigin = valueCell.substring(0, modificationSeparatorPosition);
+                let readyValueCell = valueCell.substring(modificationSeparatorPosition + 2);
+                let readyValueCellOrigin = valueCell.substring(0, modificationSeparatorPosition);
 
                 dataRow[columnKey] = readyValueCell;
                 dataRowOrigin[columnKey] = readyValueCellOrigin;
@@ -267,14 +270,14 @@ step.prototype.process = function (inputValue) {
 
             // fix first column changes
 
-            var conceptValueSearchFor = value[0];
-            var conceptValueTypeIndex = conceptValueSearchFor.indexOf('->');
+            let conceptValueSearchFor = value[0];
+            let conceptValueTypeIndex = conceptValueSearchFor.indexOf('->');
 
             if(conceptValueTypeIndex != -1) {
               conceptValueSearchFor = value[0].substring(0, conceptValueTypeIndex)
             }
 
-            var dataRowUpdated = {};
+            let dataRowUpdated = {};
             dataRowUpdated["gid"] = diffResultGidField;
             dataRowUpdated[diffResultGidField] = conceptValueSearchFor;
             dataRowUpdated["data-update"] = dataRow;
@@ -302,7 +305,7 @@ step.prototype.process = function (inputValue) {
 
   });
 
-  var result = {
+  let result = {
     'files': gitDiffFileStatus,
     'changes': dataRequest
   };
@@ -315,7 +318,7 @@ step.prototype.process = function (inputValue) {
 // Define Hook
 
 step.prototype.prepare = function () {
-  var prevStepResult = holder.getResult('flow-import-dataset-choose', []);
+  let prevStepResult = holder.getResult('flow-import-dataset-choose', []);
   this.step.choices = prevStepResult;
 };
 
@@ -326,8 +329,8 @@ module.exports = new step(question);
 
 
 function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
+  let start = new Date().getTime();
+  for (let i = 0; i < 1e7; i++) {
     if ((new Date().getTime() - start) > milliseconds){
       break;
     }
