@@ -70,6 +70,9 @@ router.post("/generate-commit-list", function (request, response) {
 
     let gitFolderDirParam = '--git-dir=./../' + gitFolder + '/.git';
     let commandGitCmd = 'git ' + gitFolderDirParam + ' log --oneline';
+
+    exec("git " + gitFolderDirParam + " pull origin master", {silent: true});
+
     let resultGitCmd = exec(commandGitCmd, {silent: true}).stdout;
 
     let commitList = resultGitCmd.split("\n").filter(function(value){
