@@ -1,7 +1,9 @@
 'use strict';
 
-var stepBase = require('./../model/base-step');
-var util = require('util');
+const stepBase = require('./../../model/base-step');
+const util = require('util');
+const cliProgress = require('./../../service/ui-progress');
+const inquirer = require('inquirer');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -9,11 +11,9 @@ function step() {
 
 util.inherits(step, stepBase);
 
-/**************************************************************************************************************/
+// Question Definition
 
-var inquirer = require('inquirer');
-
-var question = {
+let question = {
   'name': 'flow-import-translations-source',
   'type': 'list',
   'message': 'Import source',
@@ -25,7 +25,7 @@ var question = {
   ]
 };
 
-/**************************************************************************************************************/
+// Own Process Implementation
 
 step.prototype.process = function (inputValue) {
   var done = this.async();
@@ -34,6 +34,6 @@ step.prototype.process = function (inputValue) {
   }, 100);
 };
 
-/**************************************************************************************************************/
+// Export Module
 
 module.exports = new step(question);

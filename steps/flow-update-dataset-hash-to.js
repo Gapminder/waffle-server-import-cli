@@ -1,7 +1,9 @@
 'use strict';
 
-let stepBase = require('./../model/base-step');
-let util = require('util');
+const stepBase = require('./../model/base-step');
+const util = require('util');
+const cliProgress = require('./../service/ui-progress');
+const inquirer = require('inquirer');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -9,9 +11,7 @@ function step() {
 
 util.inherits(step, stepBase);
 
-/**************************************************************************************************************/
-
-let inquirer = require('inquirer');
+// Question Definition
 
 let question = {
   'name': 'flow-import-dataset-update-hash-to',
@@ -20,7 +20,7 @@ let question = {
   'choices': []
 };
 
-/**************************************************************************************************************/
+// Own Process Implementation
 
 require('shelljs/global');
 
@@ -28,12 +28,11 @@ const holder = require('./../model/value-holder');
 const daff = require('daff');
 const fs = require('fs');
 const request = require('request-defaults');
-const cliProgress = require('./../service/ui-progress');
 
 step.prototype.process = function (inputValue) {
-  let done = this.async();
 
-  cliProgress.start();
+  let done = this.async();
+  cliProgress.state("processing CSV-diff");
 
   /* STEP :: prepare data, find hashes */
   
@@ -78,7 +77,7 @@ step.prototype.process = function (inputValue) {
     }
     */
 
-    // console.log("File #" + index, fileName);
+    cliProgress.state("processing CSV-diff, file: " + fileName);
 
     let diffResult = [];
     let commandGitShowFrom = 'git ' + gitFolder + ' show ' + hashFrom + ':' + fileName;
@@ -306,7 +305,7 @@ step.prototype.process = function (inputValue) {
 
     dataRequest[fileName] = fileDiffData;
 
-    //console.log("diffResult", diffResult);
+    cliProgress.state("processing CSV-diff, generate output");
     fs.writeFileSync("./requests/" + fileName + ".json", JSON.stringify(fileDiffData));
 
   });
@@ -334,6 +333,7 @@ step.prototype.process = function (inputValue) {
 
    */
 
+  // TODO:: Update with Real path to WS
   let CHANGE_ROUTE_WS_UPDATE = 'http://localhost:3010/ws-update-incremental';
 
   request.api.get(
@@ -380,6 +380,6 @@ step.prototype.prepare = function () {
   this.step.choices = filteredArray;
 };
 
-/**************************************************************************************************************/
+// Export Module
 
 module.exports = new step(question);

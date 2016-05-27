@@ -1,7 +1,9 @@
 'use strict';
 
-var stepBase = require('./../model/base-step');
-var util = require('util');
+const stepBase = require('./../model/base-step');
+const util = require('util');
+const cliProgress = require('./../service/ui-progress');
+const inquirer = require('inquirer');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -9,22 +11,11 @@ function step() {
 
 util.inherits(step, stepBase);
 
-/**************************************************************************************************************/
+// Question Definition
 
-var inquirer = require('inquirer');
+const sourceList = require('./../service/github-repo');
 
-var sourceList = [
-  {
-    github: 'git@github.com:valor-software/ddf--gapminder_world-stub-1.git',
-    commit: 'aafed7d4dcda8d736f317e0cd3eaff009275cbb6'
-  },
-  {
-    github: 'git@github.com:valor-software/ddf--gapminder_world-stub-2.git',
-    commit: 'e4eaa8ef84c7f56325f86967351a7004cb175651'
-  }
-];
-
-var question = {
+let question = {
   'name': 'flow-import-dataset-choose',
   'type': 'list',
   'message': 'List of DataSet Repositories (github.com)',
@@ -42,21 +33,18 @@ var question = {
   ]
 };
 
-/**************************************************************************************************************/
+// Own Process Implementation
 
-var holder = require('./../model/value-holder');
-var request = require('request-defaults');
-var cliProgress = require('./../service/ui-progress');
-
-
-var intervalId;
-var consoleState = 'Loading: ';
+const holder = require('./../model/value-holder');
+const request = require('request-defaults');
 
 step.prototype.process = function (inputValue) {
 
-  var done = this.async();
+  let done = this.async();
 
   if(!!sourceList[inputValue]) {
+
+    cliProgress.state("processing import with selected DataSet '" + sourceList[inputValue].folder + "'");
 
     /*
 
@@ -69,12 +57,17 @@ step.prototype.process = function (inputValue) {
 
     */
 
+    // TODO:: Update with Real path to WS
     let CHANGE_ROUTE_WS_IMPORT = 'http://localhost:3010/ws-import-dataset';
 
-    cliProgress.start();
+    let data = {
+      'github': sourceList[inputValue].github,
+      'commit': sourceList[inputValue].commit
+    };
+
     request.api.get(
       CHANGE_ROUTE_WS_IMPORT,
-      {form: sourceList[inputValue]},
+      {form: data},
       function (error, response, body) {
         question.choices[inputValue]['disabled'] = "done";
         cliProgress.stop();
@@ -83,11 +76,12 @@ step.prototype.process = function (inputValue) {
     );
 
   } else {
+    cliProgress.stop();
     done(null, true);
   }
 
 };
 
-/**************************************************************************************************************/
+// Export Module
 
 module.exports = new step(question);

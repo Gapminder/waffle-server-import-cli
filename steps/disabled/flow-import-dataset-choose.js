@@ -1,7 +1,9 @@
 'use strict';
 
-var stepBase = require('./../model/base-step');
-var util = require('util');
+const stepBase = require('./../../model/base-step');
+const util = require('util');
+const cliProgress = require('./../../service/ui-progress');
+const inquirer = require('inquirer');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -9,11 +11,9 @@ function step() {
 
 util.inherits(step, stepBase);
 
-/**************************************************************************************************************/
+// Question Definition
 
-var inquirer = require('inquirer');
-
-var question = {
+let question = {
   'name': 'flow-import-dataset-choose',
   'type': 'list',
   'message': 'DataSet Action',
@@ -26,10 +26,10 @@ var question = {
   ]
 };
 
-/**************************************************************************************************************/
+// Own Process Implementation
 
-var holder = require('./../model/value-holder');
-var request = require('request-defaults');
+const holder = require('./../../model/value-holder');
+const request = require('request-defaults');
 
 step.prototype.process = function (inputValue) {
 
@@ -59,6 +59,6 @@ step.prototype.process = function (inputValue) {
   }
 };
 
-/**************************************************************************************************************/
+// Export Module
 
 module.exports = new step(question);

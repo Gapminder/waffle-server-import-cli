@@ -1,7 +1,9 @@
 'use strict';
 
-var stepBase = require('./../model/base-step');
-var util = require('util');
+const stepBase = require('./../../model/base-step');
+const util = require('util');
+const cliProgress = require('./../../service/ui-progress');
+const inquirer = require('inquirer');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -9,19 +11,19 @@ function step() {
 
 util.inherits(step, stepBase);
 
-/**************************************************************************************************************/
+// Question Definition
 
-var question = {
+let question = {
   'name': 'way-import-translation-contentful-accesstoken',
   'type': 'input',
   'default': 'xxx',
   'message': 'Contentful asks for "ACCESS_TOKEN"'
 };
 
-/**************************************************************************************************************/
+// Own Process Implementation
 
-var holder = require('./../model/value-holder');
-var contentfulService = require('./../service/contentful');
+const holder = require('./../../model/value-holder');
+const contentfulService = require('./../../service/contentful');
 
 step.prototype.process = function (inputValue) {
   var done = this.async();
@@ -41,6 +43,6 @@ step.prototype.process = function (inputValue) {
     });
 };
 
-/**************************************************************************************************************/
+// Export Module
 
 module.exports = new step(question);

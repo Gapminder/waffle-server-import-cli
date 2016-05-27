@@ -1,7 +1,9 @@
 'use strict';
 
-var stepBase = require('./../model/base-step');
-var util = require('util');
+const stepBase = require('./../model/base-step');
+const util = require('util');
+const cliProgress = require('./../service/ui-progress');
+const inquirer = require('inquirer');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -9,29 +11,33 @@ function step() {
 
 util.inherits(step, stepBase);
 
-/**************************************************************************************************************/
+// Question Definition
 
-var question = {
+let question = {
   'name': 'authentification-login',
   'type': 'input',
   'default': 'test',
   'message': 'Authentification, Login'
 };
 
-/**************************************************************************************************************/
+// Own Process Implementation
 
 step.prototype.process = function (inputValue) {
-  var done = this.async();
+
+  let done = this.async();
+  cliProgress.state("processing user login");
+
   setTimeout(function () {
     if(inputValue == 'test') {
+      cliProgress.stop();
       done(null, true);
     } else {
+      cliProgress.stop();
       done(null, false);
     }
   }, 100);
 };
 
-
-/**************************************************************************************************************/
+// Export Module
 
 module.exports = new step(question);

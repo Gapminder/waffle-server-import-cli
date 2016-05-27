@@ -1,273 +1,78 @@
+'use strict';
+
 require('shelljs/global');
 
-var http = require('http');
-var Router = require('router');
-var qs = require('querystring');
-var fs = require('fs');
+const http = require('http');
+const Router = require('router');
+const qs = require('querystring');
+const fs = require('fs');
 
-var router = Router();
+let router = Router();
 
-router.post("/get-data-set-published", function (request, response) {
+const SERVER_TIMEOUT_MIN = 2500;
+const SERVER_TIMEOUT_MAX = 4500;
+const DEBUG = true;
 
-  var data = [
-    {'dsId': 'some-dataset-1'},
-    {'dsId': 'some-dataset-2'},
-    {'dsId': 'some-dataset-3'},
-    {'dsId': 'some-dataset-4'}
-  ];
-  console.log("get-data-set-published::ok");
+function _log() {
+  console.log("\n");
+  console.log.apply(console, arguments);
+}
+function _debug() {
+  if(DEBUG) {
+    console.log.apply(console, arguments);
+  }
+}
 
-  response.setHeader('Content-Type', 'application/json; charset=utf-8');
-  response.end(JSON.stringify(data));
+router.get("/ws-import-dataset", function (request, response) {
 
-});
-
-router.post("/get-data-set-non-published", function (request, response) {
-
-  var data = [
-    {'dsId': 'some-non-published-dataset-1'},
-    {'dsId': 'some-non-published-dataset-2'},
-    {'dsId': 'some-non-published-dataset-3'},
-    {'dsId': 'some-non-published-dataset-4'}
-  ];
-  console.log("get-data-set-non-published::ok");
-
-  response.setHeader('Content-Type', 'application/json; charset=utf-8');
-  response.end(JSON.stringify(data));
-
-});
-
-router.post("/get-data-set-non-published-version", function (request, response) {
-
-  var dataRequest = '';
-  request.on('data', function(chunk) {
-    dataRequest += chunk;
-  });
-  request.on('end', function() {
-    /*
-     *   POST params:
-     *
-     *     - dataset_id
-     */
-    var post = qs.parse(dataRequest);
-
-    var data = {
-      'list': [
-        'some-non-published-dataset-version-1',
-        'some-non-published-dataset-version-2',
-        'some-non-published-dataset-version-3',
-        'some-non-published-dataset-version-4',
-        'some-non-published-dataset-version-5'
-      ]
-    };
-    console.log("get-data-set-non-published-version::ok");
-
-    response.setHeader('Content-Type', 'application/json; charset=utf-8');
-    response.end(JSON.stringify(data));
-
-  });
-});
-
-router.post("/translations-import", function (request, response) {
-
-  var dataRequest = '';
-  request.on('data', function(chunk) {
-    dataRequest += chunk;
-  });
-  request.on('end', function() {
-    /*
-    *   POST params:
-    *
-    *     - language
-    *     - dataset_id
-    *     - data (stringify JSON :: JSON.parse(post['data'])
-    */
-    var post = qs.parse(dataRequest);
-    console.log("translations-import::ok");
-
-    var data = {'status': 'ok'};
-    response.setHeader('Content-Type', 'application/json; charset=utf-8');
-    response.end(JSON.stringify(data));
-
-  });
-});
-
-router.post("/translations-publish", function (request, response) {
-
-  var dataRequest = '';
-  request.on('data', function(chunk) {
-    dataRequest += chunk;
-  });
-  request.on('end', function() {
-    /*
-     *   POST params:
-     *
-     *     - dataset_id
-     */
-    var post = qs.parse(dataRequest);
-    console.log("translations-publish::ok");
-
-    var data = {'status': 'ok'};
-    response.setHeader('Content-Type', 'application/json; charset=utf-8');
-    response.end(JSON.stringify(data));
-
-  });
-});
-
-router.post("/publish-dataset", function (request, response) {
-
-  var dataRequest = '';
-  request.on('data', function(chunk) {
-    dataRequest += chunk;
-  });
-  request.on('end', function() {
-    /*
-     *   POST params:
-     *
-     *     - dataset_id
-     *     - version
-     */
-    var post = qs.parse(dataRequest);
-    console.log("publish-dataset::ok");
-
-    var data = {'status': 'ok'};
-    response.setHeader('Content-Type', 'application/json; charset=utf-8');
-    response.end(JSON.stringify(data));
-
-  });
-});
-
-router.post("/ddf-import--create-concepts", function (request, response) {
-
-  var dataRequest = '';
-  request.on('data', function(chunk) {
-    dataRequest += chunk;
-  });
-  request.on('end', function() {
-    /*
-     *   POST params:
-     *
-     *     - data [concepts, Array]
-     */
-
-    var post = qs.parse(dataRequest);
-    console.log("ddf-import--create-concepts::ok");
-
-    var data = {'status': 'ok'};
-    response.setHeader('Content-Type', 'application/json; charset=utf-8');
-    response.end(JSON.stringify(data));
-
-  });
-});
-
-router.post("/ddf-import--add-concept-drillups", function (request, response) {
-
-  var dataRequest = '';
-  request.on('data', function(chunk) {
-    dataRequest += chunk;
-  });
-  request.on('end', function() {
-    /*
-     *   POST params:
-     *
-     *     - data [drillups, Array]
-     */
-
-    var post = qs.parse(dataRequest);
-    console.log("ddf-import--add-concept-drillups::ok");
-
-    var data = {'status': 'ok'};
-    response.setHeader('Content-Type', 'application/json; charset=utf-8');
-    response.end(JSON.stringify(data));
-
-  });
-});
-
-router.post("/ddf-import--add-concept-drillups", function (request, response) {
-
-  var dataRequest = '';
-  request.on('data', function(chunk) {
-    dataRequest += chunk;
-  });
-  request.on('end', function() {
-    /*
-     *   POST params:
-     *
-     *     - data [drillups, Array]
-     */
-
-    var post = qs.parse(dataRequest);
-    console.log("ddf-import--add-concept-drillups::ok");
-
-    var data = {'status': 'ok'};
-    response.setHeader('Content-Type', 'application/json; charset=utf-8');
-    response.end(JSON.stringify(data));
-
-  });
-});
-
-router.post("/ddf-import--add-concept-drilldowns", function (request, response) {
-
-  var dataRequest = '';
-  request.on('data', function(chunk) {
-    dataRequest += chunk;
-  });
-  request.on('end', function() {
-    /*
-     *   POST params:
-     *
-     *     - data [drilldowns, Array]
-     */
-
-    var post = qs.parse(dataRequest);
-    console.log("ddf-import--add-concept-drilldowns::ok");
-
-    var data = {'status': 'ok'};
-    response.setHeader('Content-Type', 'application/json; charset=utf-8');
-    response.end(JSON.stringify(data));
-
-  });
-});
-
-router.post("/ddf-import--add-concept-domains", function (request, response) {
-
-  var dataRequest = '';
-  request.on('data', function(chunk) {
-    dataRequest += chunk;
-  });
-  request.on('end', function() {
-    /*
-     *   POST params:
-     *
-     *     - data [domains, Array]
-     */
-
-    var post = qs.parse(dataRequest);
-    console.log("ddf-import--add-concept-domains::ok");
-
-    var data = {'status': 'ok'};
-    response.setHeader('Content-Type', 'application/json; charset=utf-8');
-    response.end(JSON.stringify(data));
-
-  });
-});
-
-router.post("/get-data-set-for-update", function (request, response) {
-
-  var dataRequest = '';
+  let dataRequest = '';
   request.on('data', function(chunk) {
     dataRequest += chunk;
   });
   request.on('end', function() {
 
-    var params = qs.parse(dataRequest);
+    let params = qs.parse(dataRequest);
 
+    _log("ws-import-dataset::ok");
+    _debug("Request: ", params);
 
-    var gitFolder = '--git-dir=./../' + params['folder'] + '/.git';
-    var commandGitCmd = 'git ' + gitFolder + ' log --oneline';
-    var resultGitCmd = exec(commandGitCmd, {silent: true}).stdout;
+    setTimeout(function(){
 
-    var commitList = resultGitCmd.split("\n").filter(function(value){
+      response.setHeader('Content-Type', 'application/json; charset=utf-8');
+      response.end(JSON.stringify({}));
+
+    }, SERVER_TIMEOUT_MAX);
+
+  });
+});
+
+router.post("/generate-commit-list", function (request, response) {
+
+  let dataRequest = '';
+  request.on('data', function(chunk) {
+    dataRequest += chunk;
+  });
+  request.on('end', function() {
+
+    let params = qs.parse(dataRequest);
+
+    let githubUrl = params['github'];
+    let regexpFolder = /\/(.+)\.git/;
+    let regexpFolderRes = regexpFolder.exec(githubUrl);
+    let gitFolder = regexpFolderRes[1];
+
+    let resultExec = exec("cd ../" + gitFolder, {silent: true});
+
+    // folder not found
+    if(!!resultExec.stderr) {
+      exec("cd ../ && git clone " + githubUrl, {silent: true});
+    }
+
+    let gitFolderDirParam = '--git-dir=./../' + gitFolder + '/.git';
+    let commandGitCmd = 'git ' + gitFolderDirParam + ' log --oneline';
+    let resultGitCmd = exec(commandGitCmd, {silent: true}).stdout;
+
+    let commitList = resultGitCmd.split("\n").filter(function(value){
       return !!value;
     }).map(function(value){
       return {
@@ -276,11 +81,66 @@ router.post("/get-data-set-for-update", function (request, response) {
       };
     });
 
-    var data = {
+    let data = {
       'list': commitList
     };
 
-    console.log("get-data-set-for-update::ok", commitList);
+    _log("get-data-set-for-update::ok");
+    _debug("Request: ", params);
+    _debug("Response: ", commitList);
+
+    setTimeout(function(){
+
+      response.setHeader('Content-Type', 'application/json; charset=utf-8');
+      response.end(JSON.stringify(data));
+
+    }, SERVER_TIMEOUT_MIN);
+
+  });
+});
+
+router.get("/ws-update-incremental", function (request, response) {
+
+  let dataRequest = '';
+  request.on('data', function(chunk) {
+    dataRequest += chunk;
+  });
+  request.on('end', function() {
+
+    let params = qs.parse(dataRequest);
+
+    _log("ws-update-incremental::ok", params);
+    _debug("Request: ", params);
+
+    setTimeout(function(){
+
+      response.setHeader('Content-Type', 'application/json; charset=utf-8');
+      response.end(JSON.stringify({}));
+
+    }, SERVER_TIMEOUT_MAX);
+
+  });
+});
+
+router.get("/ws-prestored-query", function (request, response) {
+
+  let dataRequest = '';
+  request.on('data', function(chunk) {
+    dataRequest += chunk;
+  });
+  request.on('end', function() {
+
+    let params = qs.parse(dataRequest);
+
+    _log("ws-prestored-query::ok", params);
+    _debug("Request: ", params);
+
+    let data = {
+      'list': [
+        'http://lmgtfy.com/?q=first+query',
+        'http://lmgtfy.com/?q=second+query'
+      ]
+    };
 
     response.setHeader('Content-Type', 'application/json; charset=utf-8');
     response.end(JSON.stringify(data));
@@ -288,52 +148,8 @@ router.post("/get-data-set-for-update", function (request, response) {
   });
 });
 
-router.get("/ws-import-dataset", function (request, response) {
-
-  var dataRequest = '';
-  request.on('data', function(chunk) {
-    dataRequest += chunk;
-  });
-  request.on('end', function() {
-
-    var params = qs.parse(dataRequest);
-    console.log("ws-import-dataset::ok");
-
-    setTimeout(function(){
-
-      response.setHeader('Content-Type', 'application/json; charset=utf-8');
-      response.end(JSON.stringify({}));
-
-    }, 3000);
-
-  });
-});
-
-router.get("/ws-update-incremental", function (request, response) {
-
-  var dataRequest = '';
-  request.on('data', function(chunk) {
-    dataRequest += chunk;
-  });
-  request.on('end', function() {
-
-    var params = qs.parse(dataRequest);
-    console.log("ws-import-dataset::ok", params);
-
-    setTimeout(function(){
-
-      response.setHeader('Content-Type', 'application/json; charset=utf-8');
-      response.end(JSON.stringify({}));
-
-    }, 3000);
-
-  });
-});
-
-
-var server = http.createServer(function(req, res) {
+let server = http.createServer(function(req, res) {
   router(req, res, function(req, res) {
-
   });
 })
 

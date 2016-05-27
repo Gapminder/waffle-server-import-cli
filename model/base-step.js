@@ -1,8 +1,8 @@
 'use strict';
 
-var inquirer = require('inquirer');
+const inquirer = require('inquirer');
 
-var step = function (data) {
+let step = function (data) {
 
   this.value = false;
 

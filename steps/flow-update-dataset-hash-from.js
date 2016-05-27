@@ -1,7 +1,9 @@
 'use strict';
 
-let stepBase = require('./../model/base-step');
-let util = require('util');
+const stepBase = require('./../model/base-step');
+const util = require('util');
+const cliProgress = require('./../service/ui-progress');
+const inquirer = require('inquirer');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -9,9 +11,7 @@ function step() {
 
 util.inherits(step, stepBase);
 
-/**************************************************************************************************************/
-
-let inquirer = require('inquirer');
+// Question Definition
 
 let question = {
   'name': 'flow-import-dataset-update-hash-from',
@@ -20,7 +20,7 @@ let question = {
   'choices': []
 };
 
-/**************************************************************************************************************/
+// Own Process Implementation
 
 let holder = require('./../model/value-holder');
 
@@ -42,6 +42,6 @@ step.prototype.prepare = function () {
   this.step.choices = filteredArray;
 };
 
-/**************************************************************************************************************/
+// Export Module
 
 module.exports = new step(question);

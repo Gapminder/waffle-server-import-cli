@@ -1,6 +1,6 @@
 'use strict';
 
-var holder = function () {
+let holder = function () {
   return this;
 };
 

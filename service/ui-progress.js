@@ -3,30 +3,36 @@
 let inquirer = require('inquirer');
 let inquirerUi = new inquirer.ui.BottomBar();
 
-
-
-
-
 function uiProgress () {
 
-  this.textBase = 'Loading ';
-  this.textIncrement = '.';
-  this.textLine = '';
-  this.intervalTimeout = 500;
-
+  this.textState;
+  this.textLine;
   this.intervalId;
 
+  this.textBase = 'State: ';
+  this.textIncrement = '.';
+  this.intervalTimeout = 500;
+
+  this.reset();
 };
 
-uiProgress.prototype.start = function () {
+uiProgress.prototype.reset = function () {
+  this.stop();
+  this.textState = '';
+  this.textLine = ' ';
+};
+
+uiProgress.prototype.state = function (state) {
 
   let that = this;
 
-  that.textLine = '';
+  that.reset();
+  that.textState = state || '';
+
   that.intervalId = setInterval(function(){
 
     that.textLine += that.textIncrement;
-    inquirerUi.updateBottomBar(that.textBase + that.textLine);
+    inquirerUi.updateBottomBar(that.textBase + that.textState + that.textLine);
 
   }, that.intervalTimeout);
 

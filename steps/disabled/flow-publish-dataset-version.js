@@ -1,7 +1,9 @@
 'use strict';
 
-var stepBase = require('./../model/base-step');
-var util = require('util');
+const stepBase = require('./../../model/base-step');
+const util = require('util');
+const cliProgress = require('./../../service/ui-progress');
+const inquirer = require('inquirer');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -9,19 +11,19 @@ function step() {
 
 util.inherits(step, stepBase);
 
-/**************************************************************************************************************/
+// Question Definition
 
-var question = {
+let question = {
   'name': 'flow-publish-dataset-version',
   'type': 'list',
   'message': 'Choose DataSet Version',
   'choices': []
 };
 
-/**************************************************************************************************************/
+// Own Process Implementation
 
-var holder = require('./../model/value-holder');
-var request = require('request-defaults');
+const holder = require('./../../model/value-holder');
+const request = require('request-defaults');
 
 step.prototype.process = function (inputValue) {
   var done = this.async();
@@ -56,6 +58,6 @@ step.prototype.prepare = function () {
   this.step.choices = holder.getResult('flow-publish-dataset-version', []);
 };
 
-/**************************************************************************************************************/
+// Export Module
 
 module.exports = new step(question);

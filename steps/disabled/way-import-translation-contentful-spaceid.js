@@ -1,8 +1,8 @@
 'use strict';
 
-const stepBase = require('./../model/base-step');
+const stepBase = require('./../../model/base-step');
 const util = require('util');
-const cliProgress = require('./../service/ui-progress');
+const cliProgress = require('./../../service/ui-progress');
 const inquirer = require('inquirer');
 
 function step() {
@@ -14,24 +14,17 @@ util.inherits(step, stepBase);
 // Question Definition
 
 let question = {
-  'name': 'exit',
-  'type': 'list',
-  'message': 'Keep working with Tool',
-  'choices': [
-    'Yes, Another Action',
-    'No, Exit'
-  ]
+  'name': 'way-import-translation-contentful-spaceid',
+  'type': 'input',
+  'default': 'xxx',
+  'message': 'Contentful asks for "SPACE_ID"'
 };
 
 // Own Process Implementation
 
 step.prototype.process = function (inputValue) {
-  
-  let done = this.async();
-  cliProgress.state("processing exit");
-  
+  var done = this.async();
   setTimeout(function () {
-    cliProgress.stop();
     done(null, true);
   }, 100);
 };

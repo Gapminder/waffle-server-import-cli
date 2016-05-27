@@ -1,7 +1,9 @@
 'use strict';
 
-var stepBase = require('./../model/base-step');
-var util = require('util');
+const stepBase = require('./../../model/base-step');
+const util = require('util');
+const cliProgress = require('./../../service/ui-progress');
+const inquirer = require('inquirer');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -9,20 +11,20 @@ function step() {
 
 util.inherits(step, stepBase);
 
-/**************************************************************************************************************/
+// Question Definition
 
-var question = {
+let question = {
   'name': 'way-import-translation-filesystem-path',
   'type': 'input',
   'default': './../vizabi/.data/translation/',
   'message': 'Filesystem asks for "Full path" to folder with translations'
 };
 
-/**************************************************************************************************************/
+// Own Process Implementation
 
-var fs = require('fs');
-var path = require('path');
-var holder = require('./../model/value-holder');
+const fs = require('fs');
+const path = require('path');
+const holder = require('./../../model/value-holder');
 
 step.prototype.process = function (inputValue) {
 
@@ -53,6 +55,6 @@ step.prototype.process = function (inputValue) {
   });
 };
 
-/**************************************************************************************************************/
+// Export Module
 
 module.exports = new step(question);

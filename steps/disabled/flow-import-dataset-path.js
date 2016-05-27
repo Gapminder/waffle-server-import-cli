@@ -1,7 +1,9 @@
 'use strict';
 
-var stepBase = require('./../model/base-step');
-var util = require('util');
+const stepBase = require('./../../model/base-step');
+const util = require('util');
+const cliProgress = require('./../../service/ui-progress');
+const inquirer = require('inquirer');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -9,20 +11,20 @@ function step() {
 
 util.inherits(step, stepBase);
 
-/**************************************************************************************************************/
+// Question Definition
 
-var question = {
+let question = {
   'name': 'flow-import-dataset-path',
   'type': 'input',
   'default': './../ddf--gapminder_world/output/ddf-full-stub/',
   'message': 'Filesystem asks for "Full path" to folder with DDF'
 };
 
-/**************************************************************************************************************/
+// Own Process Implementation
 
 var fs = require('fs');
 var path = require('path');
-var importDdfService = require('./../service/import-ddf');
+var importDdfService = require('./../../service/import-ddf');
 
 step.prototype.process = function (inputValue) {
   var done = this.async();
@@ -56,6 +58,6 @@ step.prototype.process = function (inputValue) {
   });
 };
 
-/**************************************************************************************************************/
+// Export Module
 
 module.exports = new step(question);
