@@ -317,10 +317,9 @@ step.prototype.process = function (inputValue) {
 
 
   let resultFileName = "./requests/operation-result.json";
+  fs.writeFileSync(resultFileName, JSON.stringify(result));
   let resultFilePath = fs.realpathSync(resultFileName);
 
-
-  fs.writeFileSync(resultFileName, JSON.stringify(result));
 
   /*
 
