@@ -51,15 +51,16 @@ step.prototype.process = function (inputValue) {
     let data = {
       'github': sourceList[inputValue].github
     };
-    
+
     request.api.post(
-      'http://localhost:3010/generate-commit-list',
+      'http://localhost:3000/api/ddf/demo/git-commits-list',
       {form: data},
       function (error, response, body) {
-
-        if (!error && response.statusCode == 200) {
+        if (!error) {
           if(body) {
-            holder.setResult('flow-update-dataset-choose', body.list);
+            holder.setResult('flow-update-dataset-choose', body.commits.map(commit => {
+              return {name: commit, value: commit}
+            }));
             cliProgress.stop();
             done(null, true);
           } else {

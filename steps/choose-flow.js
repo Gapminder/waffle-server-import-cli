@@ -101,8 +101,8 @@ step.prototype.process = function (inputValue) {
 
     */
 
-    // TODO:: Update with Real path to WS
-    let CHANGE_ROUTE_WS_PRESTORED_QUERY = 'http://localhost:3010/ws-prestored-query';
+    // TODO:: Update with Real path to WS - done
+    let CHANGE_ROUTE_WS_PRESTORED_QUERY = 'http://localhost:3000/api/ddf/demo/prestored-queries';
 
     request.api.get(
       CHANGE_ROUTE_WS_PRESTORED_QUERY,
@@ -110,7 +110,7 @@ step.prototype.process = function (inputValue) {
       function (error, response, body) {
 
         console.log("\n----------------------------------------\n");
-        body.list.forEach(function(item) {
+        body.forEach(function(item) {
           console.log("> ", item);
         });
         console.log("\n----------------------------------------\n\n\n\n\n");

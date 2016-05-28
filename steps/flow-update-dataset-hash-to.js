@@ -47,16 +47,27 @@ step.prototype.process = function (inputValue) {
   let sourceFolder = holder.getResult('flow-update-selected-repo', '').folder;
   let sourceUrl = holder.getResult('flow-update-selected-repo', '').github;
 
+  // clone repo locally
+
+  let resultExec = exec("cd ../" + sourceFolder, {silent: true});
+  // folder not found
+  if(!!resultExec.stderr) {
+    exec("cd ../ && git clone " + sourceUrl, {silent: true});
+  }
+
   let gitFolder = '--git-dir=./../' + sourceFolder + '/.git';
+
+  exec("git " + gitFolder + " pull origin master", {silent: true});
+
   let commandGitDiff = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
-  let resultGitDiff = exec(commandGitDiff, {silent: true}).stdout;
+  let resultGitDiff = exec(commandGitDiff, {silent: false}).stdout;
 
   let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
     return !!value && value.indexOf(".csv") != -1;
   });
 
   let commandGitDiffByFiles = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-status';
-  let resultGitDiffByFiles = exec(commandGitDiffByFiles, {silent: true}).stdout;
+  let resultGitDiffByFiles = exec(commandGitDiffByFiles, {silent: false}).stdout;
 
   let gitDiffFileStatus = {};
   resultGitDiffByFiles.split("\n").filter(function(value) {
@@ -333,13 +344,14 @@ step.prototype.process = function (inputValue) {
    */
 
   // TODO:: Update with Real path to WS
-  let CHANGE_ROUTE_WS_UPDATE = 'http://localhost:3010/ws-update-incremental';
+  let CHANGE_ROUTE_WS_UPDATE = 'http://localhost:3000/api/ddf/demo/update-incremental';
 
-  request.api.get(
+  request.api.post(
     CHANGE_ROUTE_WS_UPDATE,
     {form: {
-      'path': resultFilePath,
-      'githubUrl': sourceUrl
+      'diff': JSON.stringify(result),
+      'github': sourceUrl,
+      'commit': hashTo
     }},
     function (error, response, body) {
       cliProgress.stop();

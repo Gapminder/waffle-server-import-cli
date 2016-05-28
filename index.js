@@ -123,8 +123,8 @@ stepAuthentificationLogin.setNext(stepAuthentificationPassword);
 
 /************************************** SET UP :: First Action ********************************************************/
 
-let startAction = stepAuthentificationLogin;
-//let startAction = stepChooseFlow;
+//let startAction = stepAuthentificationLogin;
+let startAction = stepChooseFlow;
 
 startAction.run(holder);
 // flow.start(AuthStep).then(WporlStep).if(SuccesStep, FailStep).end(Step);

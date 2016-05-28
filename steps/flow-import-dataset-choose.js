@@ -21,11 +21,11 @@ let question = {
   'message': 'List of DataSet Repositories (github.com)',
   'choices': [
     {
-      name: sourceList[0].github,
+      name: `${sourceList[0].github} | ${sourceList[0].commit.slice(0, 9)}`,
       value: 0,
     },
     {
-      name: sourceList[1].github,
+      name: `${sourceList[1].github} | ${sourceList[1].commit.slice(0, 9)}`,
       value: 1,
     },
     new inquirer.Separator(),
@@ -58,14 +58,14 @@ step.prototype.process = function (inputValue) {
     */
 
     // TODO:: Update with Real path to WS
-    let CHANGE_ROUTE_WS_IMPORT = 'http://localhost:3010/ws-import-dataset';
+    let CHANGE_ROUTE_WS_IMPORT = 'http://localhost:3000/api/ddf/demo/import-dataset';
 
     let data = {
       'github': sourceList[inputValue].github,
       'commit': sourceList[inputValue].commit
     };
 
-    request.api.get(
+    request.api.post(
       CHANGE_ROUTE_WS_IMPORT,
       {form: data},
       function (error, response, body) {
