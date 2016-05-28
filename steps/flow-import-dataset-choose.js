@@ -28,6 +28,10 @@ let question = {
       name: `${sourceList[1].github} | ${sourceList[1].commit.slice(0, 9)}`,
       value: 1,
     },
+    {
+      name: `${sourceList[2].github} | ${sourceList[2].commit.slice(0, 9)}`,
+      value: 2,
+    },
     new inquirer.Separator(),
     'Back'
   ]
@@ -42,20 +46,20 @@ step.prototype.process = function (inputValue) {
 
   let done = this.async();
 
-  if(!!sourceList[inputValue]) {
+  if (!!sourceList[inputValue]) {
 
     cliProgress.state("processing import with selected DataSet '" + sourceList[inputValue].folder + "'");
 
     /*
 
-      Request to WS :: Import Dataset
+     Request to WS :: Import Dataset
 
-      GET: /api/ddf/import/repo
+     GET: /api/ddf/import/repo
 
-        PARAM: github,    [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
-        PARAM: commit,    [aafed7d4dcda8d736f317e0cd3eaff009275cbb6]
+     PARAM: github,    [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
+     PARAM: commit,    [aafed7d4dcda8d736f317e0cd3eaff009275cbb6]
 
-    */
+     */
 
     // TODO:: Update with Real path to WS
     let CHANGE_ROUTE_WS_IMPORT = 'http://localhost:3000/api/ddf/demo/import-dataset';
