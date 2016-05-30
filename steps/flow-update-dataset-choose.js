@@ -28,6 +28,10 @@ let question = {
       name: sourceList[1].github,
       value: 1,
     },
+    {
+      name: sourceList[2].github,
+      value: 2,
+    },
     new inquirer.Separator(),
     'Back'
   ]

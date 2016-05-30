@@ -60,14 +60,14 @@ step.prototype.process = function (inputValue) {
   exec("git " + gitFolder + " pull origin master", {silent: true});
 
   let commandGitDiff = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
-  let resultGitDiff = exec(commandGitDiff, {silent: false}).stdout;
+  let resultGitDiff = exec(commandGitDiff, {silent: true}).stdout;
 
   let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
     return !!value && value.indexOf(".csv") != -1;
   });
 
   let commandGitDiffByFiles = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-status';
-  let resultGitDiffByFiles = exec(commandGitDiffByFiles, {silent: false}).stdout;
+  let resultGitDiffByFiles = exec(commandGitDiffByFiles, {silent: true}).stdout;
 
   let gitDiffFileStatus = {};
   resultGitDiffByFiles.split("\n").filter(function(value) {

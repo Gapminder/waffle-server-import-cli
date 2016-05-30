@@ -4,7 +4,8 @@ let holder = require('./model/value-holder');
 let request = require('request-defaults');
 
 request.api = request.defaults({
-  timeout: 30*1000,
+  // 60 min
+  timeout: 60*60*1000,
   json: true
 });
 
@@ -77,6 +78,7 @@ flowUpdateDataSetHashFrom.setNext(flowUpdateDataSetHashTo);
 let flowUpdateDataSetChooseStrategy = {};
 flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[0].value] = flowUpdateDataSetHashFrom;
 flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[1].value] = flowUpdateDataSetHashFrom;
+flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[2].value] = flowUpdateDataSetHashFrom;
 flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[3]] = stepChooseFlow;
 
 flowUpdateDataSetChoose.setNextStrategy(flowUpdateDataSetChooseStrategy);
