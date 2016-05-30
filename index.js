@@ -73,13 +73,16 @@ flowImportDataSetPath.setNext(stepExit);
 /************************************** STEP :: Update DataSet ********************************************************/
 
 flowUpdateDataSetHashTo.setNext(stepChooseFlow);
+flowUpdateDataSetHashTo.setBack(flowUpdateDataSetHashFrom);
+
 flowUpdateDataSetHashFrom.setNext(flowUpdateDataSetHashTo);
+flowUpdateDataSetHashFrom.setBack(flowUpdateDataSetChoose);
 
 let flowUpdateDataSetChooseStrategy = {};
 flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[0].value] = flowUpdateDataSetHashFrom;
 flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[1].value] = flowUpdateDataSetHashFrom;
 flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[2].value] = flowUpdateDataSetHashFrom;
-flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[3]] = stepChooseFlow;
+flowUpdateDataSetChooseStrategy[flowUpdateDataSetChoose.step.choices[4]] = stepChooseFlow;
 
 flowUpdateDataSetChoose.setNextStrategy(flowUpdateDataSetChooseStrategy);
 

@@ -37,7 +37,11 @@ step.prototype.prepare = function () {
   let filteredArray = JSON.parse(JSON.stringify(prevStepResult));
 
   // disable first (means last commit)
-  // filteredArray[0]['disabled'] = "unavailable";
+  //filteredArray[0]['disabled'] = "unavailable";
+
+  // Back Flow
+  filteredArray.push(new inquirer.Separator());
+  filteredArray.push('Back');
 
   this.step.choices = filteredArray;
 };

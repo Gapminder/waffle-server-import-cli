@@ -32,6 +32,9 @@ uiProgress.prototype.state = function (state) {
   that.intervalId = setInterval(function(){
 
     that.textLine += that.textIncrement;
+    if(that.textLine.length > 20) {
+      that.textLine = that.textIncrement;
+    }
     inquirerUi.updateBottomBar(that.textBase + that.textState + that.textLine);
 
   }, that.intervalTimeout);

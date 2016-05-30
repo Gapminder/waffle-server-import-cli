@@ -8,6 +8,7 @@ let step = function (data) {
 
   this.nextDirect = false;
   this.nextStrategy = false;
+  this.backDirect = false;
 
   this.hash = data.name;
   this.step = data;
@@ -34,6 +35,9 @@ step.prototype.setNextStrategy = function (steps) {
   this.nextDirect = false;
   this.nextStrategy = steps;
 };
+step.prototype.setBack = function (step) {
+  this.backDirect = step;
+};
 
 // Hook to Enlarge Step Flow
 step.prototype.prepare = function () {
@@ -45,9 +49,15 @@ step.prototype.run = function (holder) {
   inquirer.prompt(this.step).then(function (answers) {
 
     this.value = answers[this.hash];
+
+    // this.backDirect
+
+
     holder.set(this.hash, this.value);
 
-    if (this.nextDirect) {
+    if (this.backDirect && this.value == "Back") {
+      return this.backDirect.run(holder);
+    } else if (this.nextDirect) {
       this.nextDirect.prepare();
       return this.nextDirect.run(holder);
     }

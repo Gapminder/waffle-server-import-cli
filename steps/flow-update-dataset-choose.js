@@ -41,6 +41,7 @@ let question = {
 
 const holder = require('./../model/value-holder');
 const request = require('request-defaults');
+const _ = require('lodash');
 require('shelljs/global');
 
 step.prototype.process = function (inputValue) {
@@ -62,8 +63,18 @@ step.prototype.process = function (inputValue) {
       function (error, response, body) {
         if (!error) {
           if(body) {
+            /*
+             "hash": "5412b8bd341ec69475ad3678ffd217aae7bb699e",
+             "date": "2016-05-25 17:44:41 +0300",
+             "message": "feat(stub-data): update stub data for dataset 1 (version 3) (HEAD, origin/master, origin/HEAD, master)",
+             "author_name": "Oleksandra korel Kalinina",
+             "author_email": "korery@gmail.com"
+             */
+
             holder.setResult('flow-update-dataset-choose', body.commits.map(commit => {
-              return {name: commit, value: commit}
+              // hash (8 symbols) | date | author_email
+              let nameCli = `${_.take(commit.hash, 8).join('')} | ${_.chain(commit.date).split(" ").take(2).join(" ").value() } | ${commit.author_email} | ${commit.message}`;
+              return {name: nameCli, value: commit.hash}
             }));
             cliProgress.stop();
             done(null, true);

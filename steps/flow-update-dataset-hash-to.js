@@ -383,10 +383,14 @@ step.prototype.prepare = function () {
     if(answerHashFromIndex === index) {
       source[index]['disabled'] = "from";
     }
-    if(answerHashFromIndex < index) {
+    if(answerHashFromIndex > index) {
       source[index]['disabled'] = "unavailable";
     }
   });
+
+  // Back Flow
+  filteredArray.push(new inquirer.Separator());
+  filteredArray.push('Back');
 
   this.step.choices = filteredArray;
 };
