@@ -35,6 +35,14 @@ let sourceFolder = regexpFolderGitFolder;
 
 /* COPY STEP IMPLEMENTATION */
 
+if(!fs.existsSync("./requests/")) {
+  fs.mkdirSync("./requests/");
+}
+
+if(!fs.existsSync("./repos/")) {
+  fs.mkdirSync("./repos/");
+}
+
 let resultExec = exec("cd " + sourceFolderPath + sourceFolder, {silent: true});
 // folder not found
 if(!!resultExec.stderr) {
