@@ -7,7 +7,7 @@
     "ws-cli": "./index.js"
   },
   "scripts": {
-    "server": "node server.js",
+    "diff": "node generate-diff.js",
     "cli": "node index.js"
   },
   "repository": {

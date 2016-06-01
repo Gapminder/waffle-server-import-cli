@@ -1,0 +1,338 @@
+{
+  "files": {
+    "ddf--datapoints--energy_use_total--by--geo--year.csv": "M"
+  },
+  "changes": {
+    "ddf--datapoints--energy_use_total--by--geo--year.csv": {
+      "header": {
+        "create": [],
+        "remove": [],
+        "update": []
+      },
+      "body": {
+        "create": [
+          {
+            "energy_use_total": "1",
+            "geo": "abc",
+            "year": "1988"
+          },
+          {
+            "energy_use_total": "2",
+            "geo": "abc",
+            "year": "1989"
+          },
+          {
+            "energy_use_total": "3",
+            "geo": "abc",
+            "year": "1990"
+          },
+          {
+            "energy_use_total": "4",
+            "geo": "abc",
+            "year": "1991"
+          },
+          {
+            "energy_use_total": "5",
+            "geo": "abc",
+            "year": "1992"
+          },
+          {
+            "energy_use_total": "6",
+            "geo": "abc",
+            "year": "2091"
+          },
+          {
+            "energy_use_total": "7",
+            "geo": "abc",
+            "year": "2092"
+          },
+          {
+            "energy_use_total": "8",
+            "geo": "abc",
+            "year": "2093"
+          },
+          {
+            "energy_use_total": "9",
+            "geo": "abc",
+            "year": "2094"
+          },
+          {
+            "energy_use_total": "10",
+            "geo": "abc",
+            "year": "2095"
+          },
+          {
+            "energy_use_total": "1",
+            "geo": "abc",
+            "year": "2096"
+          },
+          {
+            "energy_use_total": "2",
+            "geo": "abc",
+            "year": "2097"
+          },
+          {
+            "energy_use_total": "3",
+            "geo": "abc",
+            "year": "2098"
+          },
+          {
+            "energy_use_total": "4",
+            "geo": "abc",
+            "year": "2099"
+          },
+          {
+            "energy_use_total": "5",
+            "geo": "abc",
+            "year": "2100"
+          }
+        ],
+        "remove": [
+          {
+            "energy_use_total": "4040000",
+            "geo": "hkg",
+            "year": "1976"
+          },
+          {
+            "energy_use_total": "4574000",
+            "geo": "hkg",
+            "year": "1977"
+          },
+          {
+            "energy_use_total": "5035000",
+            "geo": "hkg",
+            "year": "1978"
+          },
+          {
+            "energy_use_total": "4527000",
+            "geo": "hkg",
+            "year": "1979"
+          },
+          {
+            "energy_use_total": "4628000",
+            "geo": "hkg",
+            "year": "1980"
+          },
+          {
+            "energy_use_total": "5148000",
+            "geo": "hkg",
+            "year": "1981"
+          },
+          {
+            "energy_use_total": "5689000",
+            "geo": "hkg",
+            "year": "1982"
+          },
+          {
+            "energy_use_total": "6165000",
+            "geo": "hkg",
+            "year": "1983"
+          },
+          {
+            "energy_use_total": "6238000",
+            "geo": "hkg",
+            "year": "1984"
+          },
+          {
+            "energy_use_total": "6574000",
+            "geo": "hkg",
+            "year": "1985"
+          },
+          {
+            "energy_use_total": "7563000",
+            "geo": "hkg",
+            "year": "1986"
+          },
+          {
+            "energy_use_total": "8199000",
+            "geo": "hkg",
+            "year": "1987"
+          },
+          {
+            "energy_use_total": "9227000",
+            "geo": "hkg",
+            "year": "1988"
+          },
+          {
+            "energy_use_total": "9413000",
+            "geo": "hkg",
+            "year": "1989"
+          },
+          {
+            "energy_use_total": "8658000",
+            "geo": "hkg",
+            "year": "1990"
+          },
+          {
+            "energy_use_total": "8889000",
+            "geo": "hkg",
+            "year": "1991"
+          },
+          {
+            "energy_use_total": "10670000",
+            "geo": "hkg",
+            "year": "1992"
+          },
+          {
+            "energy_use_total": "10410000",
+            "geo": "hkg",
+            "year": "1993"
+          },
+          {
+            "energy_use_total": "10730000",
+            "geo": "hkg",
+            "year": "1994"
+          },
+          {
+            "energy_use_total": "10650000",
+            "geo": "hkg",
+            "year": "1995"
+          }
+        ],
+        "update": [],
+        "change": [
+          {
+            "gid": "energy_use_total",
+            "energy_use_total": "30350000",
+            "data-update": {
+              "energy_use_total": "1",
+              "geo": "hun",
+              "year": "1988"
+            },
+            "data-origin": {
+              "energy_use_total": "30350000",
+              "geo": "hun",
+              "year": "1988"
+            }
+          },
+          {
+            "gid": "energy_use_total",
+            "energy_use_total": "30140000",
+            "data-update": {
+              "energy_use_total": "2",
+              "geo": "hun",
+              "year": "1989"
+            },
+            "data-origin": {
+              "energy_use_total": "30140000",
+              "geo": "hun",
+              "year": "1989"
+            }
+          },
+          {
+            "gid": "energy_use_total",
+            "energy_use_total": "28760000",
+            "data-update": {
+              "energy_use_total": "3",
+              "geo": "hun",
+              "year": "1990"
+            },
+            "data-origin": {
+              "energy_use_total": "28760000",
+              "geo": "hun",
+              "year": "1990"
+            }
+          },
+          {
+            "gid": "energy_use_total",
+            "energy_use_total": "27470000",
+            "data-update": {
+              "energy_use_total": "4",
+              "geo": "hun",
+              "year": "1991"
+            },
+            "data-origin": {
+              "energy_use_total": "27470000",
+              "geo": "hun",
+              "year": "1991"
+            }
+          },
+          {
+            "gid": "energy_use_total",
+            "energy_use_total": "25090000",
+            "data-update": {
+              "energy_use_total": "5",
+              "geo": "hun",
+              "year": "1992"
+            },
+            "data-origin": {
+              "energy_use_total": "25090000",
+              "geo": "hun",
+              "year": "1992"
+            }
+          },
+          {
+            "gid": "energy_use_total",
+            "energy_use_total": "25720000",
+            "data-update": {
+              "energy_use_total": "6",
+              "geo": "hun",
+              "year": "1993"
+            },
+            "data-origin": {
+              "energy_use_total": "25720000",
+              "geo": "hun",
+              "year": "1993"
+            }
+          },
+          {
+            "gid": "energy_use_total",
+            "energy_use_total": "24940000",
+            "data-update": {
+              "energy_use_total": "7",
+              "geo": "hun",
+              "year": "1994"
+            },
+            "data-origin": {
+              "energy_use_total": "24940000",
+              "geo": "hun",
+              "year": "1994"
+            }
+          },
+          {
+            "gid": "energy_use_total",
+            "energy_use_total": "25880000",
+            "data-update": {
+              "energy_use_total": "8",
+              "geo": "hun",
+              "year": "1995"
+            },
+            "data-origin": {
+              "energy_use_total": "25880000",
+              "geo": "hun",
+              "year": "1995"
+            }
+          },
+          {
+            "gid": "energy_use_total",
+            "energy_use_total": "26540000",
+            "data-update": {
+              "energy_use_total": "9",
+              "geo": "hun",
+              "year": "1996"
+            },
+            "data-origin": {
+              "energy_use_total": "26540000",
+              "geo": "hun",
+              "year": "1996"
+            }
+          },
+          {
+            "gid": "energy_use_total",
+            "energy_use_total": "26040000",
+            "data-update": {
+              "energy_use_total": "10",
+              "geo": "hun",
+              "year": "1997"
+            },
+            "data-origin": {
+              "energy_use_total": "26040000",
+              "geo": "hun",
+              "year": "1997"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
