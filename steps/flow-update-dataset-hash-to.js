@@ -228,6 +228,7 @@ step.prototype.process = function (inputValue) {
                 }
               });
             } else {
+              dataRowRemoved['gid'] = diffResultGidField;
               dataRowRemoved[diffResultGidField] = value[0];
             }
 
