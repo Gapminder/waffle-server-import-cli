@@ -220,6 +220,7 @@ gitDiffFileList.forEach(function(fileName, index){
               }
             });
           } else {
+            dataRowRemoved['gid'] = diffResultGidField;
             dataRowRemoved[diffResultGidField] = value[0];
           }
 
