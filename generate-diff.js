@@ -6,11 +6,12 @@
   
 */
 
-require('shelljs/global');
-
+const shelljs = require('shelljs');
 const daff = require('daff');
 const fs = require('fs');
 
+const async = require("async");
+//const Promise = require("bluebird");
 
 /* ENV */
 
@@ -43,25 +44,25 @@ if(!fs.existsSync("./repos/")) {
   fs.mkdirSync("./repos/");
 }
 
-let resultExec = exec("cd " + sourceFolderPath + sourceFolder, {silent: true});
+let resultExec = shelljs.exec("cd " + sourceFolderPath + sourceFolder, {silent: true});
 // folder not found
 if(!!resultExec.stderr) {
-  exec("cd " + sourceFolderPath + " && git clone " + sourceUrl, {silent: true});
+  shelljs.exec("cd " + sourceFolderPath + " && git clone " + sourceUrl, {silent: true});
 }
 
 let gitFolder = '--git-dir=' + sourceFolderPath + sourceFolder + '/.git';
 
-exec("git " + gitFolder + " pull origin master", {silent: true});
+shelljs.exec("git " + gitFolder + " pull origin master", {silent: true});
 
 let commandGitDiff = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
-let resultGitDiff = exec(commandGitDiff, {silent: true}).stdout;
+let resultGitDiff = shelljs.exec(commandGitDiff, {silent: true}).stdout;
 
 let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
   return !!value && value.indexOf(".csv") != -1;
 });
 
 let commandGitDiffByFiles = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-status';
-let resultGitDiffByFiles = exec(commandGitDiffByFiles, {silent: true}).stdout;
+let resultGitDiffByFiles = shelljs.exec(commandGitDiffByFiles, {silent: true}).stdout;
 
 let gitDiffFileStatus = {};
 resultGitDiffByFiles.split("\n").filter(function(value) {
@@ -71,26 +72,61 @@ resultGitDiffByFiles.split("\n").filter(function(value) {
   gitDiffFileStatus[fileStat[1]] = fileStat[0];
 });
 
+
 let dataRequest = {};
 
-gitDiffFileList.forEach(function(fileName, index){
+async.mapLimit(
+  gitDiffFileList,
+  2,
+  // iteration
+  function(fileName, doneMapLimit){
 
-  // disable changes for removed files
-  /*
-   if(gitDiffFileStatus[fileName] && gitDiffFileStatus[fileName] == "D") {
-   return;
-   }
-   */
+    let commandGitShowFrom = 'git ' + gitFolder + ' show ' + hashFrom + ':' + fileName;
+    let commandGitShowTo = 'git ' + gitFolder + ' show ' + hashTo + ':' + fileName;
+
+    async.waterfall(
+      [
+        function(done) {
+
+          let csvFrom = [];
+          return shelljs.exec(commandGitShowFrom, {silent: true, async: true}).stdout.on("data", function(dataFrom) {
+            csvFrom.push(dataFrom);
+          })
+            .on('end', function() {
+              return done(null, csvFrom.join(""));
+            });
+        },
+        function(dataFrom, done) {
+
+          let csvTo = [];
+          return shelljs.exec(commandGitShowTo, {silent: true, async: true}).stdout.on("data", function(dataTo) {
+            csvTo.push(dataTo);
+          }).on("end", function() {
+            return done(null, {from: dataFrom, to: csvTo.join("")});
+          });
+        }
+      ],
+      // callback
+      function(error, result) {
+
+        // implement diff for file
+        getDiffByFile(fileName, result);
+        return doneMapLimit(error);
+      }
+    );
+  },
+  // callback
+  function(error){
+    return completeFlow();
+  }
+);
+
+function getDiffByFile (fileName, dataDiff) {
 
   let diffResult = [];
-  let commandGitShowFrom = 'git ' + gitFolder + ' show ' + hashFrom + ':' + fileName;
-  let commandGitShowTo = 'git ' + gitFolder + ' show ' + hashTo + ':' + fileName;
 
-  const fileDataFrom = exec(commandGitShowFrom, {silent: true}).stdout;
-  const fileDataTo = exec(commandGitShowTo, {silent: true}).stdout;
-
-  const tableFrom = new daff.Csv().makeTable(fileDataFrom);
-  const tableTo = new daff.Csv().makeTable(fileDataTo);
+  const tableFrom = new daff.Csv().makeTable(dataDiff.from);
+  const tableTo = new daff.Csv().makeTable(dataDiff.to);
 
   let filesDiff = daff.compareTables(tableFrom,tableTo).align();
 
@@ -304,19 +340,22 @@ gitDiffFileList.forEach(function(fileName, index){
   }
 
 
-
   // Structure :: Create
 
   dataRequest[fileName] = fileDiffData;
   fs.writeFileSync("./requests/" + fileName + ".json", JSON.stringify(fileDiffData));
 
-});
-
-let result = {
-  'files': gitDiffFileStatus,
-  'changes': dataRequest
 };
 
+function completeFlow () {
 
-let resultFileName = "./requests/diff-operation-result.json";
-fs.writeFileSync(resultFileName, JSON.stringify(result));
+  let result = {
+    'files': gitDiffFileStatus,
+    'changes': dataRequest
+  };
+
+
+  let resultFileName = "./requests/diff-operation-result.json";
+  fs.writeFileSync(resultFileName, JSON.stringify(result));
+
+}
