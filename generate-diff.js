@@ -377,6 +377,10 @@ function getDiffByFile (fileName, dataDiff) {
 
   }
 
+  // clear remove header section for removed files
+  if(gitDiffFileStatus[fileName] == "D") {
+    fileDiffData.header.remove = [];
+  }
 
   // Structure :: Create
 
