@@ -297,6 +297,7 @@ function getDiffByFile (fileName, dataDiff) {
             let modificationSeparatorPosition = valueCell.indexOf('->');
             let columnKey = diffResultColumns[indexCell];
 
+            // cell modified
             if(modificationSeparatorPosition != -1) {
 
               let readyValueCell = valueCell.substring(modificationSeparatorPosition + 2);
@@ -310,6 +311,9 @@ function getDiffByFile (fileName, dataDiff) {
               if(fileDiffData.header.create.indexOf(columnKey) == -1) {
                 dataRowOrigin[columnKey] = valueCell;
               }
+            // check that it's not new column
+            } else if (fileDiffData.header.create.indexOf(columnKey) == -1) {
+              dataRow[columnKey] = valueCell;
             }
           });
 
@@ -332,6 +336,40 @@ function getDiffByFile (fileName, dataDiff) {
           }
 
           fileDiffData.body.change.push(dataRowUpdated);
+        }
+      // empty modifier symbol
+      } else {
+        // check that there is no new columns were added
+        if(fileDiffData.header.create.length) {
+
+          let dataRow = {};
+          let dataRowOrigin = {};
+
+          // check that file with datapoints
+          value.forEach(function(valueCell, indexCell){
+            let columnKey = diffResultColumns[indexCell];
+
+            if(fileDiffData.header.create.indexOf(columnKey) == -1) {
+              if(isDataPointsFile) {
+                // collect original values for datapoints
+                dataRowOrigin[columnKey] = valueCell;
+              }
+            } else {
+              // new values for added columns
+              dataRow[columnKey] = valueCell;
+            }
+          });
+
+          let dataRowChanged = {};
+          dataRowChanged["gid"] = diffResultGidField;
+          dataRowChanged[diffResultGidField] = value[0];
+          dataRowChanged["data-update"] = dataRow;
+
+          if(isDataPointsFile) {
+            dataRowChanged["data-origin"] = dataRowOrigin;
+          }
+
+          fileDiffData.body.change.push(dataRowChanged);
         }
       }
 
