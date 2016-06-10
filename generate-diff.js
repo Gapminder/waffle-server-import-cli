@@ -3,6 +3,9 @@
 /*
   
   FROM=aafed7d4 TO=5f88ae30 REPO=git@github.com:valor-software/ddf--gapminder_world-stub-1.git npm run diff
+
+  FROM=e217d99 TO=7c2b7e3 REPO=git@github.com:VS-work/ddf--gapminder_world-stub-4.git npm run diff
+  FROM=e217d99 TO=246d133 REPO=git@github.com:VS-work/ddf--gapminder_world-stub-4.git npm run diff
   
 */
 
@@ -32,6 +35,9 @@ let hashTo = gitHashTo;
 let sourceUrl = gitRepo;
 let sourceFolder = regexpFolderGitFolder;
 
+let gitFolder;
+let gitDiffFileStatus = {};
+let dataRequest = {};
 
 /* COPY STEP IMPLEMENTATION */
 
@@ -43,86 +49,130 @@ if(!fs.existsSync("./repos/")) {
   fs.mkdirSync("./repos/");
 }
 
-let resultExec = shelljs.exec("cd " + sourceFolderPath + sourceFolder, {silent: true});
-// folder not found
-if(!!resultExec.stderr) {
-  shelljs.exec("cd " + sourceFolderPath + " && git clone " + sourceUrl, {silent: true});
-}
+/* ASYNC */
 
-let gitFolder = '--git-dir=' + sourceFolderPath + sourceFolder + '/.git';
+async.waterfall(
+  [
+    // create folder and clone
+    function(done) {
 
-shelljs.exec("git " + gitFolder + " pull origin master", {silent: true});
-
-let commandGitDiff = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
-let resultGitDiff = shelljs.exec(commandGitDiff, {silent: true}).stdout;
-
-let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
-  return !!value && value.indexOf(".csv") != -1;
-});
-
-let commandGitDiffByFiles = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-status';
-let resultGitDiffByFiles = shelljs.exec(commandGitDiffByFiles, {silent: true}).stdout;
-
-let gitDiffFileStatus = {};
-resultGitDiffByFiles.split("\n").filter(function(value) {
-  return !!value && value.indexOf(".csv") != -1;
-}).map(function(rawFile) {
-  let fileStat = rawFile.split("\t");
-  gitDiffFileStatus[fileStat[1]] = fileStat[0];
-});
-
-
-let dataRequest = {};
-
-async.mapLimit(
-  gitDiffFileList,
-  2,
-  // iteration
-  function(fileName, doneMapLimit){
-
-    let commandGitShowFrom = 'git ' + gitFolder + ' show ' + hashFrom + ':' + fileName;
-    let commandGitShowTo = 'git ' + gitFolder + ' show ' + hashTo + ':' + fileName;
-
-    async.waterfall(
-      [
-        function(done) {
-
-          let csvFrom = [];
-          return shelljs.exec(commandGitShowFrom, {silent: true, async: true}).stdout.on("data", function(dataFrom) {
-            csvFrom.push(dataFrom);
-          })
-            .on('end', function() {
-              return done(null, csvFrom.join(""));
-            });
-        },
-        function(dataFrom, done) {
-
-          let csvTo = [];
-          return shelljs.exec(commandGitShowTo, {silent: true, async: true}).stdout.on("data", function(dataTo) {
-            csvTo.push(dataTo);
-          }).on("end", function() {
-            return done(null, {from: dataFrom, to: csvTo.join("")});
+      let execCD = "cd " + sourceFolderPath + sourceFolder;
+      shelljs.exec(execCD, {silent: true, async: true}, function(error, stdout, stderr) {
+        //console.log(execCD, stdout);
+        // folder not found
+        if(!!stderr) {
+          shelljs.exec("cd " + sourceFolderPath + " && git clone " + sourceUrl, {silent: true, async: true}, function(error, stdout, stderr) {
+            return done(null);
           });
+        } else {
+          return done(null);
         }
-      ],
-      // callback
-      function(error, result) {
+      });
+    },
+    // pull changes
+    function(done) {
 
-        // implement diff for file
-        getDiffByFile(fileName, result);
-        return doneMapLimit(error);
+      gitFolder = '--git-dir=' + sourceFolderPath + sourceFolder + '/.git';
+      let execGitPull = "git " + gitFolder + " pull origin master";
+      shelljs.exec(execGitPull, {silent: true, async: true}, function(error, stdout, stderr) {
+        //console.log(execGitPull, stdout);
+        return done(null);
+      });
+    },
+    // files diff
+    function(done) {
+
+      let commandGitDiff = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
+      shelljs.exec(commandGitDiff, {silent: true, async: true}, function(error, stdout, stderr) {
+
+        if(!!stderr) {
+          return done(stderr);
+        }
+
+        let resultGitDiff = stdout;
+        let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
+          return !!value && value.indexOf(".csv") != -1;
+        });
+
+        let commandGitDiffByFiles = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-status';
+        shelljs.exec(commandGitDiffByFiles, {silent: true, async: true}, function(error, stdout, stderr) {
+
+          //console.log(commandGitDiffByFiles, stdout);
+          let resultGitDiffByFiles = stdout;
+
+          resultGitDiffByFiles.split("\n").filter(function(value) {
+            return !!value && value.indexOf(".csv") != -1;
+          }).map(function(rawFile) {
+            let fileStat = rawFile.split("\t");
+            gitDiffFileStatus[fileStat[1]] = fileStat[0];
+          });
+
+          done(null, gitDiffFileList);
+        });
+      });
+    }
+  ],
+  // callback
+  function(error, gitDiffFileList) {
+
+    if(!!error) {
+      console.log("\x1b[31mERROR:\x1b[22m \x1b[93m", error);
+      return false;
+    }
+
+    async.mapLimit(
+      gitDiffFileList,
+      2,
+      // iteration
+      function(fileName, doneMapLimit){
+
+        let commandGitShowFrom = 'git ' + gitFolder + ' show ' + hashFrom + ':' + fileName;
+        let commandGitShowTo = 'git ' + gitFolder + ' show ' + hashTo + ':' + fileName;
+
+        async.waterfall(
+          [
+            function(done) {
+
+              let csvFrom = [];
+              return shelljs.exec(commandGitShowFrom, {silent: true, async: true}).stdout.on("data", function(dataFrom) {
+                csvFrom.push(dataFrom);
+              })
+                .on('end', function() {
+                  return done(null, csvFrom.join(""));
+                });
+            },
+            function(dataFrom, done) {
+
+              let csvTo = [];
+              return shelljs.exec(commandGitShowTo, {silent: true, async: true}).stdout.on("data", function(dataTo) {
+                csvTo.push(dataTo);
+              }).on("end", function() {
+                return done(null, {from: dataFrom, to: csvTo.join("")});
+              });
+            }
+          ],
+          // callback
+          function(error, result) {
+
+            // implement diff for file
+            getDiffByFile(fileName, result);
+            return doneMapLimit(error);
+          }
+        );
+      },
+      // callback
+      function(error){
+        return completeFlow();
       }
     );
-  },
-  // callback
-  function(error){
-    return completeFlow();
   }
 );
 
 function getDiffByFile (fileName, dataDiff) {
 
   let diffResult = [];
+
+  //console.log("FROM-TO", dataDiff.from.length, dataDiff.to.length);
 
   const tableFrom = new daff.Csv().makeTable(dataDiff.from);
   const tableTo = new daff.Csv().makeTable(dataDiff.to);
@@ -137,7 +187,9 @@ function getDiffByFile (fileName, dataDiff) {
   let highlighter = new daff.TableDiff(filesDiff, flags);
   highlighter.hilite(diffResult);
 
-  fs.writeFileSync("./requests/diff--" + fileName + ".json", JSON.stringify(diffResult));
+  let fileDiffJSON = "./requests/diff--" + fileName + ".json";
+  fs.writeFileSync(fileDiffJSON, JSON.stringify(diffResult));
+  //console.log(fileDiffJSON);
 
   /* Prepare Data Structure */
 
@@ -399,4 +451,5 @@ function completeFlow () {
   let resultFileName = "./requests/diff-operation-result.json";
   fs.writeFileSync(resultFileName, JSON.stringify(result));
 
+  console.log("\x1b[32m DONE!");
 }
