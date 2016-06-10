@@ -15,10 +15,9 @@ const async = require("async");
 
 /* ENV */
 
-let gitHashFrom = process.env.FROM;
-let gitHashTo = process.env.TO;
+let gitHashFrom = process.env.FROM.substring(0, 8);
+let gitHashTo = process.env.TO.substring(0, 8);
 let gitRepo = process.env.REPO;
-
 
 /* SETUP INPUT */
 
@@ -312,7 +311,7 @@ function getDiffByFile (fileName, dataDiff) {
                 dataRowOrigin[columnKey] = valueCell;
               }
             // check that it's not new column
-            } else if (fileDiffData.header.create.indexOf(columnKey) == -1) {
+            } else if (fileDiffData.header.create.indexOf(columnKey) != -1) {
               dataRow[columnKey] = valueCell;
             }
           });
