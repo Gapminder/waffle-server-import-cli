@@ -20,12 +20,12 @@
 
 ## Flow
 
-### Start with Authentification
+### Start with Authentication
 
 | Step | Choice |
 |:---|:---|
-| Authentification, Login       | Enter |
-| Authentification, Password    | Enter |
+| Authentication, Login       | Enter |
+| Authentication, Password    | Enter |
 
 ### Import Repo 1
 

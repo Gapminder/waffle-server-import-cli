@@ -1,0 +1,22 @@
+[
+  {
+    "github": "git@github.com:VS-work/ddf--gapminder_world-stub-1.git",
+    "folder": "ddf--gapminder_world-stub-1"
+  },
+  {
+    "github": "git@github.com:VS-work/ddf--gapminder_world-stub-2.git",
+    "folder": "ddf--gapminder_world-stub-2"
+  },
+  {
+    "github": "git@github.com:VS-work/ddf--gapminder_world-stub-3.git",
+    "folder": "ddf--gapminder_world-stub-3"
+  },
+  {
+    "github": "git@github.com:valor-software/ddf--gapminder_world.git",
+    "folder": "ddf--gapminder_world"
+  },
+  {
+    "github": "git@github.com:vvpanchenko/temp-ddf-csv-dummy-data.git",
+    "folder": "temp-ddf-csv-dummy-data"
+  }
+]

@@ -1,204 +1,82 @@
 'use strict';
 
-const stepBase = require('./../model/base-step');
-const util = require('util');
-const cliProgress = require('./../service/ui-progress');
-const inquirer = require('inquirer');
-
-function step() {
-  stepBase.apply(this, arguments);
-}
-
-util.inherits(step, stepBase);
-
-// Question Definition
-
-let question = {
-  'name': 'flow-import-dataset-update-hash-to',
-  'type': 'list',
-  'message': 'Git commit, state TO',
-  'choices': []
-};
-
-// Own Process Implementation
-
-require('shelljs/global');
-
-const holder = require('./../model/value-holder');
 const daff = require('daff');
 const fs = require('fs');
 const async = require("async");
-const request = require('request-defaults');
 
-step.prototype.process = function (inputValue) {
+const gitFlow = require('./git-flow');
+const cliUi = require('./cli-ui');
 
-  let doneStep = this.async();
-  cliProgress.state("processing CSV-diff");
+function csvDiff() {};
 
-  /* STEP :: prepare data, find hashes */
-  
-  let answerHashFrom = holder.get('flow-import-dataset-update-hash-from', false);
-  let answerHashTo = inputValue;
+csvDiff.prototype.process = function (data, callback) {
 
-  let stepHashFrom = answerHashFrom.split(" ")[0];
-  let stepHashTo = answerHashTo.split(" ")[0];
+  let gitHashFrom = data.hashFrom;
+  let gitHashTo = data.hashTo;
 
-  let stepSourceFolder = holder.getResult('flow-update-selected-repo', '').folder;
-  let stepSourceUrl = holder.getResult('flow-update-selected-repo', '').github;
+  // prepare folder
 
-  /* STEP :: get diff by hashes */
+  let sourceFolder = fs.realpathSync('./');
+  let sourceFolderPath = sourceFolder + '/requests/';
 
+  if(!fs.existsSync(sourceFolderPath)) {
+    fs.mkdirSync(sourceFolderPath);
+  }
 
-  let gitHashFrom = stepHashFrom;
-  let gitHashTo = stepHashTo;
-  let gitRepo = stepSourceUrl;
-
-  let regexpFolder = /\/(.+)\.git/;
-  let regexpFolderRes = regexpFolder.exec(gitRepo);
-  let regexpFolderGitFolder = regexpFolderRes[1];
-  let sourceFolderPath = './repos/';
-
-  let hashFrom = gitHashFrom;
-  let hashTo = gitHashTo;
-  let sourceUrl = gitRepo;
-  let sourceFolder = regexpFolderGitFolder;
-
-  let gitFolder;
-  let gitDiffFileStatus = {};
   let dataRequest = {};
+  let gitDiffFileStatus = {};
 
-  // clone repo locally
+  gitFlow.getFileDiffByHashes(data, gitDiffFileStatus, function(error, gitDiffFileList) {
 
-  if(!fs.existsSync("./requests/")) {
-    fs.mkdirSync("./requests/");
-  }
-
-  if(!fs.existsSync("./repos/")) {
-    fs.mkdirSync("./repos/");
-  }
-
-  async.waterfall(
-    [
-      // create folder and clone
-      function(done) {
-
-        let execCD = "cd " + sourceFolderPath + sourceFolder;
-        shelljs.exec(execCD, {silent: true, async: true}, function(error, stdout, stderr) {
-          //console.log(execCD, stdout);
-          // folder not found
-          if(!!stderr) {
-            shelljs.exec("cd " + sourceFolderPath + " && git clone " + sourceUrl, {silent: true, async: true}, function(error, stdout, stderr) {
-              return done(null);
-            });
-          } else {
-            return done(null);
-          }
-        });
-      },
-      // pull changes
-      function(done) {
-
-        gitFolder = '--git-dir=' + sourceFolderPath + sourceFolder + '/.git';
-        let execGitPull = "git " + gitFolder + " pull origin master";
-        shelljs.exec(execGitPull, {silent: true, async: true}, function(error, stdout, stderr) {
-          //console.log(execGitPull, stdout);
-          return done(null);
-        });
-      },
-      // files diff
-      function(done) {
-
-        let commandGitDiff = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
-        shelljs.exec(commandGitDiff, {silent: true, async: true}, function(error, stdout, stderr) {
-
-          if(!!stderr) {
-            return done(stderr);
-          }
-
-          let resultGitDiff = stdout;
-          let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
-            return !!value && value.indexOf(".csv") != -1;
-          });
-
-          let commandGitDiffByFiles = 'git ' + gitFolder + ' diff ' + hashFrom + '..' + hashTo + ' --name-status';
-          shelljs.exec(commandGitDiffByFiles, {silent: true, async: true}, function(error, stdout, stderr) {
-
-            //console.log(commandGitDiffByFiles, stdout);
-            let resultGitDiffByFiles = stdout;
-
-            resultGitDiffByFiles.split("\n").filter(function(value) {
-              return !!value && value.indexOf(".csv") != -1;
-            }).map(function(rawFile) {
-              let fileStat = rawFile.split("\t");
-              gitDiffFileStatus[fileStat[1]] = fileStat[0];
-            });
-
-            done(null, gitDiffFileList);
-          });
-        });
-      }
-    ],
-    // callback
-    function(error, gitDiffFileList) {
-
-      if(!!error) {
-        console.log("\x1b[31mERROR:\x1b[22m \x1b[93m", error);
-        return false;
-      }
-
-      async.mapLimit(
-        gitDiffFileList,
-        2,
-        // iteration
-        function(fileName, doneMapLimit){
-
-          let commandGitShowFrom = 'git ' + gitFolder + ' show ' + hashFrom + ':' + fileName;
-          let commandGitShowTo = 'git ' + gitFolder + ' show ' + hashTo + ':' + fileName;
-
-          async.waterfall(
-            [
-              function(done) {
-
-                let csvFrom = [];
-                return shelljs.exec(commandGitShowFrom, {silent: true, async: true}).stdout.on("data", function(dataFrom) {
-                  csvFrom.push(dataFrom);
-                })
-                  .on('end', function() {
-                    return done(null, csvFrom.join(""));
-                  });
-              },
-              function(dataFrom, done) {
-
-                let csvTo = [];
-                return shelljs.exec(commandGitShowTo, {silent: true, async: true}).stdout.on("data", function(dataTo) {
-                  csvTo.push(dataTo);
-                }).on("end", function() {
-                  return done(null, {from: dataFrom, to: csvTo.join("")});
-                });
-              }
-            ],
-            // callback
-            function(error, result) {
-
-              // implement diff for file
-              getDiffByFile(fileName, result);
-              return doneMapLimit(error);
-            }
-          );
-        },
-        // callback
-        function(error){
-          completeFlow();
-        }
-      );
+    if(!!error) {
+      cliUi.error(error);
+      return callback(error);
     }
-  );
+
+    async.mapSeries (
+
+      gitDiffFileList,
+      // iteration
+      function(fileName, doneMapLimit){
+
+        cliUi.state("generate diff for file", fileName);
+
+        gitFlow.showFileStateByHash(data, fileName, function(error, result) {
+
+          getDiffByFile(fileName, result);
+          return doneMapLimit(error);
+
+        });
+
+      },
+      // callback
+      function(error){
+
+        let result = {
+          'files': gitDiffFileStatus,
+          'changes': dataRequest
+        };
+
+        let resultFileName = sourceFolderPath + "diff-operation-result.json";
+        fs.writeFileSync(resultFileName, JSON.stringify(result));
+
+        cliUi.success("Diff generation completed!");
+        return callback(false, result);
+      }
+    );
+
+  });
+
+
+
+
 
   function getDiffByFile (fileName, dataDiff) {
 
     let diffResult = [];
 
-    //console.log("FROM-TO", dataDiff.from.length, dataDiff.to.length);
+    //cliUi.state("FROM-TO", dataDiff.from.length, dataDiff.to.length);
+    cliUi.state("getDiffByFile inside");
 
     const tableFrom = new daff.Csv().makeTable(dataDiff.from);
     const tableTo = new daff.Csv().makeTable(dataDiff.to);
@@ -213,9 +91,8 @@ step.prototype.process = function (inputValue) {
     let highlighter = new daff.TableDiff(filesDiff, flags);
     highlighter.hilite(diffResult);
 
-    let fileDiffJSON = "./requests/diff--" + fileName + ".json";
+    let fileDiffJSON = sourceFolderPath + "diff--" + fileName + ".json";
     fs.writeFileSync(fileDiffJSON, JSON.stringify(diffResult));
-    //console.log(fileDiffJSON);
 
     /* Prepare Data Structure */
 
@@ -288,7 +165,6 @@ step.prototype.process = function (inputValue) {
     }
 
     let isDataPointsFile = fileName.indexOf("--datapoints--") != -1 ? true : false;
-
 
     if(diffResult.length) {
 
@@ -462,89 +338,12 @@ step.prototype.process = function (inputValue) {
     // Structure :: Create
 
     dataRequest[fileName] = fileDiffData;
-    fs.writeFileSync("./requests/" + fileName + ".json", JSON.stringify(fileDiffData));
-
+    cliUi.state("+ " + fileName + ".json");
+    fs.writeFileSync(sourceFolderPath + fileName + ".json", JSON.stringify(fileDiffData));
   };
 
-  function completeFlow () {
-
-    let result = {
-      'files': gitDiffFileStatus,
-      'changes': dataRequest
-    };
-
-
-    let resultFileName = "./requests/diff-operation-result.json";
-    fs.writeFileSync(resultFileName, JSON.stringify(result));
-
-
-    /*
-
-     Request to WS :: Incremental update
-
-     GET: /api/ddf/incremental-update/repo
-
-     PARAM: path,        [/full/path/to/output_file.json]
-     PARAM: githubUrl,   [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
-
-     */
-
-    // TODO:: Update with Real path to WS
-    let CHANGE_ROUTE_WS_UPDATE = 'http://localhost:3000/api/ddf/demo/update-incremental';
-
-    request.api.post(
-      CHANGE_ROUTE_WS_UPDATE,
-      {form: {
-        'diff': JSON.stringify(result),
-        'github': sourceUrl,
-        'commit': hashTo
-      }},
-      function (error, response, body) {
-        cliProgress.stop();
-        doneStep
-        done(null, true);
-      }
-    );
-
-
-  }
-
-};
-
-// Define Hook
-
-step.prototype.prepare = function () {
-
-  let prevStepResult = holder.getResult('flow-update-dataset-choose', []);
-  //let filteredArray = prevStepResult.slice();
-  let filteredArray = JSON.parse(JSON.stringify(prevStepResult));
-
-  let answerHashFrom = holder.get('flow-import-dataset-update-hash-from', false);
-
-  let answerHashFromIndex = false;
-
-  filteredArray.forEach(function(item, index) {
-    if(item.value == answerHashFrom) {
-      answerHashFromIndex = index;
-    }
-  });
-
-  filteredArray.forEach(function(value, index, source){
-    if(answerHashFromIndex === index) {
-      source[index]['disabled'] = "from";
-    }
-    if(answerHashFromIndex > index) {
-      source[index]['disabled'] = "unavailable";
-    }
-  });
-
-  // Back Flow
-  filteredArray.push(new inquirer.Separator());
-  filteredArray.push('Back');
-
-  this.step.choices = filteredArray;
 };
 
 // Export Module
 
-module.exports = new step(question);
+module.exports = new csvDiff();

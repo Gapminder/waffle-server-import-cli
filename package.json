@@ -7,8 +7,9 @@
     "ws-cli": "./index.js"
   },
   "scripts": {
-    "diff": "node generate-diff.js",
-    "cli": "node index.js"
+    "start": "npm run cli",
+    "cli": "node index.js",
+    "diff": "node index_diff.js"
   },
   "repository": {
     "type": "git",
