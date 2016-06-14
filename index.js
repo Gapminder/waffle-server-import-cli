@@ -2,8 +2,9 @@
 
 let request = require('request-defaults');
 request.api = request.defaults({
-  // 60 min
-  timeout: 60*60*1000,
+  // 24 hours
+  timeout: 24*60*60*1000,
+  // timeout: false, not working, default value 120 seconds
   json: true
 });
 

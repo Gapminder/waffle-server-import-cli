@@ -9,7 +9,7 @@ function uiProgress () {
   this.textLine;
   this.intervalId;
 
-  this.textBase = 'State: ';
+  this.textBase = '* State: ';
   this.textIncrement = '.';
   this.intervalTimeout = 500;
 
@@ -29,13 +29,19 @@ uiProgress.prototype.state = function (state) {
   that.reset();
   that.textState = state || '';
 
+  let timeStart = new Date().getTime();
+
   that.intervalId = setInterval(function(){
+
+    let timeNow = new Date().getTime();
+    let timeDiff = parseInt((timeNow - timeStart)/1000, 10);
+    let timeWait = " (" + timeDiff + "s) ";
 
     that.textLine += that.textIncrement;
     if(that.textLine.length > 20) {
       that.textLine = that.textIncrement;
     }
-    inquirerUi.updateBottomBar(that.textBase + that.textState + that.textLine);
+    inquirerUi.updateBottomBar(that.textBase + that.textState + timeWait + that.textLine);
 
   }, that.intervalTimeout);
 
@@ -52,12 +58,14 @@ uiProgress.prototype.logStart = function () {
   console.log("\n----------------------------------------\n");
 };
 uiProgress.prototype.logEnd = function () {
-  console.log("\n----------------------------------------\n\n\n\n\n");
+  console.log("----------------------------------------\n\n\n\n\n\n\n");
 };
 
-uiProgress.prototype.logPrint = function () {
+uiProgress.prototype.logPrint = function (data) {
   this.logStart();
-  console.log.apply(console, arguments);
+  data.forEach(function(item){
+    console.log(item);
+  });
   this.logEnd();
 };
 

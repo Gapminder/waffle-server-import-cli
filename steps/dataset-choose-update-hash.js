@@ -58,6 +58,8 @@ step.prototype.preProcess  = function (done) {
     gitFlow.getCommitList(selectedDataSet, function(error, list) {
       if(!error) {
 
+        list.reverse();
+
         let commitFromIndex = list.findIndex(function(item) {
           //return item.hash.indexOf(commitFrom) >= 0;
           return item.hash == commitFrom;
@@ -70,7 +72,7 @@ step.prototype.preProcess  = function (done) {
             name: [item.hash, item.message].join(" "),
             value: item.hash
           };
-          if(index > commitFromIndex) {
+          if(index < commitFromIndex) {
             choiceData['disabled'] = 'unavailable';
           }
           if(index == commitFromIndex) {
@@ -93,6 +95,12 @@ step.prototype.process = function (inputValue) {
 
   let done = this.async();
   cliUi.state("processing Update Dataset");
+
+  // back & exit
+  if(!stepInstance.availableChoice(inputValue)) {
+    cliUi.stop();
+    return done(null, true);
+  }
 
   let datasetData = stepInstance.holder.getResult('dataset-update-data');
   let commitFrom = gitFlow.getShortHash(datasetData.commit);

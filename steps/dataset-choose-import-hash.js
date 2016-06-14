@@ -32,6 +32,8 @@ step.prototype.preProcess  = function (done) {
   gitFlow.getCommitList(selectedDataSet, function(error, list) {
     if(!error) {
 
+      list.reverse();
+
       let nextStrategy = {};
       let choices = list.map(function(item){
         nextStrategy[item.hash] = 'choose-flow';
@@ -55,6 +57,12 @@ step.prototype.process = function (inputValue) {
   let done = this.async();
   cliUi.state("processing Import Dataset, send request");
 
+  // back & exit
+  if(!stepInstance.availableChoice(inputValue)) {
+    cliUi.stop();
+    return done(null, true);
+  }  
+  
   let data = {
     'github': stepInstance.holder.get('dataset-choose-import', false),
     'commit': inputValue

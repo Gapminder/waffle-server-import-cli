@@ -1,6 +1,7 @@
 'use strict';
 
 const inquirer = require('inquirer');
+const SchemeConst = require('./step-const');
 
 let step = function (data) {
 
@@ -48,6 +49,18 @@ step.prototype.setNextStrategy = function (steps) {
 };
 step.prototype.setBack = function (step) {
   this.backDirect = step;
+};
+
+// check selected value for type list
+step.prototype.availableChoice = function (value) {
+
+  if(
+    value == SchemeConst.STEP_KEY_BACK ||
+    value == SchemeConst.STEP_KEY_EXIT
+  ) {
+    return false;
+  }
+  return true;
 };
 
 

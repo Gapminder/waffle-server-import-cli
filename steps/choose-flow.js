@@ -47,6 +47,12 @@ step.prototype.process = function (inputValue) {
   let done = this.async();
   cliUi.state("processing user choice");
 
+  // back & exit
+  if(!stepInstance.availableChoice(inputValue)) {
+    cliUi.stop();
+    return done(null, true);
+  }
+
   /*
     inquirer :: issue
 
@@ -68,8 +74,13 @@ step.prototype.process = function (inputValue) {
       }
 
       let logRows = [];
-      body.forEach(function(item) {
-        logRows.push(["> ", item]);
+      body.result.forEach(function(item, index) {
+        if(index%2) {
+          logRows.push("> " + item);
+          logRows.push("");
+        } else {
+          logRows.push("> " + item);
+        }
       });
 
       cliUi.logPrint(logRows);

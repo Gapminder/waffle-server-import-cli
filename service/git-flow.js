@@ -1,11 +1,14 @@
 'use strict';
 
 const fs = require('fs');
+const path = require('path');
 const shelljs = require('shelljs');
 const cliUi = require('./../service/cli-ui');
 
 let sourceFolder = fs.realpathSync('./');
 let sourceFolderPath = sourceFolder + '/repos/';
+
+const debugGitSilent = true;
 
 function gitFlow() {
   if(!fs.existsSync(sourceFolderPath)) {
@@ -33,16 +36,16 @@ gitFlow.prototype.getCommitList = function (github, callback) {
   let gitFolder = this.getRepoFolder(github);
   let execGitClone = "git clone " + github + " " + gitFolder;
   cliUi.state("git, get commit list, clone repo");
-  shelljs.exec(execGitClone, {silent: true, async: true}, function(error, stdout, stderr) {
+  shelljs.exec(execGitClone, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
 
     let gitDir = '--git-dir=' + gitFolder + '/.git';
     let execGitPull = "git " + gitDir + " pull origin master";
     cliUi.state("git, get commit list, download updates");
-    shelljs.exec(execGitPull, {silent: true, async: true}, function(error, stdout, stderr) {
+    shelljs.exec(execGitPull, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
 
       let execGitLog = "git " + gitDir + " log --all --oneline";
       cliUi.state("git, get commit list, process log");
-      shelljs.exec(execGitLog, {silent: true, async: true}, function(error, stdout, stderr) {
+      shelljs.exec(execGitLog, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
 
         let commits = stdout.split("\n");
         let commitsList = commits.filter(function(item){
@@ -71,16 +74,16 @@ gitFlow.prototype.getFileDiffByHashes = function (data, callback) {
   let gitFolder = this.getRepoFolder(github);
   let execGitClone = "git clone " + github + " " + gitFolder;
   cliUi.state("git, get files diff, clone repo");
-  shelljs.exec(execGitClone, {silent: true, async: true}, function(error, stdout, stderr) {
+  shelljs.exec(execGitClone, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
 
     let gitDir = '--git-dir=' + gitFolder + '/.git';
     let execGitPull = "git " + gitDir + " pull origin master";
     cliUi.state("git, get files diff, download updates");
-    shelljs.exec(execGitPull, {silent: true, async: true}, function(error, stdout, stderr) {
+    shelljs.exec(execGitPull, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
 
       let commandGitDiff = 'git ' + gitDir + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
       cliUi.state("git, get files diff, file-names only");
-      shelljs.exec(commandGitDiff, {silent: true, async: true}, function(error, stdout, stderr) {
+      shelljs.exec(commandGitDiff, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
 
         if(!!stderr) {
           cliUi.error("git, get files diff, filenames only", stderr.toString());
@@ -92,9 +95,15 @@ gitFlow.prototype.getFileDiffByHashes = function (data, callback) {
           return !!value && value.indexOf(".csv") != -1;
         });
 
+        // fix path with folders
+        gitDiffFileList.forEach(function(item, index, arr){
+          let filepath = path.parse(item);
+          arr[index] = filepath.base;
+        });
+
         let commandGitDiffByFiles = 'git ' + gitDir + ' diff ' + hashFrom + '..' + hashTo + ' --name-status';
         cliUi.state("git, get files diff, file-names with states");
-        shelljs.exec(commandGitDiffByFiles, {silent: true, async: true}, function(error, stdout, stderr) {
+        shelljs.exec(commandGitDiffByFiles, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
 
           let resultGitDiffByFiles = stdout;
           let gitDiffFileStatus = {};
