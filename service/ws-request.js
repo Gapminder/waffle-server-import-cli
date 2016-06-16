@@ -1,11 +1,14 @@
 'use strict';
 
-const request = require('request-defaults');
+const request = require('superagent');
+const JSONStream = require('JSONStream');
 
-const ROUTE_WS_PRESTORED_QUERY = 'http://localhost:3000/api/ddf/demo/prestored-queries';
-const ROUTE_WS_IMPORT = 'http://localhost:3000/api/ddf/demo/import-dataset';
-const ROUTE_WS_LATEST_COMMIT = 'http://localhost:3000/api/ddf/demo/commit-of-latest-dataset-version';
-const ROUTE_WS_UPDATE = 'http://localhost:3000/api/ddf/demo/update-incremental';
+const ROUTE_WS_PRESTORED_QUERY = 'http://localhost:3000/api/ddf/cli/prestored-queries';
+const ROUTE_WS_IMPORT = 'http://localhost:3000/api/ddf/cli/import-dataset';
+const ROUTE_WS_LATEST_COMMIT = 'http://localhost:3000/api/ddf/cli/commit-of-latest-dataset-version';
+const ROUTE_WS_UPDATE = 'http://localhost:3000/api/ddf/cli/update-incremental';
+
+const REQUEST_TIMEOUT = 24 * 60 * 60 * 1000;
 
 function wsRequest() {};
 
@@ -23,7 +26,7 @@ function wsRequest() {};
 */
 
 wsRequest.prototype.getPrestoredQueries = function (data, callback) {
-  this.sendRequestPost(ROUTE_WS_PRESTORED_QUERY, data, callback);
+  this.sendRequest('get', ROUTE_WS_PRESTORED_QUERY, data, callback);
 };
 
 /*
@@ -38,7 +41,7 @@ wsRequest.prototype.getPrestoredQueries = function (data, callback) {
 */
 
 wsRequest.prototype.importDataset = function (data, callback) {
-  this.sendRequestPost(ROUTE_WS_IMPORT, data, callback);
+  this.sendRequest('post', ROUTE_WS_IMPORT, data, callback);
 };
 
 /*
@@ -59,7 +62,7 @@ wsRequest.prototype.importDataset = function (data, callback) {
  */
 
 wsRequest.prototype.getLatestCommit = function (data, callback) {
-  this.sendRequestGet(ROUTE_WS_LATEST_COMMIT, data, callback);
+  this.sendRequest('get', ROUTE_WS_LATEST_COMMIT, data, callback);
 };
 
 /*
@@ -74,7 +77,8 @@ wsRequest.prototype.getLatestCommit = function (data, callback) {
  */
 
 wsRequest.prototype.updateDataset = function (data, callback) {
-  this.sendRequestPost(ROUTE_WS_UPDATE, data, callback);
+  this.sendStream(ROUTE_WS_UPDATE, data, callback);
+  //this.sendRequest('post', ROUTE_WS_UPDATE, data, callback);
 };
 
 
@@ -90,58 +94,67 @@ wsRequest.prototype.updateDataset = function (data, callback) {
  *
  */
 
-wsRequest.prototype.sendRequestPost = function (ROUTE_WS, data, callback) {
+wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
 
-  request.api.post(
-    ROUTE_WS,
-    {form: data},
-    function (error, response, body) {
-      callback(error, response, body);
-    }
-  );
+  if(rType == 'get') {
 
-};
+    request
+      .get(ROUTE_WS)
+      .query(data)
+      .timeout(REQUEST_TIMEOUT)
+      .end(function(error, response){
+        callback(error, response.body);
+      });
 
-/*
- * sendRequest, method GET
- *
- * @param ROUTE_WS
- * @param data
- * @param callback
- *
- */
+  } else {
 
-wsRequest.prototype.sendRequestGet = function (ROUTE_WS, data, callback) {
+    request
+      .post(ROUTE_WS)
+      .send(data)
+      .timeout(REQUEST_TIMEOUT)
+      .end(function(error, response){
+        callback(error, response.body);
+      });
 
-  const ROUTE_WS_GET = this.generateGetUrl(ROUTE_WS, data);
-
-  request.api.get(
-    ROUTE_WS_GET,
-    function (error, response, body) {
-      callback(error, response, body);
-    }
-  );
-
-};
-
-/*
- * generateGetUrl
- *
- * @param ROUTE_WS
- * @param data
- *
- * @return String, ready get url
- *
- */
-
-wsRequest.prototype.generateGetUrl = function (ROUTE_WS, data) {
-
-  let params = [];
-  for(let key in data) {
-    params.push(key + "=" + data[key]);
   }
 
-  return ROUTE_WS + "?" + params.join("&");
+};
+
+wsRequest.prototype.sendStream = function (ROUTE_WS, data, callback) {
+
+  var objectStream = JSONStream.stringify();
+
+  let requestInst = request
+    .post(ROUTE_WS)
+    //.post('http://192.168.1.98:3000/api/ddf/cli/update-incremental')
+    .timeout(24 * 60 * 60 * 1000);
+
+  requestInst.on('response', function(response){
+    //console.log("onEnd", response.body, arguments[1]);
+    callback(null, response.body);
+  });
+
+  objectStream.pipe(requestInst);
+
+  for(let fileName in data.diff.changes) {
+
+    //let sliced = data.diff.slice(j, 100000);
+
+    let changes = {};
+    changes[fileName] = data.diff.changes[fileName];
+
+    console.log("streaming", fileName);
+
+    objectStream.write({
+      commit: data.commit,
+      github: data.github,
+      diff: {
+        changes: changes
+      }
+    });
+  }
+
+  objectStream.end();
 };
 
 

@@ -24,10 +24,6 @@ let question = {
 
 // Own Process Implementation
 
-const request = require('request-defaults');
-const _ = require('lodash');
-require('shelljs/global');
-
 step.prototype.preProcess  = function (done) {
 
   let choices = [];

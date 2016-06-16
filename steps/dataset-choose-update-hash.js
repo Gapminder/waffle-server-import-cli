@@ -35,7 +35,7 @@ step.prototype.preProcess  = function (done) {
     'github': this.holder.get('dataset-choose-update', false)
   };
 
-  wsRequest.getLatestCommit(data, function(error, response, body) {
+  wsRequest.getLatestCommit(data, function(error, body) {
 
     if(error || body.error) {
 
@@ -117,7 +117,7 @@ step.prototype.process = function (inputValue) {
       'commit': inputValue
     };
 
-    wsRequest.updateDataset(data, function(error, response, body) {
+    wsRequest.updateDataset(data, function(error, body) {
 
       if(error) {
         cliUi.stop();

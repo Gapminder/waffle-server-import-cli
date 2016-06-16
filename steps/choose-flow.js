@@ -63,7 +63,7 @@ step.prototype.process = function (inputValue) {
 
   if (inputValue == 'results-overview') {
 
-    wsRequest.getPrestoredQueries({}, function(error, response, body) {
+    wsRequest.getPrestoredQueries({}, function(error, body) {
 
       if(error) {
 

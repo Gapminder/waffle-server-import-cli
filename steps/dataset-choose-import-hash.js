@@ -68,7 +68,7 @@ step.prototype.process = function (inputValue) {
     'commit': inputValue
   };
 
-  wsRequest.importDataset(data, function(error, response, body) {
+  wsRequest.importDataset(data, function(error, body) {
 
     if(error) {
       cliUi.stop();
