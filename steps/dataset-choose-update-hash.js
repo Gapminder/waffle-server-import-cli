@@ -112,7 +112,7 @@ step.prototype.process = function (inputValue) {
   }, function(error, result) {
 
     let data = {
-      'diff': JSON.stringify(result),
+      'diff': result,
       'github': datasetData.github,
       'commit': inputValue
     };
