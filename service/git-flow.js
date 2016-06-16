@@ -43,7 +43,7 @@ gitFlow.prototype.getCommitList = function (github, callback) {
     cliUi.state("git, get commit list, download updates");
     shelljs.exec(execGitPull, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
 
-      let execGitLog = "git " + gitDir + " log --all --oneline";
+      let execGitLog = "git " + gitDir + " log --oneline";
       cliUi.state("git, get commit list, process log");
       shelljs.exec(execGitLog, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
 
