@@ -3,10 +3,13 @@
 const request = require('superagent');
 const JSONStream = require('JSONStream');
 
-const ROUTE_WS_PRESTORED_QUERY = 'http://localhost:3000/api/ddf/cli/prestored-queries';
-const ROUTE_WS_IMPORT = 'http://localhost:3000/api/ddf/cli/import-dataset';
-const ROUTE_WS_LATEST_COMMIT = 'http://localhost:3000/api/ddf/cli/commit-of-latest-dataset-version';
-const ROUTE_WS_UPDATE = 'http://localhost:3000/api/ddf/cli/update-incremental';
+const WS_HOST = 'http://localhost:3000';
+//const WS_HOST = 'http://192.168.1.98:3000';
+
+const ROUTE_WS_PRESTORED_QUERY = WS_HOST + '/api/ddf/cli/prestored-queries';
+const ROUTE_WS_IMPORT = WS_HOST + '/api/ddf/cli/import-dataset';
+const ROUTE_WS_LATEST_COMMIT = WS_HOST + '/api/ddf/cli/commit-of-latest-dataset-version';
+const ROUTE_WS_UPDATE = WS_HOST + '/api/ddf/cli/update-incremental';
 
 const REQUEST_TIMEOUT = 24 * 60 * 60 * 1000;
 
@@ -110,6 +113,7 @@ wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
 
     request
       .post(ROUTE_WS)
+      .type('form')
       .send(data)
       .timeout(REQUEST_TIMEOUT)
       .end(function(error, response){
