@@ -11,7 +11,9 @@ const ROUTE_WS_IMPORT = WS_HOST + '/api/ddf/cli/import-dataset';
 const ROUTE_WS_LATEST_COMMIT = WS_HOST + '/api/ddf/cli/commit-of-latest-dataset-version';
 const ROUTE_WS_UPDATE = WS_HOST + '/api/ddf/cli/update-incremental';
 
-const REQUEST_TIMEOUT = 24 * 60 * 60 * 1000;
+//const REQUEST_TIMEOUT = 2 * 60 * 60 * 1000;
+// Linux kernel TCP :: max 120 seconds
+const REQUEST_TIMEOUT = 150 * 1000;
 
 function wsRequest() {};
 
@@ -106,7 +108,8 @@ wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
       .query(data)
       .timeout(REQUEST_TIMEOUT)
       .end(function(error, response){
-        callback(error, response.body);
+        let responseBody = response && response.body ? response.body : '';
+        callback(error, responseBody);
       });
 
   } else {
@@ -117,7 +120,8 @@ wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
       .send(data)
       .timeout(REQUEST_TIMEOUT)
       .end(function(error, response){
-        callback(error, response.body);
+        let responseBody = response && response.body ? response.body : '';
+        callback(error, responseBody);
       });
 
   }
@@ -130,15 +134,15 @@ wsRequest.prototype.sendStream = function (ROUTE_WS, data, callback) {
 
   let requestInst = request
     .post(ROUTE_WS)
-    //.post('http://192.168.1.98:3000/api/ddf/cli/update-incremental')
-    .timeout(24 * 60 * 60 * 1000);
+    .timeout(REQUEST_TIMEOUT);
 
-  requestInst.on('response', function(response){
-    //console.log("onEnd", response.body, arguments[1]);
-    callback(null, response.body);
+  requestInst.on('response',   function (response){
+    let responseBody = response && response.body ? response.body : '';
+    callback(false, responseBody);
   });
 
   objectStream.pipe(requestInst);
+  //console.log("\n");
 
   for(let fileName in data.diff.changes) {
 
@@ -146,8 +150,7 @@ wsRequest.prototype.sendStream = function (ROUTE_WS, data, callback) {
 
     let changes = {};
     changes[fileName] = data.diff.changes[fileName];
-
-    console.log("streaming", fileName);
+    //console.log("streaming:", fileName);
 
     objectStream.write({
       commit: data.commit,
@@ -158,6 +161,7 @@ wsRequest.prototype.sendStream = function (ROUTE_WS, data, callback) {
     });
   }
 
+  //console.log("\n\n\n\n\n\n\n\n");
   objectStream.end();
 };
 

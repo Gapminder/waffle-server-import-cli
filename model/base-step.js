@@ -106,7 +106,6 @@ step.prototype.run = function (holder, runner) {
       }
       // Flow :: Exit
       else {
-        console.log("Exit");
         return true;
       }
 

@@ -119,8 +119,11 @@ step.prototype.process = function (inputValue) {
 
     wsRequest.updateDataset(data, function(error, body) {
 
-      if(error) {
+      let errorMsg = error || body.err;
+
+      if(!!errorMsg) {
         cliUi.stop();
+        cliUi.error(errorMsg);
         return done(null, true);
         // inquirer, bug
         return done(error.toString());

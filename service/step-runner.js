@@ -103,7 +103,7 @@ function StepFlow(schemeConfig, holder) {
       StepList[stepKey].step.choices.push(separator);
     }
 
-    if(typeof step.back != 'undefined' && step.back === true || typeof step.back == 'undefined') {
+    if(typeof step.back != 'undefined' && !!step.back) {
 
       let backStep = StepList[step.back];
       nextStepStrategy[SchemeConst.STEP_KEY_BACK] = backStep;
@@ -114,7 +114,7 @@ function StepFlow(schemeConfig, holder) {
       });
     }
 
-    if(typeof step.exit != 'undefined' && step.exit === true || typeof step.exit == 'undefined') {
+    if(typeof step.exit != 'undefined' && step.exit === true) {
 
       nextStepStrategy[SchemeConst.STEP_KEY_EXIT] = false;
 

@@ -71,7 +71,7 @@ uiProgress.prototype.logPrint = function (data) {
 
 uiProgress.prototype.error = function () {
   let args = Array.prototype.slice.call(arguments);
-  args.unshift("\x1b[31mERROR:\x1b[22m \x1b[93m");
+  args.unshift("\x1b[31m ERROR:\x1b[22m \x1b[93m");
   args.push("\x1B[37m");
   console.log.apply(console, args);
 };

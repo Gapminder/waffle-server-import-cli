@@ -14,6 +14,7 @@
   "choose-flow": {
     "type": "step::static-multi",
     "back": false,
+    "exit": true,
     "next": {
       "register-repository": "register-repository",
       "dataset-choose-import": "dataset-choose-import",
