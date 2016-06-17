@@ -21,7 +21,7 @@ function gitFlow() {
 
 
 gitFlow.prototype.getShortHash = function (commit) {
-  return !!commit ? commit.substring(0, 8) : '';
+  return !!commit ? commit.substring(0, 7) : '';
 };
 
 gitFlow.prototype.configDir = function (github) {

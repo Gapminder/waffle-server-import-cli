@@ -47,7 +47,6 @@ step.prototype.preProcess  = function (done) {
 
     let latestData = body;
 
-
     // get commit list
 
     self.holder.setResult('dataset-update-data', latestData);
@@ -62,6 +61,7 @@ step.prototype.preProcess  = function (done) {
 
         let commitFromIndex = list.findIndex(function(item) {
           //return item.hash.indexOf(commitFrom) >= 0;
+          console.log(commitFrom, item);
           return item.hash == commitFrom;
         });
 
