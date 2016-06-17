@@ -133,7 +133,7 @@ gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
   let gitRepo = data.github;
 
   let self = this;
-  this.configDir(gitRepo);
+  let gitFolder = this.configDir(gitRepo);
 
   let gitDir = '--git-dir=' + gitFolder + '/.git';
 
