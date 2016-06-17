@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const shelljs = require('shelljs');
+const async = require("async");
 const cliUi = require('./../service/cli-ui');
 
 let sourceFolder = fs.realpathSync('./');
@@ -65,7 +66,7 @@ gitFlow.prototype.getCommitList = function (github, callback) {
   });
 };
 
-gitFlow.prototype.getFileDiffByHashes = function (data, callback) {
+gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callback) {
 
   let github = data.github;
   let hashFrom = data.hashFrom;
@@ -106,7 +107,6 @@ gitFlow.prototype.getFileDiffByHashes = function (data, callback) {
         shelljs.exec(commandGitDiffByFiles, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
 
           let resultGitDiffByFiles = stdout;
-          let gitDiffFileStatus = {};
 
           resultGitDiffByFiles.split("\n").filter(function(value) {
             return !!value && value.indexOf(".csv") != -1;
@@ -116,12 +116,55 @@ gitFlow.prototype.getFileDiffByHashes = function (data, callback) {
           });
 
           cliUi.stop();
-          callback(null, gitDiffFileList, gitDiffFileStatus);
+          callback(null, gitDiffFileList);
         });
       });
 
     });
   });
+};
+
+gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
+
+  let gitHashFrom = data.hashFrom;
+  let gitHashTo = data.hashTo;
+  let gitRepo = data.github;
+  let gitFolder = this.getRepoFolder(gitRepo);
+
+  let gitDir = '--git-dir=' + gitFolder + '/.git';
+
+  let commandGitShowFrom = 'git ' + gitDir + ' show ' + gitHashFrom + ':' + fileName;
+  let commandGitShowTo = 'git ' + gitDir + ' show ' + gitHashTo + ':' + fileName;
+
+  async.waterfall(
+    [
+      function(done) {
+
+        let csvFrom = [];
+        return shelljs.exec(commandGitShowFrom, {silent: debugGitSilent, async: true}).stdout.on("data", function(dataFrom) {
+          csvFrom.push(dataFrom);
+        })
+          .on('end', function() {
+            cliUi.state("generate diff, data from ready");
+            return done(null, csvFrom.join(""));
+          });
+      },
+      function(dataFrom, done) {
+
+        let csvTo = [];
+        return shelljs.exec(commandGitShowTo, {silent: debugGitSilent, async: true}).stdout.on("data", function(dataTo) {
+          csvTo.push(dataTo);
+        }).on("end", function() {
+          cliUi.state("generate diff, data to ready");
+          return done(null, {from: dataFrom, to: csvTo.join("")});
+        });
+      }
+    ],
+    // callback
+    function(error, result) {
+      callback(error, result);
+    }
+  );
 };
 
 // Export Module
