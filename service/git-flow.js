@@ -23,6 +23,14 @@ gitFlow.prototype.getShortHash = function (commit) {
   return !!commit ? commit.substring(0, 8) : '';
 };
 
+gitFlow.prototype.configDir = function (github) {
+  let gitFolder = this.getRepoFolder(github);
+  simpleGit._baseDir = gitFolder;
+  return gitFolder;
+};
+
+
+
 gitFlow.prototype.getRepoFolder = function (github) {
   let regexpFolder = /\/(.+)\.git/;
   let regexpFolderRes = regexpFolder.exec(github);
@@ -36,8 +44,7 @@ gitFlow.prototype.getRepoFolder = function (github) {
 gitFlow.prototype.getCommitList = function (github, callback) {
 
   let self = this;
-  let gitFolder = this.getRepoFolder(github);
-  simpleGit._baseDir = gitFolder;
+  let gitFolder = this.configDir(github);
 
   cliUi.state("git, get commit list, clone repo");
   simpleGit.silent(true).clone(github, gitFolder, function(error, result){
@@ -70,43 +77,32 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
   let hashFrom = data.hashFrom;
   let hashTo = data.hashTo;
 
-  let gitFolder = this.getRepoFolder(github);
-  simpleGit._baseDir = gitFolder;
+  let self = this;
+  let gitFolder = this.configDir(github);
 
-  let execGitClone = "git clone " + github + " " + gitFolder;
   cliUi.state("git, get files diff, clone repo");
-  shelljs.exec(execGitClone, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
+  simpleGit.silent(true).clone(github, gitFolder, function(error, result){
 
-    let gitDir = '--git-dir=' + gitFolder + '/.git';
-    let execGitPull = "git " + gitDir + " pull origin master";
     cliUi.state("git, get files diff, download updates");
-    shelljs.exec(execGitPull, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
+    simpleGit.silent(true).pull('origin', 'master', function(error, result) {
 
-      let commandGitDiff = 'git ' + gitDir + ' diff ' + hashFrom + '..' + hashTo + ' --name-only';
       cliUi.state("git, get files diff, file-names only");
-      shelljs.exec(commandGitDiff, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
+      simpleGit.diff([hashFrom + '..' + hashTo, "--name-only"], function(error, result) {
 
-        if(!!stderr) {
-          cliUi.error("git, get files diff, filenames only", stderr.toString());
-          return callback();
-        }
-
-        let resultGitDiff = stdout;
+        let resultGitDiff = result;
         let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
           return !!value && value.indexOf(".csv") != -1;
         });
 
         // fix path with folders
         gitDiffFileList.forEach(function(item, index, arr){
-          let filepath = path.parse(item);
-          arr[index] = filepath.base;
+          arr[index] = path.parse(item).base;
         });
 
-        let commandGitDiffByFiles = 'git ' + gitDir + ' diff ' + hashFrom + '..' + hashTo + ' --name-status';
         cliUi.state("git, get files diff, file-names with states");
-        shelljs.exec(commandGitDiffByFiles, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
+        simpleGit.diff([hashFrom + '..' + hashTo, "--name-status"], function(error, result) {
 
-          let resultGitDiffByFiles = stdout;
+          let resultGitDiffByFiles = result;
 
           resultGitDiffByFiles.split("\n").filter(function(value) {
             return !!value && value.indexOf(".csv") != -1;
@@ -117,11 +113,12 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
 
           cliUi.stop();
           callback(null, gitDiffFileList);
+
         });
       });
-
     });
   });
+
 };
 
 gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
@@ -129,8 +126,9 @@ gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
   let gitHashFrom = data.hashFrom;
   let gitHashTo = data.hashTo;
   let gitRepo = data.github;
-  let gitFolder = this.getRepoFolder(gitRepo);
-  simpleGit._baseDir = gitFolder;
+
+  let self = this;
+  this.configDir(gitRepo);
 
   let gitDir = '--git-dir=' + gitFolder + '/.git';
 
