@@ -9,6 +9,7 @@ const cliUi = require('./../service/cli-ui');
 let sourceFolder = fs.realpathSync('./');
 let sourceFolderPath = sourceFolder + '/repos/';
 
+const simpleGit = require('simple-git')();
 const debugGitSilent = true;
 
 function gitFlow() {
@@ -34,28 +35,24 @@ gitFlow.prototype.getRepoFolder = function (github) {
 
 gitFlow.prototype.getCommitList = function (github, callback) {
 
+  let self = this;
   let gitFolder = this.getRepoFolder(github);
-  let execGitClone = "git clone " + github + " " + gitFolder;
+  simpleGit._baseDir = gitFolder;
+
   cliUi.state("git, get commit list, clone repo");
-  shelljs.exec(execGitClone, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
+  simpleGit.silent(true).clone(github, gitFolder, function(error, result){
 
-    let gitDir = '--git-dir=' + gitFolder + '/.git';
-    let execGitPull = "git " + gitDir + " pull origin master";
     cliUi.state("git, get commit list, download updates");
-    shelljs.exec(execGitPull, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
+    simpleGit.silent(true).pull('origin', 'master', function(error, result){
 
-      let execGitLog = "git " + gitDir + " log --oneline";
       cliUi.state("git, get commit list, process log");
-      shelljs.exec(execGitLog, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
+      simpleGit.silent(true).log(function(error, result){
 
-        let commits = stdout.split("\n");
-        let commitsList = commits.filter(function(item){
-          return !!item.length;
-        }).map(function(item){
-          let data = item.split(" ");
+        let commits = result.all;
+        let commitsList = commits.map(function(item){
           return {
-            hash: data.shift(),
-            message: data.join(" ")
+            hash: self.getShortHash(item.hash),
+            message: item.message
           };
         });
 
@@ -64,6 +61,7 @@ gitFlow.prototype.getCommitList = function (github, callback) {
       });
     });
   });
+
 };
 
 gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callback) {
@@ -73,6 +71,8 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
   let hashTo = data.hashTo;
 
   let gitFolder = this.getRepoFolder(github);
+  simpleGit._baseDir = gitFolder;
+
   let execGitClone = "git clone " + github + " " + gitFolder;
   cliUi.state("git, get files diff, clone repo");
   shelljs.exec(execGitClone, {silent: debugGitSilent, async: true}, function(error, stdout, stderr) {
@@ -130,6 +130,7 @@ gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
   let gitHashTo = data.hashTo;
   let gitRepo = data.github;
   let gitFolder = this.getRepoFolder(gitRepo);
+  simpleGit._baseDir = gitFolder;
 
   let gitDir = '--git-dir=' + gitFolder + '/.git';
 
