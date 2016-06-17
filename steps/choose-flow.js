@@ -34,6 +34,10 @@ let question = {
     {
       name: 'Results Overview',
       value: 'results-overview'
+    },
+    {
+      name: 'Dataset State',
+      value: 'dataset-state'
     }
   ]
 };
@@ -88,9 +92,31 @@ step.prototype.process = function (inputValue) {
       done(null, true);
     });
 
+  } else if(inputValue == 'dataset-state') {
+
+    wsRequest.getDatasetState({}, function(error, body) {
+
+      if(error) {
+
+        cliUi.stop();
+        return done(null, true);
+        // inquirer, bug
+        return done(error.toString());
+      }
+
+      let logRows = [];
+      body.result.forEach(function(item, index) {
+        logRows.push("> " + item);
+      });
+
+      cliUi.logPrint(logRows);
+      cliUi.stop();
+      done(null, true);
+    });
+
   } else {
-    cliUi.stop();
-    done(null, true);
+      cliUi.stop();
+      done(null, true);
   }
 };
 

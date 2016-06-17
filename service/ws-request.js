@@ -7,6 +7,7 @@ const WS_HOST = 'http://localhost:3000';
 //const WS_HOST = 'http://192.168.1.98:3000';
 
 const ROUTE_WS_PRESTORED_QUERY = WS_HOST + '/api/ddf/cli/prestored-queries';
+const ROUTE_WS_DATASET_STATE = WS_HOST + '/api/ddf/cli/dataset/status';
 const ROUTE_WS_IMPORT = WS_HOST + '/api/ddf/cli/import-dataset';
 const ROUTE_WS_LATEST_COMMIT = WS_HOST + '/api/ddf/cli/commit-of-latest-dataset-version';
 const ROUTE_WS_UPDATE = WS_HOST + '/api/ddf/cli/update-incremental';
@@ -19,14 +20,11 @@ function wsRequest() {};
 
 /*
 
- Request to WS :: Import Dataset
+ Request to WS :: Get Prestored Queries
 
- GET: /api/ddf/prestored-query
+ GET: /api/ddf/cli/prestored-query
 
- PARAM: github,    [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
- PARAM: commit,    [aafed7d4dcda8d736f317e0cd3eaff009275cbb6]
-
- RESPONSE: Array,    [http://localhost:3000/api/ddf/stats?dataset=57470620cef40f3d23cda175&version=1464272416303&time=1800:2015&select=geo,time,sg_population,energy_use_total,...]
+ RESPONSE: Array of requests
 
 */
 
@@ -36,9 +34,23 @@ wsRequest.prototype.getPrestoredQueries = function (data, callback) {
 
 /*
 
+ Request to WS :: Get list of registered Datasets with states
+
+ GET: /api/ddf/cli/dataset/status
+
+ RESPONSE: Array
+
+ */
+
+wsRequest.prototype.getDatasetState = function (data, callback) {
+  this.sendRequest('get', ROUTE_WS_DATASET_STATE, data, callback);
+};
+
+/*
+
  Request to WS :: Import Dataset
 
- GET: /api/ddf/import/repo
+ GET: /api/ddf/cli/import-dataset
 
  PARAM: github,    [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
  PARAM: commit,    [aafed7d4dcda8d736f317e0cd3eaff009275cbb6]
@@ -53,7 +65,7 @@ wsRequest.prototype.importDataset = function (data, callback) {
 
  Request to WS :: Get Latest commit hash
 
- GET: /api/ddf/demo/commit-of-latest-dataset-version
+ GET: /api/ddf/cli/commit-of-latest-dataset-version
 
  PARAM: github,    [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
 
@@ -74,7 +86,7 @@ wsRequest.prototype.getLatestCommit = function (data, callback) {
 
  Request to WS :: Incremental update
 
- GET: /api/ddf/incremental-update/repo
+ GET: /api/ddf/cli/update-incremental
 
  PARAM: path,        [/full/path/to/output_file.json]
  PARAM: githubUrl,   [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]

@@ -19,7 +19,8 @@
       "register-repository": "register-repository",
       "dataset-choose-import": "dataset-choose-import",
       "dataset-choose-update": "dataset-choose-update",
-      "results-overview": "choose-flow"
+      "results-overview": "choose-flow",
+      "dataset-state": "choose-flow"
     }
   },
 
