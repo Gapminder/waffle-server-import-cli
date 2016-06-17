@@ -11,6 +11,7 @@ let sourceFolderPath = sourceFolder + '/repos/';
 
 const simpleGit = require('simple-git')();
 const debugGitSilent = true;
+const GIT_SILENT = true;
 
 function gitFlow() {
   if(!fs.existsSync(sourceFolderPath)) {
@@ -26,7 +27,7 @@ gitFlow.prototype.getShortHash = function (commit) {
 gitFlow.prototype.configDir = function (github) {
   let gitFolder = this.getRepoFolder(github);
   simpleGit._baseDir = gitFolder;
-  return gitFolder;
+  return gitFolder + "/";
 };
 
 
@@ -38,7 +39,11 @@ gitFlow.prototype.getRepoFolder = function (github) {
   if(!regexpFolderGitFolder) {
     return regexpFolderGitFolder;
   }
-  return sourceFolderPath + regexpFolderGitFolder;
+  let targetFolder = sourceFolderPath + regexpFolderGitFolder;
+  if(!fs.existsSync(targetFolder)) {
+    fs.mkdirSync(targetFolder);
+  }
+  return targetFolder;
 };
 
 gitFlow.prototype.getCommitList = function (github, callback) {
@@ -47,13 +52,13 @@ gitFlow.prototype.getCommitList = function (github, callback) {
   let gitFolder = this.configDir(github);
 
   cliUi.state("git, get commit list, clone repo");
-  simpleGit.silent(true).clone(github, gitFolder, function(error, result){
+  simpleGit.silent(GIT_SILENT).clone(github, gitFolder, function(error, result){
 
     cliUi.state("git, get commit list, download updates");
-    simpleGit.silent(true).pull('origin', 'master', function(error, result){
+    simpleGit.silent(GIT_SILENT).pull('origin', 'master', function(error, result){
 
       cliUi.state("git, get commit list, process log");
-      simpleGit.silent(true).log(function(error, result){
+      simpleGit.silent(GIT_SILENT).log(function(error, result){
 
         let commits = result.all;
         let commitsList = commits.map(function(item){
@@ -81,10 +86,10 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
   let gitFolder = this.configDir(github);
 
   cliUi.state("git, get files diff, clone repo");
-  simpleGit.silent(true).clone(github, gitFolder, function(error, result){
+  simpleGit.silent(GIT_SILENT).clone(github, gitFolder, function(error, result){
 
     cliUi.state("git, get files diff, download updates");
-    simpleGit.silent(true).pull('origin', 'master', function(error, result) {
+    simpleGit.silent(GIT_SILENT).pull('origin', 'master', function(error, result) {
 
       cliUi.state("git, get files diff, file-names only");
       simpleGit.diff([hashFrom + '..' + hashTo, "--name-only"], function(error, result) {
@@ -100,7 +105,7 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
         });
 
         cliUi.state("git, get files diff, file-names with states");
-        simpleGit.diff([hashFrom + '..' + hashTo, "--name-status"], function(error, result) {
+        simpleGit.silent(GIT_SILENT).diff([hashFrom + '..' + hashTo, "--name-status"], function(error, result) {
 
           let resultGitDiffByFiles = result;
 
