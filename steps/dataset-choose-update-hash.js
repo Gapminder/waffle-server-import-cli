@@ -60,8 +60,6 @@ step.prototype.preProcess  = function (done) {
         list.reverse();
 
         let commitFromIndex = list.findIndex(function(item) {
-          //return item.hash.indexOf(commitFrom) >= 0;
-          console.log(commitFrom, item);
           return item.hash == commitFrom;
         });
 
@@ -116,6 +114,8 @@ step.prototype.process = function (inputValue) {
       'github': datasetData.github,
       'commit': inputValue
     };
+
+    cliUi.state("processing Update Dataset, send request");
 
     wsRequest.updateDataset(data, function(error, body) {
 

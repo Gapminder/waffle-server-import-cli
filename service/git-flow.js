@@ -10,7 +10,6 @@ let sourceFolder = fs.realpathSync('./');
 let sourceFolderPath = sourceFolder + '/repos/';
 
 const simpleGit = require('simple-git')();
-const debugGitSilent = true;
 const GIT_SILENT = true;
 
 function gitFlow() {
@@ -107,9 +106,7 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
         cliUi.state("git, get files diff, file-names with states");
         simpleGit.silent(GIT_SILENT).diff([hashFrom + '..' + hashTo, "--name-status"], function(error, result) {
 
-          let resultGitDiffByFiles = result;
-
-          resultGitDiffByFiles.split("\n").filter(function(value) {
+          result.split("\n").filter(function(value) {
             return !!value && value.indexOf(".csv") != -1;
           }).map(function(rawFile) {
             let fileStat = rawFile.split("\t");
@@ -128,40 +125,31 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
 
 gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
 
-  let gitHashFrom = data.hashFrom;
-  let gitHashTo = data.hashTo;
   let gitRepo = data.github;
 
   let self = this;
   let gitFolder = this.configDir(gitRepo);
 
-  let gitDir = '--git-dir=' + gitFolder + '/.git';
-
-  let commandGitShowFrom = 'git ' + gitDir + ' show ' + gitHashFrom + ':' + fileName;
-  let commandGitShowTo = 'git ' + gitDir + ' show ' + gitHashTo + ':' + fileName;
+  let gitHashFrom = data.hashFrom + ':' + fileName;
+  let gitHashTo = data.hashTo + ':' + fileName;
 
   async.waterfall(
     [
       function(done) {
 
-        let csvFrom = [];
-        return shelljs.exec(commandGitShowFrom, {silent: debugGitSilent, async: true}).stdout.on("data", function(dataFrom) {
-          csvFrom.push(dataFrom);
-        })
-          .on('end', function() {
-            cliUi.state("generate diff, data from ready");
-            return done(null, csvFrom.join(""));
-          });
+        simpleGit.silent(GIT_SILENT).show([gitHashFrom], function(error, result){
+          result = !!error ? '' : result;
+          return done(null, result);
+        });
+
       },
       function(dataFrom, done) {
 
-        let csvTo = [];
-        return shelljs.exec(commandGitShowTo, {silent: debugGitSilent, async: true}).stdout.on("data", function(dataTo) {
-          csvTo.push(dataTo);
-        }).on("end", function() {
-          cliUi.state("generate diff, data to ready");
-          return done(null, {from: dataFrom, to: csvTo.join("")});
+        simpleGit.silent(GIT_SILENT).show([gitHashTo], function(error, result){
+          result = !!error ? '' : result;
+          return done(null, {from: dataFrom, to: result});
         });
+
       }
     ],
     // callback
