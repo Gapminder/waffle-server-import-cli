@@ -20,7 +20,7 @@
       "dataset-choose-import": "dataset-choose-import",
       "dataset-choose-update": "dataset-choose-update",
       "results-overview": "choose-flow",
-      "dataset-state": "choose-flow"
+      "dataset-choose-check-state": "dataset-choose-check-state"
     }
   },
 
@@ -50,6 +50,12 @@
   "dataset-choose-update-hash": {
     "type": "step::dynamic",
     "back": "dataset-choose-update",
+    "next": "choose-flow"
+  },
+
+  "dataset-choose-check-state": {
+    "type": "step::dynamic",
+    "back": "choose-flow",
     "next": "choose-flow"
   }
 

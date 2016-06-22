@@ -8,7 +8,7 @@ const WS_HOST = 'http://localhost:3000';
 //const WS_HOST = 'http://192.168.1.98:3000';
 
 const ROUTE_WS_PRESTORED_QUERY = WS_HOST + '/api/ddf/cli/prestored-queries';
-const ROUTE_WS_DATASET_STATE = WS_HOST + '/api/ddf/cli/dataset/status';
+const ROUTE_WS_DATASET_STATE = WS_HOST + '/api/ddf/cli/transactions/latest/status';
 const ROUTE_WS_IMPORT = WS_HOST + '/api/ddf/cli/import-dataset';
 const ROUTE_WS_LATEST_COMMIT = WS_HOST + '/api/ddf/cli/commit-of-latest-dataset-version';
 const ROUTE_WS_UPDATE = WS_HOST + '/api/ddf/cli/update-incremental';

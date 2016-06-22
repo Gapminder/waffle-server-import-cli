@@ -36,8 +36,8 @@ let question = {
       value: 'results-overview'
     },
     {
-      name: 'Dataset State',
-      value: 'dataset-state'
+      name: 'Check State',
+      value: 'dataset-choose-check-state'
     }
   ]
 };
@@ -87,29 +87,6 @@ step.prototype.process = function (inputValue) {
         } else {
           logRows.push("> " + item);
         }
-      });
-
-      cliUi.logPrint(logRows).stop();
-      done(null, true);
-    });
-
-  } else if(inputValue == 'dataset-state') {
-
-    wsRequest.getDatasetState({}, function(error, wsResponse) {
-
-      let errorMsg = error ? error.toString() : wsResponse.getError();
-
-      if(errorMsg) {
-        cliUi.logStart().error(errorMsg).logEnd().stop();
-        // return done(errorMsg); :: inquirer bug, update after fix
-        return done(null, true);
-      }
-
-      let logRows = [];
-      let responseData = wsResponse.getData([]);
-
-      responseData.forEach(function(item, index) {
-        logRows.push("> " + item);
       });
 
       cliUi.logPrint(logRows).stop();
