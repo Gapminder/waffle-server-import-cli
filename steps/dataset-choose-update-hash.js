@@ -37,12 +37,10 @@ step.prototype.preProcess  = function (done) {
 
   wsRequest.getLatestCommit(data, function(error, wsResponse) {
 
-    let errorIns = error || wsResponse.getError();
-    let errorMsg = errorIns.toString();
+    let errorMsg = error ? error.toString() : wsResponse.getError();
 
     if(errorMsg) {
-      cliUi.error(errorMsg);
-      cliUi.stop();
+      cliUi.logStart().error(errorMsg).logEnd().stop();
       // return done(errorMsg); :: inquirer bug, update after fix
       return done(null, true);
     }
@@ -121,12 +119,10 @@ step.prototype.process = function (inputValue) {
 
     wsRequest.updateDataset(data, function(error, wsResponse) {
 
-      let errorIns = error || wsResponse.getError();
-      let errorMsg = errorIns.toString();
+      let errorMsg = error ? error.toString() : wsResponse.getError();
 
       if(errorMsg) {
-        cliUi.error(errorMsg);
-        cliUi.stop();
+        cliUi.logStart().error(errorMsg).logEnd().stop();
         // return done(errorMsg); :: inquirer bug, update after fix
         return done(null, true);
       }

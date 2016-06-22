@@ -20,6 +20,7 @@ uiProgress.prototype.reset = function () {
   this.stop();
   this.textState = '';
   this.textLine = ' ';
+  return this;
 };
 
 uiProgress.prototype.state = function (state) {
@@ -45,20 +46,24 @@ uiProgress.prototype.state = function (state) {
 
   }, that.intervalTimeout);
 
+  return this;
 };
 
 uiProgress.prototype.stop = function () {
   inquirerUi.updateBottomBar("");
   clearInterval(this.intervalId);
+  return this;
 };
 
 // implement :: console.log - could be changed to better lib
 
 uiProgress.prototype.logStart = function () {
   console.log("\n----------------------------------------\n");
+  return this;
 };
 uiProgress.prototype.logEnd = function () {
   console.log("----------------------------------------\n\n\n\n\n\n\n");
+  return this;
 };
 
 uiProgress.prototype.logPrint = function (data) {
@@ -67,22 +72,24 @@ uiProgress.prototype.logPrint = function (data) {
     console.log(item);
   });
   this.logEnd();
+  return this;
 };
 
 uiProgress.prototype.error = function () {
   let args = Array.prototype.slice.call(arguments);
-  args.unshift("\n\x1b[31m ERROR:\x1b[22m \x1b[93m");
+  args.unshift("\x1b[31m ERROR:\x1b[22m \x1b[93m");
   args.push("\x1B[37m");
-  args.push("\n\n\n\n\n\n\n\n");
+  //args.push("\n\n\n\n\n\n\n\n");
   console.log.apply(console, args);
+  return this;
 };
 uiProgress.prototype.success = function () {
   let args = Array.prototype.slice.call(arguments);
-  args.unshift("\n\x1b[32m");
+  args.unshift("\x1b[32m");
   args.push("\x1B[37m");
-  args.push("\n\n\n\n\n\n\n\n");
+  //args.push("\n\n\n\n\n\n\n\n");
   console.log.apply(console, args);
+  return this;
 };
-
 
 module.exports = new uiProgress();

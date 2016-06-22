@@ -75,7 +75,6 @@ csvDiff.prototype.process = function (data, callback) {
 
     let diffResult = [];
 
-    //cliUi.state("FROM-TO", dataDiff.from.length, dataDiff.to.length);
     cliUi.state("getDiffByFile inside");
 
     const tableFrom = new daff.Csv().makeTable(dataDiff.from);

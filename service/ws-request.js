@@ -15,17 +15,27 @@ const ROUTE_WS_UPDATE = WS_HOST + '/api/ddf/cli/update-incremental';
 
 //const REQUEST_TIMEOUT = 2 * 60 * 60 * 1000;
 // Linux kernel TCP :: max 120 seconds
-const REQUEST_TIMEOUT = 150 * 1000;
+const REQUEST_TIMEOUT = 110 * 1000;
 
 function wsRequest() {};
 
 /*
 
- Request to WS :: Get Prestored Queries
+  Request to WS :: Get Prestored Queries
 
- GET: /api/ddf/cli/prestored-query
+  GET: /api/ddf/cli/prestored-query
 
- RESPONSE: Array of requests
+  RESPONSE: Array(Objects)
+
+    [
+      {
+        "url": "http://localhost:3000/api/ddf/stats...lation,energy_use_total",
+        "datasetName": "ddf--gapminder_world-stub-1",
+        "version": 1466591220748,
+        "createdAt": "2016-06-22T10:27:00.748Z"
+      },
+      ...
+    ]
 
 */
 

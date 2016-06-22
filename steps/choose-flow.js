@@ -69,12 +69,10 @@ step.prototype.process = function (inputValue) {
 
     wsRequest.getPrestoredQueries({}, function(error, wsResponse) {
 
-      let errorIns = error || wsResponse.getError();
-      let errorMsg = errorIns.toString();
+      let errorMsg = error ? error.toString() : wsResponse.getError();
 
       if(errorMsg) {
-        cliUi.error(errorMsg);
-        cliUi.stop();
+        cliUi.logStart().error(errorMsg).logEnd().stop();
         // return done(errorMsg); :: inquirer bug, update after fix
         return done(null, true);
       }
@@ -91,8 +89,7 @@ step.prototype.process = function (inputValue) {
         }
       });
 
-      cliUi.logPrint(logRows);
-      cliUi.stop();
+      cliUi.logPrint(logRows).stop();
       done(null, true);
     });
 
@@ -100,12 +97,10 @@ step.prototype.process = function (inputValue) {
 
     wsRequest.getDatasetState({}, function(error, wsResponse) {
 
-      let errorIns = error || wsResponse.getError();
-      let errorMsg = errorIns.toString();
+      let errorMsg = error ? error.toString() : wsResponse.getError();
 
       if(errorMsg) {
-        cliUi.error(errorMsg);
-        cliUi.stop();
+        cliUi.logStart().error(errorMsg).logEnd().stop();
         // return done(errorMsg); :: inquirer bug, update after fix
         return done(null, true);
       }
@@ -117,8 +112,7 @@ step.prototype.process = function (inputValue) {
         logRows.push("> " + item);
       });
 
-      cliUi.logPrint(logRows);
-      cliUi.stop();
+      cliUi.logPrint(logRows).stop();
       done(null, true);
     });
 

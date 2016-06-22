@@ -38,18 +38,14 @@ csvDiff.process({
 
   wsRequest.updateDataset(data, function(error, wsResponse) {
 
-    let errorIns = error || wsResponse.getError();
-    let errorMsg = errorIns.toString();
+    let errorMsg = error ? error.toString() : wsResponse.getError();
 
     if(errorMsg) {
-      cliUi.error(errorMsg);
-      cliUi.stop();
+      cliUi.error(errorMsg).stop();
       return;
     }
 
-    cliUi.success("Request completed!");
-    cliUi.stop();
-
+    cliUi.success("Request completed!").stop();
     return;
   });
 
