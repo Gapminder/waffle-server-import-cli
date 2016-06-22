@@ -30,6 +30,7 @@ step.prototype.process = function (inputValue) {
   let done = this.async();
   cliUi.state("register repository");
 
+  inputValue = _.trim(inputValue);
   let repoList = stepInstance.holder.getResult('repository-list', []);
 
   let githubUrl = inputValue;

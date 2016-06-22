@@ -1,4 +1,4 @@
-'use strict';const fs = require('fs');
+'use strict';
 
 let inquirer = require('inquirer');
 let inquirerUi = new inquirer.ui.BottomBar();
