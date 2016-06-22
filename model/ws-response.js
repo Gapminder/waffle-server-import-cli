@@ -1,5 +1,19 @@
 'use strict';
 
+/*
+
+  {
+    success: Boolean [true|false]
+    
+    *data: Any
+    *message: String (Provides simple message of Server)
+    *error: String (Describes Server Error. Available and Mandatory if success=false)
+  }
+
+  *, optional
+
+*/
+
 let wsResponse = function (response) {
   this.response = response && response.body ? response.body : {success: false};
 };

@@ -40,7 +40,7 @@ csvDiff.process({
 
     let errorIns = error || wsResponse.getError();
     let errorMsg = errorIns.toString();
-    
+
     if(errorMsg) {
       cliUi.error(errorMsg);
       cliUi.stop();
