@@ -18,7 +18,6 @@
 
 const cliUi = require('./service/cli-ui');
 const wsRequest = require('./service/ws-request');
-const gitFlow = require('./service/git-flow');
 const csvDiff = require('./service/csv-diff');
 
 const gitHashFrom = process.env.FROM || '';
@@ -37,12 +36,15 @@ csvDiff.process({
     'commit': gitHashTo
   };
 
-  wsRequest.updateDataset(data, function(error, body) {
+  wsRequest.updateDataset(data, function(error, wsResponse) {
 
-    let errorMsg = error || body.err;
-
-    if(!!errorMsg) {
+    let errorIns = error || wsResponse.getError();
+    let errorMsg = errorIns.toString();
+    
+    if(errorMsg) {
       cliUi.error(errorMsg);
+      cliUi.stop();
+      return;
     }
 
     cliUi.success("Request completed!");

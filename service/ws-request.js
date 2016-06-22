@@ -2,6 +2,7 @@
 
 const request = require('superagent');
 const JSONStream = require('JSONStream');
+const wsResponse = require('./../model/ws-response');
 
 const WS_HOST = 'http://localhost:3000';
 //const WS_HOST = 'http://192.168.1.98:3000';
@@ -113,30 +114,21 @@ wsRequest.prototype.updateDataset = function (data, callback) {
 
 wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
 
+  let requestInstance;
+
+  // validate value between get|post
+  rType = rType != 'get' ? 'post' : rType;
+
   if(rType == 'get') {
-
-    request
-      .get(ROUTE_WS)
-      .query(data)
-      .timeout(REQUEST_TIMEOUT)
-      .end(function(error, response){
-        let responseBody = response && response.body ? response.body : '';
-        callback(error, responseBody);
-      });
-
+    requestInstance = request.get(ROUTE_WS).query(data);
   } else {
-
-    request
-      .post(ROUTE_WS)
-      .type('form')
-      .send(data)
-      .timeout(REQUEST_TIMEOUT)
-      .end(function(error, response){
-        let responseBody = response && response.body ? response.body : '';
-        callback(error, responseBody);
-      });
-
+    requestInstance = request.post(ROUTE_WS).type('form').send(data);
   }
+
+  requestInstance.timeout(REQUEST_TIMEOUT)
+    .end(function(error, response){
+      callback(error, new wsResponse(response));
+    });
 
 };
 
@@ -149,8 +141,7 @@ wsRequest.prototype.sendStream = function (ROUTE_WS, data, callback) {
     .timeout(REQUEST_TIMEOUT);
 
   requestInst.on('response',   function (response){
-    let responseBody = response && response.body ? response.body : '';
-    callback(false, responseBody);
+    callback(false, new wsResponse(response));
   });
 
   objectStream.pipe(requestInst);

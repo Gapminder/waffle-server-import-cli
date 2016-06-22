@@ -67,18 +67,22 @@ step.prototype.process = function (inputValue) {
 
   if (inputValue == 'results-overview') {
 
-    wsRequest.getPrestoredQueries({}, function(error, body) {
+    wsRequest.getPrestoredQueries({}, function(error, wsResponse) {
 
-      if(error) {
+      let errorIns = error || wsResponse.getError();
+      let errorMsg = errorIns.toString();
 
+      if(errorMsg) {
+        cliUi.error(errorMsg);
         cliUi.stop();
+        // return done(errorMsg); :: inquirer bug, update after fix
         return done(null, true);
-        // inquirer, bug
-        return done(error.toString());
       }
 
       let logRows = [];
-      body.result.forEach(function(item, index) {
+      let responseData = wsResponse.getData([]);
+
+      responseData.forEach(function(item, index) {
         if(index%2) {
           logRows.push("> " + item);
           logRows.push("");
@@ -94,18 +98,22 @@ step.prototype.process = function (inputValue) {
 
   } else if(inputValue == 'dataset-state') {
 
-    wsRequest.getDatasetState({}, function(error, body) {
+    wsRequest.getDatasetState({}, function(error, wsResponse) {
 
-      if(error) {
+      let errorIns = error || wsResponse.getError();
+      let errorMsg = errorIns.toString();
 
+      if(errorMsg) {
+        cliUi.error(errorMsg);
         cliUi.stop();
+        // return done(errorMsg); :: inquirer bug, update after fix
         return done(null, true);
-        // inquirer, bug
-        return done(error.toString());
       }
 
       let logRows = [];
-      body.result.forEach(function(item, index) {
+      let responseData = wsResponse.getData([]);
+
+      responseData.forEach(function(item, index) {
         logRows.push("> " + item);
       });
 

@@ -68,16 +68,18 @@ step.prototype.process = function (inputValue) {
     'commit': inputValue
   };
 
-  wsRequest.importDataset(data, function(error, body) {
+  wsRequest.importDataset(data, function(error, wsResponse) {
 
-    if(error) {
+    let errorIns = error || wsResponse.getError();
+    let errorMsg = errorIns.toString();
+
+    if(errorMsg) {
+      cliUi.error(errorMsg);
       cliUi.stop();
+      // return done(errorMsg); :: inquirer bug, update after fix
       return done(null, true);
-      // inquirer, bug
-      return done(error.toString());
     }
 
-    console.log("connection OK");
     cliUi.stop();
     return done(null, true);
   });

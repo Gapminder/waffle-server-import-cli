@@ -35,24 +35,26 @@ step.prototype.preProcess  = function (done) {
     'github': this.holder.get('dataset-choose-update', false)
   };
 
-  wsRequest.getLatestCommit(data, function(error, body) {
+  wsRequest.getLatestCommit(data, function(error, wsResponse) {
 
-    if(error || body.error) {
+    let errorIns = error || wsResponse.getError();
+    let errorMsg = errorIns.toString();
 
-      let errorMessage = !!error ? error.toString() : body.error;
-
+    if(errorMsg) {
+      cliUi.error(errorMsg);
       cliUi.stop();
-      return done(errorMessage);
+      // return done(errorMsg); :: inquirer bug, update after fix
+      return done(null, true);
     }
 
-    let latestData = body;
+    let responseData = wsResponse.getData();
 
     // get commit list
 
-    self.holder.setResult('dataset-update-data', latestData);
+    self.holder.setResult('dataset-update-data', responseData);
 
-    let selectedDataSet = latestData.github;
-    let commitFrom = gitFlow.getShortHash(latestData.commit);
+    let selectedDataSet = responseData.github;
+    let commitFrom = gitFlow.getShortHash(responseData.commit);
 
     gitFlow.getCommitList(selectedDataSet, function(error, list) {
       if(!error) {
@@ -117,16 +119,16 @@ step.prototype.process = function (inputValue) {
 
     cliUi.state("processing Update Dataset, send request");
 
-    wsRequest.updateDataset(data, function(error, body) {
+    wsRequest.updateDataset(data, function(error, wsResponse) {
 
-      let errorMsg = error || body.err;
+      let errorIns = error || wsResponse.getError();
+      let errorMsg = errorIns.toString();
 
-      if(!!errorMsg) {
-        cliUi.stop();
+      if(errorMsg) {
         cliUi.error(errorMsg);
+        cliUi.stop();
+        // return done(errorMsg); :: inquirer bug, update after fix
         return done(null, true);
-        // inquirer, bug
-        return done(error.toString());
       }
 
       cliUi.stop();

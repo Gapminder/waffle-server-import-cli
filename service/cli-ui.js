@@ -71,14 +71,16 @@ uiProgress.prototype.logPrint = function (data) {
 
 uiProgress.prototype.error = function () {
   let args = Array.prototype.slice.call(arguments);
-  args.unshift("\x1b[31m ERROR:\x1b[22m \x1b[93m");
+  args.unshift("\n\x1b[31m ERROR:\x1b[22m \x1b[93m");
   args.push("\x1B[37m");
+  args.push("\n\n\n\n\n\n\n\n");
   console.log.apply(console, args);
 };
 uiProgress.prototype.success = function () {
   let args = Array.prototype.slice.call(arguments);
-  args.unshift("\x1b[32m");
+  args.unshift("\n\x1b[32m");
   args.push("\x1B[37m");
+  args.push("\n\n\n\n\n\n\n\n");
   console.log.apply(console, args);
 };
 
