@@ -45,7 +45,7 @@ csvDiff.process({
       return;
     }
 
-    cliUi.success("Request completed!").stop();
+    cliUi.success("* Request completed!").stop();
     return;
   });
 

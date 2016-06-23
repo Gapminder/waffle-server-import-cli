@@ -3,6 +3,13 @@
 let inquirer = require('inquirer');
 let inquirerUi = new inquirer.ui.BottomBar();
 
+const SEPARATOR_LINE = "-------------------------------------------------------------------------";
+const SEPARATOR_UI = "\n\n\n\n\n\n\n\n";
+
+const CONST_FONT_ERROR = "\x1b[31m* ERROR:\x1b[93m ";
+const CONST_FONT_GREEN = "\x1b[32m";
+const CONST_FONT_WHITE = "\x1b[0m";
+
 function uiProgress () {
 
   this.textState;
@@ -58,11 +65,11 @@ uiProgress.prototype.stop = function () {
 // implement :: console.log - could be changed to better lib
 
 uiProgress.prototype.logStart = function () {
-  console.log("\n-------------------------------------------------------------");
+  console.log("\n" + SEPARATOR_LINE);
   return this;
 };
 uiProgress.prototype.logEnd = function () {
-  console.log("-------------------------------------------------------------\n\n\n\n\n\n\n\n");
+  console.log(SEPARATOR_LINE + SEPARATOR_UI);
   return this;
 };
 
@@ -77,17 +84,15 @@ uiProgress.prototype.logPrint = function (data) {
 
 uiProgress.prototype.error = function () {
   let args = Array.prototype.slice.call(arguments);
-  args.unshift("\x1b[31m ERROR:\x1b[22m \x1b[93m");
-  args.push("\x1B[37m");
-  //args.push("\n\n\n\n\n\n\n\n");
+  args[0] = CONST_FONT_ERROR + args[0];
+  args.push(CONST_FONT_WHITE);
   console.log.apply(console, args);
   return this;
 };
 uiProgress.prototype.success = function () {
   let args = Array.prototype.slice.call(arguments);
-  args.unshift("\x1b[32m");
-  args.push("\x1B[37m");
-  //args.push("\n\n\n\n\n\n\n\n");
+  args[0] = CONST_FONT_GREEN + args[0];
+  args.push(CONST_FONT_WHITE);
   console.log.apply(console, args);
   return this;
 };

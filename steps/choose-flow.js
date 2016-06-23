@@ -49,6 +49,7 @@ let question = {
 // Own Process Implementation
 
 const wsRequest = require('./../service/ws-request');
+const formatter = require('./../service/formatter');
 
 step.prototype.process = function (inputValue) {
 
@@ -88,12 +89,12 @@ step.prototype.process = function (inputValue) {
         logRows.push("\n");
         logRows.push("> " + item.datasetName);
         logRows.push("  - version : " + item.version);
-        logRows.push("  - date    : " + item.createdAt);
+        logRows.push("  - date    : " + formatter.date(item.createdAt));
         logRows.push("  - url     : " + item.url);
       });
       logRows.push("\n");
 
-      cliUi.logPrint(logRows).stop();
+      cliUi.stop().logPrint(logRows);
       done(null, true);
     });
 

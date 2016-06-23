@@ -26,6 +26,7 @@ let question = {
 
 const wsRequest = require('./../service/ws-request');
 const gitFlow = require('./../service/git-flow');
+const formatter = require('./../service/formatter');
 
 step.prototype.preProcess  = function (done) {
 
@@ -75,8 +76,8 @@ step.prototype.process = function (inputValue) {
     let responseData = wsResponse.getData([]);
 
     let message = responseData.datasetName + ": #" + responseData.transaction.commit + " - ";
-    message += responseData.transaction.status + ", (" + responseData.transaction.createdAt + ")";
-    cliUi.logPrint([message]).stop();
+    message += responseData.transaction.status + ", (" + formatter.date(responseData.transaction.createdAt) + ")";
+    cliUi.stop().logPrint([message]);
 
     done(null, true);
   });

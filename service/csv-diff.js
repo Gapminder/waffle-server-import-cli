@@ -60,7 +60,7 @@ csvDiff.prototype.process = function (data, callback) {
         let resultFileName = sourceFolderPath + "diff-operation-result.json";
         fs.writeFileSync(resultFileName, JSON.stringify(result));
 
-        cliUi.success("Diff generation completed!");
+        cliUi.success("* Diff generation completed!");
         return callback(false, result);
       }
     );

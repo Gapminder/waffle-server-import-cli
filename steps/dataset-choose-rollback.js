@@ -73,7 +73,7 @@ step.prototype.process = function (inputValue) {
     }
 
     let operationMsg = wsResponse.getMessage();
-    cliUi.logPrint([operationMsg]).stop();
+    cliUi.stop().logPrint([operationMsg]);
 
     done(null, true);
   });
