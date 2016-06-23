@@ -127,7 +127,9 @@ step.prototype.process = function (inputValue) {
         return done(null, true);
       }
 
-      cliUi.stop();
+      let operationMsg = wsResponse.getMessage();
+      cliUi.logPrint([operationMsg]).stop();
+
       return done(null, true);
     });
 

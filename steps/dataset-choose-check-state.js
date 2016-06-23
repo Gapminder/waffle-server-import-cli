@@ -25,6 +25,7 @@ let question = {
 // Own Process Implementation
 
 const wsRequest = require('./../service/ws-request');
+const gitFlow = require('./../service/git-flow');
 
 step.prototype.preProcess  = function (done) {
 
@@ -58,7 +59,7 @@ step.prototype.process = function (inputValue) {
   // REQUEST
 
   let data = {
-    'datasetName': inputValue
+    'datasetName': gitFlow.getRepoName(inputValue)
   };
 
   wsRequest.getDatasetState(data, function(error, wsResponse) {
@@ -75,8 +76,8 @@ step.prototype.process = function (inputValue) {
 
     let message = responseData.datasetName + ": #" + responseData.transaction.commit + " - ";
     message += responseData.transaction.status + ", (" + responseData.transaction.createdAt + ")";
+    cliUi.logPrint([message]).stop();
 
-    cliUi.logPrint(message).stop();
     done(null, true);
   });
 

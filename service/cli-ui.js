@@ -58,11 +58,11 @@ uiProgress.prototype.stop = function () {
 // implement :: console.log - could be changed to better lib
 
 uiProgress.prototype.logStart = function () {
-  console.log("\n----------------------------------------\n");
+  console.log("\n-------------------------------------------------------------");
   return this;
 };
 uiProgress.prototype.logEnd = function () {
-  console.log("----------------------------------------\n\n\n\n\n\n\n");
+  console.log("-------------------------------------------------------------\n\n\n\n\n\n\n\n");
   return this;
 };
 

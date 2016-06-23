@@ -38,6 +38,10 @@ let question = {
     {
       name: 'Check State',
       value: 'dataset-choose-check-state'
+    },
+    {
+      name: 'RollBack Transaction',
+      value: 'dataset-choose-rollback'
     }
   ]
 };
@@ -81,13 +85,13 @@ step.prototype.process = function (inputValue) {
       let responseData = wsResponse.getData([]);
 
       responseData.forEach(function(item, index) {
-        if(index%2) {
-          logRows.push("> " + item);
-          logRows.push("");
-        } else {
-          logRows.push("> " + item);
-        }
+        logRows.push("\n");
+        logRows.push("> " + item.datasetName);
+        logRows.push("  - version : " + item.version);
+        logRows.push("  - date    : " + item.createdAt);
+        logRows.push("  - url     : " + item.url);
       });
+      logRows.push("\n");
 
       cliUi.logPrint(logRows).stop();
       done(null, true);

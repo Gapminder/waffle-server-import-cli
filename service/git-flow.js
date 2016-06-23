@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const shelljs = require('shelljs');
 const async = require("async");
 const cliUi = require('./../service/cli-ui');
 
@@ -30,14 +29,15 @@ gitFlow.prototype.configDir = function (github) {
 };
 
 
-
-gitFlow.prototype.getRepoFolder = function (github) {
+gitFlow.prototype.getRepoName = function (github) {
   let regexpFolder = /\/(.+)\.git/;
   let regexpFolderRes = regexpFolder.exec(github);
   let regexpFolderGitFolder = regexpFolderRes[1] || false;
-  if(!regexpFolderGitFolder) {
-    return regexpFolderGitFolder;
-  }
+  return regexpFolderGitFolder || '';
+};
+
+gitFlow.prototype.getRepoFolder = function (github) {
+  let regexpFolderGitFolder = this.getRepoName(github);
   let targetFolder = sourceFolderPath + regexpFolderGitFolder;
   if(!fs.existsSync(targetFolder)) {
     fs.mkdirSync(targetFolder);

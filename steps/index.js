@@ -9,6 +9,7 @@ let datasetChooseUpdate = require('./dataset-choose-update');
 let datasetChooseUpdateHash = require('./dataset-choose-update-hash');
 let registerRepository = require('./register-repository');
 let datasetChooseCheckState = require('./dataset-choose-check-state');
+let datasetChooseRollback = require('./dataset-choose-rollback');
 
 let steps = {};
 
@@ -21,5 +22,6 @@ steps[registerRepository.getName()] = registerRepository;
 steps[datasetChooseImportHash.getName()] = datasetChooseImportHash;
 steps[datasetChooseUpdateHash.getName()] = datasetChooseUpdateHash;
 steps[datasetChooseCheckState.getName()] = datasetChooseCheckState;
+steps[datasetChooseRollback.getName()] = datasetChooseRollback;
 
 module.exports = steps;

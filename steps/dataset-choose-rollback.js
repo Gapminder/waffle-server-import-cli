@@ -13,10 +13,12 @@ util.inherits(step, stepBase);
 
 // Question Definition
 
+const sourceList = require('./../config/repositories');
+
 let question = {
-  'name': 'dataset-choose-import-hash',
+  'name': 'dataset-choose-rollback',
   'type': 'list',
-  'message': 'List of Available Commits',
+  'message': 'List of DataSet Repositories (github.com)',
   'choices': []
 };
 
@@ -27,48 +29,40 @@ const gitFlow = require('./../service/git-flow');
 
 step.prototype.preProcess  = function (done) {
 
-  let self = this;
-  let selectedDataSet = this.holder.get('dataset-choose-import', '');
-  gitFlow.getCommitList(selectedDataSet, function(error, list) {
-    if(!error) {
+  let choices = [];
+  let nextStrategy = {};
+  let repoList = this.holder.getResult('repository-list', []);
 
-      list.reverse();
-
-      let nextStrategy = {};
-      let choices = list.map(function(item){
-        nextStrategy[item.hash] = 'choose-flow';
-        return {
-          name: [item.hash, item.message].join(" "),
-          value: item.hash
-        };
-      });
-      self.setQuestionChoices(choices, nextStrategy);
-      done(null, true);
-    } else {
-      // error
-      done("Get Commit List Failed");
-    }
+  repoList.forEach(function(item){
+    choices.push({
+      name: item.github,
+      value: item.github
+    });
+    nextStrategy[item.github] = 'choose-flow';
   });
-};
 
+  this.setQuestionChoices(choices, nextStrategy);
+  done();
+};
 
 step.prototype.process = function (inputValue) {
 
   let done = this.async();
-  cliUi.state("processing Import Dataset, send request");
+  cliUi.state("processing selected repo for rollback");
 
   // back & exit
   if(!stepInstance.availableChoice(inputValue)) {
     cliUi.stop();
     return done(null, true);
-  }  
-  
+  }
+
+  // REQUEST
+
   let data = {
-    'github': stepInstance.holder.get('dataset-choose-import', false),
-    'commit': inputValue
+    'datasetName': gitFlow.getRepoName(inputValue)
   };
 
-  wsRequest.importDataset(data, function(error, wsResponse) {
+  wsRequest.rollback(data, function(error, wsResponse) {
 
     let errorMsg = error ? error.toString() : wsResponse.getError();
 
@@ -81,7 +75,7 @@ step.prototype.process = function (inputValue) {
     let operationMsg = wsResponse.getMessage();
     cliUi.logPrint([operationMsg]).stop();
 
-    return done(null, true);
+    done(null, true);
   });
 
 };

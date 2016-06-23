@@ -38,4 +38,12 @@ wsResponse.prototype.getData = function (defaultValue) {
   return this.response.data || defaultValue;
 };
 
+wsResponse.prototype.getMessage = function () {
+  if(!this.isSuccess()) {
+    return '';
+  }
+
+  return this.response.message || '';
+};
+
 module.exports = wsResponse;

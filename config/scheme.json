@@ -20,7 +20,8 @@
       "dataset-choose-import": "dataset-choose-import",
       "dataset-choose-update": "dataset-choose-update",
       "results-overview": "choose-flow",
-      "dataset-choose-check-state": "dataset-choose-check-state"
+      "dataset-choose-check-state": "dataset-choose-check-state",
+      "dataset-choose-rollback": "dataset-choose-rollback"
     }
   },
 
@@ -54,6 +55,12 @@
   },
 
   "dataset-choose-check-state": {
+    "type": "step::dynamic",
+    "back": "choose-flow",
+    "next": "choose-flow"
+  },
+
+  "dataset-choose-rollback": {
     "type": "step::dynamic",
     "back": "choose-flow",
     "next": "choose-flow"
