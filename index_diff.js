@@ -41,11 +41,11 @@ csvDiff.process({
     let errorMsg = error ? error.toString() : wsResponse.getError();
 
     if(errorMsg) {
-      cliUi.error(errorMsg).stop();
+      cliUi.stop().error(errorMsg);
       return;
     }
 
-    cliUi.success("* Request completed!").stop();
+    cliUi.stop().success("* Request completed!");
     return;
   });
 

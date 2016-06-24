@@ -1,8 +1,8 @@
 'use strict';
 
-let stepScheme = require('./config/scheme.json');
-let stepFlow = require('./service/step-runner');
-let holder = require('./model/value-holder');
+const stepScheme = require('./config/scheme.json');
+const stepFlow = require('./service/step-runner');
+const holder = require('./model/value-holder');
 
 // include static repos
 let repoListReserved = require('./config/repositories');

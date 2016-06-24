@@ -29,12 +29,17 @@ step.prototype.process = function (inputValue) {
 
   // START implement :: authentication check login
 
-  if(inputValue != 'test') { cliUi.stop(); return done(null, false); }
+  /*
+    if(inputValue != 'test') {
+      cliUi.stop();
+      return done(null, false);
+    }
+  */
 
   // END implement :: authentication check login
 
   cliUi.stop();
-  done(null, true);
+  return done(null, true);
 };
 
 // Export Module and keep Context available for process (inquirer ctx)

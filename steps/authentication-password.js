@@ -22,19 +22,38 @@ let question = {
 
 // Own Process Implementation
 
+const wsRequest = require('./../service/ws-request');
+
 step.prototype.process = function (inputValue) {
 
   let done = this.async();
   cliUi.state("processing user password");
 
-  // START implement :: authentication check login + password
+  let data = {
+    email: stepInstance.holder.get('authentication-login', ''),
+    password: inputValue
+  };
 
-  if(inputValue != 'test') { cliUi.stop(); return done(null, false); }
+  wsRequest.authenticate(data, function(error, wsResponse) {
 
-  // END implement :: authentication check login + password
+    let errorMsg = error ? error.toString() : wsResponse.getError();
 
-  cliUi.stop();
-  done(null, true);  
+    if(errorMsg) {
+      cliUi.logStart().error(errorMsg).logEnd().stop();
+      stepInstance.setNextDynamic('authentication-login');
+      // return done(errorMsg); :: inquirer bug, update after fix
+      return done(null, true);
+    }
+
+    let responseData = wsResponse.getData();
+
+    stepInstance.holder.setResult('auth', responseData);
+    stepInstance.setNextDynamic(false);
+
+    cliUi.stop();
+    done(null, true);
+  });
+
 };
 
 // Export Module and keep Context available for process (inquirer ctx)

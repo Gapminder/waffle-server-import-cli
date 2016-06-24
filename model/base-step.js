@@ -34,7 +34,11 @@ step.prototype.filter = function (inputValue) {
 
 step.prototype.setQuestionChoices = function (list, nextStrategy) {
   this.step.choices = list;
-  this.runner.setNextDynamic(this.getName(), nextStrategy);
+  this.runner.setNextStrategyDynamic(this.getName(), nextStrategy);
+};
+
+step.prototype.setNextDynamic = function (stepName) {
+  this.runner.setNextDynamic(this.getName(), stepName);
 };
 
 // Group of Flow manipulation Functions

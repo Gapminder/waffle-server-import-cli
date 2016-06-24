@@ -12,6 +12,7 @@ function StepFlow(schemeConfig, holder) {
   self.run = run;
   self.fillChoice = fillChoice;
   self.setNextDynamic = setNextDynamic;
+  self.setNextStrategyDynamic = setNextStrategyDynamic;
 
   // setup
   self.scheme = schemeConfig;
@@ -28,7 +29,7 @@ function StepFlow(schemeConfig, holder) {
     if(!!StepList[self.stepFirst]) {
       StepList[self.stepFirst].run(this.holder, this);
     }
-  };
+  }
 
   function process () {
     if(!!self.scheme) {
@@ -51,9 +52,11 @@ function StepFlow(schemeConfig, holder) {
     let step = self.scheme[stepKey];
 
     // Next Directly
-    if(step.type == SchemeConst.STEP_STATIC_SINGLE) {
+    if(step.type == SchemeConst.STEP_STATIC_SINGLE || !!step.nextDynamic) {
 
-      let nextStep = StepList[step.next];
+      let nextDynamic = !!step.nextDynamic ? step.nextDynamic : step.next;
+
+      let nextStep = StepList[nextDynamic];
       StepList[stepKey].setNext(nextStep);
 
     }
@@ -72,12 +75,12 @@ function StepFlow(schemeConfig, holder) {
       fillChoice(stepKey);
     }
     // Next Dynamically defined in pre-hook
-    else if (step.type == SchemeConst.STEP_DYNAMIC && !!step.nextDynamic) {
+    else if (step.type == SchemeConst.STEP_DYNAMIC && !!step.nextStrategyDynamic) {
 
       let nextStepStrategy = {};
 
-      for(let nextKey in step.nextDynamic) {
-        let nextStepKey = step.nextDynamic[nextKey];
+      for(let nextKey in step.nextStrategyDynamic) {
+        let nextStepKey = step.nextStrategyDynamic[nextKey];
         let nextStep = StepList[nextStepKey];
         nextStepStrategy[nextKey] = nextStep;
       }
@@ -87,10 +90,15 @@ function StepFlow(schemeConfig, holder) {
     }
   }
 
+  function setNextStrategyDynamic (stepKey, nextStrategyDynamic) {
+    self.scheme[stepKey]['nextStrategyDynamic'] = nextStrategyDynamic;
+    processRelation(stepKey);
+  }
+
   function setNextDynamic (stepKey, nextDynamic) {
     self.scheme[stepKey]['nextDynamic'] = nextDynamic;
     processRelation(stepKey);
-  }
+  }  
 
   function fillChoice (stepKey) {
 

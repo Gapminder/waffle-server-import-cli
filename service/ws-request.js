@@ -3,10 +3,12 @@
 const request = require('superagent');
 const JSONStream = require('JSONStream');
 const wsResponse = require('./../model/ws-response');
+const holder = require('./../model/value-holder');
 
 const WS_HOST = 'http://localhost:3000';
 //const WS_HOST = 'http://192.168.1.98:3000';
 
+const ROUTE_WS_AUTH = WS_HOST + '/api/ddf/cli/authenticate';
 const ROUTE_WS_LATEST_COMMIT = WS_HOST + '/api/ddf/cli/commit-of-latest-dataset-version';
 const ROUTE_WS_PRESTORED_QUERY = WS_HOST + '/api/ddf/cli/prestored-queries';
 const ROUTE_WS_DATASET_STATE = WS_HOST + '/api/ddf/cli/transactions/latest/status';
@@ -17,8 +19,30 @@ const ROUTE_WS_UPDATE = WS_HOST + '/api/ddf/cli/update-incremental';
 //const REQUEST_TIMEOUT = 2 * 60 * 60 * 1000;
 // Linux kernel TCP :: max 120 seconds
 const REQUEST_TIMEOUT = 110 * 1000;
+const REQUEST_TOKEN_PARAM = 'waffle-server-token';
 
 function wsRequest() {};
+
+/*
+
+  Request to WS :: Authenticate
+
+  GET: /api/ddf/cli/authenticate
+
+  PARAM: email
+  PARAM: password
+
+  RESPONSE, data:
+
+    {
+      token: "aaabbbcccddd"
+    }
+
+*/
+
+wsRequest.prototype.authenticate = function (data, callback) {
+  this.sendRequest('post', ROUTE_WS_AUTH, data, callback);
+};
 
 /*
 
@@ -148,6 +172,17 @@ wsRequest.prototype.updateDataset = function (data, callback) {
 
 /* Internal */
 
+wsRequest.prototype.addToken = function () {
+
+  let tokenData = holder.getResult('auth', false);
+
+  if(!tokenData) {
+    return '';
+  }
+
+  return '?' + REQUEST_TOKEN_PARAM + '=' + tokenData.token;
+};
+
 /*
 
   sendRequest, method POST
@@ -165,6 +200,7 @@ wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
 
   // validate value between get|post
   rType = rType != 'get' ? 'post' : rType;
+  ROUTE_WS += this.addToken();
 
   if(rType == 'get') {
     requestInstance = request.get(ROUTE_WS).query(data);
@@ -191,18 +227,19 @@ wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
 
 wsRequest.prototype.sendStream = function (ROUTE_WS, data, callback) {
 
-  var objectStream = JSONStream.stringify();
+  let objectStream = JSONStream.stringify();
 
-  let requestInst = request
+  ROUTE_WS += this.addToken();
+
+  let requestInstance = request
     .post(ROUTE_WS)
     .timeout(REQUEST_TIMEOUT);
 
-  requestInst.on('response',   function (response){
+  requestInstance.on('response',   function (response){
     callback(false, new wsResponse(response));
   });
 
-  objectStream.pipe(requestInst);
-  //console.log("\n");
+  objectStream.pipe(requestInstance);
 
   for(let fileName in data.diff.changes) {
 
