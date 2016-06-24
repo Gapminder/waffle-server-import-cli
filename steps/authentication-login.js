@@ -16,7 +16,7 @@ util.inherits(step, stepBase);
 let question = {
   'name': 'authentication-login',
   'type': 'input',
-  'default': 'test',
+  'default': 'email@email.com',
   'message': 'Authentication, Login'
 };
 

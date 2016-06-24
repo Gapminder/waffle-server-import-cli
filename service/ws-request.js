@@ -180,7 +180,7 @@ wsRequest.prototype.addToken = function () {
     return '';
   }
 
-  return '?' + REQUEST_TOKEN_PARAM + '=' + tokenData.token;
+  return '?' + REQUEST_TOKEN_PARAM + '=' + encodeURIComponent(tokenData.token);
 };
 
 /*

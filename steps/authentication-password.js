@@ -16,7 +16,7 @@ util.inherits(step, stepBase);
 let question = {
   'name': 'authentication-password',
   'type': 'password',
-  'default': 'test',
+  'default': 'VPup',
   'message': 'Authentication, Password'
 };
 
