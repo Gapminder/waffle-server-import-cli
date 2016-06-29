@@ -117,20 +117,49 @@ step.prototype.process = function (inputValue) {
 
     cliUi.state("processing Update Dataset, send request");
 
-    wsRequest.updateDataset(data, function(error, wsResponse) {
+    gitFlow.validateDataset(data, function(error) {
 
-      let errorMsg = error ? error.toString() : wsResponse.getError();
+      if(error) {
 
-      if(errorMsg) {
-        cliUi.logStart().error(errorMsg).logEnd().stop();
+        error.forEach(function(index, item, array){
+          let fileName = item.path;
+
+          let message = [];
+          message.push("TYPE: ");
+          message.push(item.type);
+          message.push("; ");
+          message.push("FILE: ");
+          message.push(fileName);
+          message.push("; ");
+          message.push("DATA: ");
+          message.push();
+          message.push();
+
+          array[index] = message.join("");
+        });
+
+        cliUi.logStart().error("ValidationError").logEnd();
+        cliUi.stop().logPrint(error);
         // return done(errorMsg); :: inquirer bug, update after fix
         return done(null, true);
       }
 
-      let operationMsg = wsResponse.getMessage();
-      cliUi.stop().logPrint([operationMsg]);
+      wsRequest.updateDataset(data, function(error, wsResponse) {
 
-      return done(null, true);
+        let errorMsg = error ? error.toString() : wsResponse.getError();
+
+        if(errorMsg) {
+          cliUi.logStart().error(errorMsg).logEnd().stop();
+          // return done(errorMsg); :: inquirer bug, update after fix
+          return done(null, true);
+        }
+
+        let operationMsg = wsResponse.getMessage();
+        cliUi.stop().logPrint([operationMsg]);
+
+        return done(null, true);
+      });
+
     });
 
   });

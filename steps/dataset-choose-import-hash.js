@@ -61,27 +61,37 @@ step.prototype.process = function (inputValue) {
   if(!stepInstance.availableChoice(inputValue)) {
     cliUi.stop();
     return done(null, true);
-  }  
-  
+  }
+
   let data = {
     'github': stepInstance.holder.get('dataset-choose-import', false),
     'commit': inputValue
   };
 
-  wsRequest.importDataset(data, function(error, wsResponse) {
+  gitFlow.validateDataset(data, function(error) {
 
-    let errorMsg = error ? error.toString() : wsResponse.getError();
-
-    if(errorMsg) {
-      cliUi.logStart().error(errorMsg).logEnd().stop();
+    if(error) {
+      cliUi.stop().logPrint(error);
       // return done(errorMsg); :: inquirer bug, update after fix
       return done(null, true);
     }
 
-    let operationMsg = wsResponse.getMessage();
-    cliUi.stop().logPrint([operationMsg]);
+    wsRequest.importDataset(data, function(error, wsResponse) {
 
-    return done(null, true);
+      let errorMsg = error ? error.toString() : wsResponse.getError();
+
+      if(errorMsg) {
+        cliUi.logStart().error(errorMsg).logEnd().stop();
+        // return done(errorMsg); :: inquirer bug, update after fix
+        return done(null, true);
+      }
+
+      let operationMsg = wsResponse.getMessage();
+      cliUi.stop().logPrint([operationMsg]);
+
+      return done(null, true);
+    });
+
   });
 
 };

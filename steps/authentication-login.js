@@ -16,7 +16,7 @@ util.inherits(step, stepBase);
 let question = {
   'name': 'authentication-login',
   'type': 'input',
-  'default': 'email@email.com',
+  'default': 'dev@gapminder.org',
   'message': 'Authentication, Login'
 };
 

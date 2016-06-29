@@ -5,6 +5,9 @@ const path = require('path');
 const async = require("async");
 const cliUi = require('./../service/cli-ui');
 
+const ddfValidation = require('ddf-validation');
+const StreamValidator = ddfValidation.StreamValidator;
+
 let sourceFolder = fs.realpathSync('./');
 let sourceFolderPath = sourceFolder + '/repos/';
 
@@ -128,7 +131,7 @@ gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
   let gitRepo = data.github;
 
   let self = this;
-  let gitFolder = this.configDir(gitRepo);
+  this.configDir(gitRepo);
 
   let gitHashFrom = data.hashFrom + ':' + fileName;
   let gitHashTo = data.hashTo + ':' + fileName;
@@ -157,6 +160,40 @@ gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
       callback(error, result);
     }
   );
+};
+
+gitFlow.prototype.validateDataset = function (data, callback) {
+
+  let self = this;
+
+  let gitRepo = data.github;
+  let gitCommit = data.commit;
+
+  let gitFolder = this.configDir(gitRepo);
+
+  simpleGit.silent(GIT_SILENT).checkout(gitCommit, function(error, result) {
+
+    if(error) {
+      return callback(error);
+    }
+
+    let streamValidator = new StreamValidator(gitFolder, {includeTags: 'WAFFLE_SERVER', excludeRules: 'FILENAME_DOES_NOT_MATCH_HEADER'});
+    let issues = [];
+
+    streamValidator.on('issue', function(issue) {
+      issues.push(issue);
+    });
+
+    streamValidator.on('finish', function(err) {
+      if(issues.length) {
+        return callback(issues);
+      }
+      return callback(null);
+    });
+
+    ddfValidation.validate(streamValidator);
+  });
+
 };
 
 // Export Module

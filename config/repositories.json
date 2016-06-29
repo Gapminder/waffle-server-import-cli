@@ -1,18 +1,10 @@
 [
   {
-    "github": "git@github.com:VS-work/ddf--gapminder_world-stub-1.git",
-    "folder": "ddf--gapminder_world-stub-1"
+    "github": "git@github.com:VS-work/ddf-gapminder-world-stub-1-validated.git",
+    "folder": "ddf-gapminder-world-stub-1-validated"
   },
   {
-    "github": "git@github.com:VS-work/ddf--gapminder_world-stub-2.git",
-    "folder": "ddf--gapminder_world-stub-2"
-  },
-  {
-    "github": "git@github.com:VS-work/ddf--gapminder_world-stub-3.git",
-    "folder": "ddf--gapminder_world-stub-3"
-  },
-  {
-    "github": "git@github.com:VS-work/ddf--gapminder_world-stub-4.git",
-    "folder": "ddf--gapminder_world-stub-4"
+    "github": "git@github.com:VS-work/ddf-gapminder-world-stub-4-validated.git",
+    "folder": "ddf-gapminder-world-stub-4-validated"
   }
 ]
