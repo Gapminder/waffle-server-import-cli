@@ -75,10 +75,15 @@ step.prototype.process = function (inputValue) {
 
     let responseData = wsResponse.getData([]);
 
-    let message = responseData.datasetName + ": #" + responseData.transaction.commit + " - ";
-    message += responseData.transaction.status + ", (" + formatter.date(responseData.transaction.createdAt) + ")";
-    cliUi.stop().logPrint([message]);
+    let message = [];
+    message.push(`> ${responseData.datasetName} : #${responseData.transaction.commit} - ${responseData.transaction.status},`);
+    message.push(`(${formatter.date(responseData.transaction.createdAt)})\n`);
 
+    message.push(`  - Concepts: ${responseData.modifiedObjects.concepts}\n`);
+    message.push(`  - Entities: ${responseData.modifiedObjects.entities}\n`);
+    message.push(`  - Datapoints: ${responseData.modifiedObjects.datapoints}`);
+
+    cliUi.stop().logPrint([message.join("")]);
     done(null, true);
   });
 

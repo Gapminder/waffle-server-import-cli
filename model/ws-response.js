@@ -43,7 +43,7 @@ wsResponse.prototype.getMessage = function () {
     return '';
   }
 
-  return this.response.message || '';
+  return this.response.message ? '* ' + this.response.message : '';
 };
 
 module.exports = wsResponse;
