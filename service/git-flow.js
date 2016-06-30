@@ -14,6 +14,8 @@ let sourceFolderPath = sourceFolder + '/repos/';
 const simpleGit = require('simple-git')();
 const GIT_SILENT = true;
 
+simpleGit.silent(GIT_SILENT);
+
 function gitFlow() {
   if(!fs.existsSync(sourceFolderPath)) {
     fs.mkdirSync(sourceFolderPath);
@@ -48,34 +50,48 @@ gitFlow.prototype.getRepoFolder = function (github) {
   return targetFolder;
 };
 
+gitFlow.prototype.registerRepo = function (github, callback) {
+
+  let self = this;
+  let gitFolder = this.configDir(github);
+
+  cliUi.state("git, clone repo");
+  simpleGit.clone(github, gitFolder, function(error, result){
+
+    cliUi.state("git, download updates");
+    simpleGit.fetch('origin', 'master', function(error, result){
+
+      simpleGit.reset(['--hard', 'origin/master'], function(error, result){
+        callback();
+      });
+    });
+  });
+
+};
+
 gitFlow.prototype.getCommitList = function (github, callback) {
 
   let self = this;
   let gitFolder = this.configDir(github);
 
-  cliUi.state("git, get commit list, clone repo");
-  simpleGit.silent(GIT_SILENT).clone(github, gitFolder, function(error, result){
+  this.registerRepo(github, function(){
 
-    cliUi.state("git, get commit list, download updates");
-    simpleGit.silent(GIT_SILENT).pull('origin', 'master', function(error, result){
+    cliUi.state("git, process log");
+    simpleGit.log(function(error, result){
 
-      cliUi.state("git, get commit list, process log");
-      simpleGit.silent(GIT_SILENT).log(function(error, result){
-
-        let commits = result.all;
-        let commitsList = commits.map(function(item){
-          return {
-            hash: self.getShortHash(item.hash),
-            message: item.message
-          };
-        });
-
-        cliUi.stop();
-        callback(false, commitsList);
+      let commits = result.all;
+      let commitsList = commits.map(function(item){
+        return {
+          hash: self.getShortHash(item.hash),
+          message: item.message
+        };
       });
-    });
-  });
 
+      cliUi.stop();
+      callback(false, commitsList);
+    });
+
+  });
 };
 
 gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callback) {
@@ -87,43 +103,38 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
   let self = this;
   let gitFolder = this.configDir(github);
 
-  cliUi.state("git, get files diff, clone repo");
-  simpleGit.silent(GIT_SILENT).clone(github, gitFolder, function(error, result){
+  this.registerRepo(github, function(){
 
-    cliUi.state("git, get files diff, download updates");
-    simpleGit.silent(GIT_SILENT).pull('origin', 'master', function(error, result) {
+    cliUi.state("git, get diff, file-names only");
+    simpleGit.diff([hashFrom + '..' + hashTo, "--name-only"], function(error, result) {
 
-      cliUi.state("git, get files diff, file-names only");
-      simpleGit.diff([hashFrom + '..' + hashTo, "--name-only"], function(error, result) {
+      let resultGitDiff = result;
+      let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
+        return !!value && value.indexOf(".csv") != -1;
+      });
 
-        let resultGitDiff = result;
-        let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
+      // fix path with folders
+      gitDiffFileList.forEach(function(item, index, arr){
+        arr[index] = path.parse(item).base;
+      });
+
+      cliUi.state("git, get diff, file-names with states");
+      simpleGit.diff([hashFrom + '..' + hashTo, "--name-status"], function(error, result) {
+
+        result.split("\n").filter(function(value) {
           return !!value && value.indexOf(".csv") != -1;
+        }).map(function(rawFile) {
+          let fileStat = rawFile.split("\t");
+          gitDiffFileStatus[fileStat[1]] = fileStat[0];
         });
 
-        // fix path with folders
-        gitDiffFileList.forEach(function(item, index, arr){
-          arr[index] = path.parse(item).base;
-        });
+        cliUi.stop();
+        callback(null, gitDiffFileList);
 
-        cliUi.state("git, get files diff, file-names with states");
-        simpleGit.silent(GIT_SILENT).diff([hashFrom + '..' + hashTo, "--name-status"], function(error, result) {
-
-          result.split("\n").filter(function(value) {
-            return !!value && value.indexOf(".csv") != -1;
-          }).map(function(rawFile) {
-            let fileStat = rawFile.split("\t");
-            gitDiffFileStatus[fileStat[1]] = fileStat[0];
-          });
-
-          cliUi.stop();
-          callback(null, gitDiffFileList);
-
-        });
       });
     });
-  });
 
+  });
 };
 
 gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
@@ -140,7 +151,7 @@ gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
     [
       function(done) {
 
-        simpleGit.silent(GIT_SILENT).show([gitHashFrom], function(error, result){
+        simpleGit.show([gitHashFrom], function(error, result){
           result = !!error ? '' : result;
           return done(null, result);
         });
@@ -148,7 +159,7 @@ gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
       },
       function(dataFrom, done) {
 
-        simpleGit.silent(GIT_SILENT).show([gitHashTo], function(error, result){
+        simpleGit.show([gitHashTo], function(error, result){
           result = !!error ? '' : result;
           return done(null, {from: dataFrom, to: result});
         });
@@ -171,7 +182,7 @@ gitFlow.prototype.validateDataset = function (data, callback) {
 
   let gitFolder = this.configDir(gitRepo);
 
-  simpleGit.silent(GIT_SILENT).checkout(gitCommit, function(error, result) {
+  simpleGit.checkout(gitCommit, function(error, result) {
 
     if(error) {
       return callback(error);
