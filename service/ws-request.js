@@ -5,8 +5,7 @@ const JSONStream = require('JSONStream');
 const wsResponse = require('./../model/ws-response');
 const holder = require('./../model/value-holder');
 
-const WS_HOST = 'http://localhost:3000';
-//const WS_HOST = 'http://192.168.1.98:3000';
+const WS_HOST = holder.getResult('config-ws-url');
 
 const ROUTE_WS_AUTH = WS_HOST + '/api/ddf/cli/authenticate';
 const ROUTE_WS_LATEST_COMMIT = WS_HOST + '/api/ddf/cli/commit-of-latest-dataset-version';
