@@ -29,7 +29,7 @@ csvDiff.prototype.process = function (data, callback) {
   gitFlow.getFileDiffByHashes(data, gitDiffFileStatus, function(error, gitDiffFileList) {
 
     if(!!error) {
-      cliUi.error(error);
+      cliUi.stop().error(error);
       return callback(error);
     }
 
@@ -60,7 +60,7 @@ csvDiff.prototype.process = function (data, callback) {
         let resultFileName = sourceFolderPath + "diff-operation-result.json";
         fs.writeFileSync(resultFileName, JSON.stringify(result));
 
-        cliUi.success("* Diff generation completed!");
+        cliUi.stop().success("* Diff generation completed!");
         return callback(false, result);
       }
     );

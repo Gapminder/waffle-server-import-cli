@@ -42,7 +42,9 @@ step.prototype.preProcess  = function (done) {
 
 step.prototype.process = function (inputValue) {
   let done = this.async();
-  cliUi.state("processing selected repo for import").stop();
+  cliUi.state("processing selected repo for import");
+
+  cliUi.stop();
   done(null, true);
 };
 

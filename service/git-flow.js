@@ -87,7 +87,6 @@ gitFlow.prototype.getCommitList = function (github, callback) {
         };
       });
 
-      cliUi.stop();
       callback(false, commitsList);
     });
 
@@ -128,7 +127,6 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
           gitDiffFileStatus[fileStat[1]] = fileStat[0];
         });
 
-        cliUi.stop();
         callback(null, gitDiffFileList);
 
       });

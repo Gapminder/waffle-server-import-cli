@@ -77,7 +77,7 @@ step.prototype.process = function (inputValue) {
       let errorMsg = error ? error.toString() : wsResponse.getError();
 
       if(errorMsg) {
-        cliUi.logStart().error(errorMsg).logEnd().stop();
+        cliUi.stop().logStart().error(errorMsg).logEnd();
         // return done(errorMsg); :: inquirer bug, update after fix
         return done(null, true);
       }

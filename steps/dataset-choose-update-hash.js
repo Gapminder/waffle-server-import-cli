@@ -42,7 +42,7 @@ step.prototype.preProcess  = function (done) {
 
     if(errorMsg) {
       self.setQuestionChoices([], []);
-      cliUi.logStart().error(errorMsg).logEnd().stop();
+      cliUi.stop().logStart().error(errorMsg).logEnd();
       // return done(errorMsg); :: inquirer bug, update after fix
       return done(null, true);
     }
@@ -143,8 +143,7 @@ step.prototype.process = function (inputValue) {
           array[index] = message.join("");
         });
 
-        cliUi.logStart().error("ValidationError").logEnd();
-        cliUi.stop().logPrint(error);
+        cliUi.stop().logStart().error("ValidationError").logEnd().logPrint(error);
         // return done(errorMsg); :: inquirer bug, update after fix
         return done(null, true);
       }
@@ -154,7 +153,7 @@ step.prototype.process = function (inputValue) {
         let errorMsg = error ? error.toString() : wsResponse.getError();
 
         if(errorMsg) {
-          cliUi.logStart().error(errorMsg).logEnd().stop();
+          cliUi.stop().logStart().error(errorMsg).logEnd();
           // return done(errorMsg); :: inquirer bug, update after fix
           return done(null, true);
         }
