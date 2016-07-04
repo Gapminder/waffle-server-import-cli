@@ -25,6 +25,7 @@ let question = {
 const wsRequest = require('./../service/ws-request');
 const gitFlow = require('./../service/git-flow');
 const csvDiff = require('./../service/csv-diff');
+const longPolling = require('./../service/long-polling');
 
 step.prototype.preProcess  = function (done) {
 
@@ -40,6 +41,7 @@ step.prototype.preProcess  = function (done) {
     let errorMsg = error ? error.toString() : wsResponse.getError();
 
     if(errorMsg) {
+      self.setQuestionChoices([], []);
       cliUi.logStart().error(errorMsg).logEnd().stop();
       // return done(errorMsg); :: inquirer bug, update after fix
       return done(null, true);
@@ -55,6 +57,7 @@ step.prototype.preProcess  = function (done) {
     let commitFrom = gitFlow.getShortHash(responseData.commit);
 
     gitFlow.getCommitList(selectedDataSet, function(error, list) {
+
       if(!error) {
 
         list.reverse();
@@ -80,8 +83,10 @@ step.prototype.preProcess  = function (done) {
         });
         self.setQuestionChoices(choices, nextStrategy);
         done();
+
       } else {
         // error
+        self.setQuestionChoices(choices, nextStrategy);
         done("Get Commit List Failed");
       }
     });
@@ -155,9 +160,22 @@ step.prototype.process = function (inputValue) {
         }
 
         let operationMsg = wsResponse.getMessage();
-        cliUi.stop().logPrint([operationMsg]);
 
-        return done(null, true);
+        let dataState = {
+          'datasetName': gitFlow.getRepoName(datasetData.github)
+        };
+
+        longPolling.checkDataSet(dataState, function(state){
+
+          // state.success
+          if(!state.success) {
+            cliUi.stop().logStart().error(state.message).logEnd();
+          } else {
+            cliUi.stop().logPrint([state.message]);
+          }
+          return done(null, true);
+        });
+
       });
 
     });
