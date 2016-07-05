@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const wsRequest = require('./ws-request');
+const wsRequest = require('./request-ws');
 const cliUi = require('./../service/cli-ui');
 
 let longPolling = function () {

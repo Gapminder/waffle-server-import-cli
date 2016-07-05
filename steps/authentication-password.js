@@ -22,7 +22,7 @@ let question = {
 
 // Own Process Implementation
 
-const wsRequest = require('./../service/ws-request');
+const wsRequest = require('./../service/request-ws');
 
 step.prototype.process = function (inputValue) {
 

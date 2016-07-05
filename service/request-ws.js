@@ -14,6 +14,8 @@ const ROUTE_WS_DATASET_STATE = WS_HOST + '/api/ddf/cli/transactions/latest/statu
 const ROUTE_WS_ROLLBACK = WS_HOST + '/api/ddf/cli/transactions/latest/rollback';
 const ROUTE_WS_IMPORT = WS_HOST + '/api/ddf/cli/import-dataset';
 const ROUTE_WS_UPDATE = WS_HOST + '/api/ddf/cli/update-incremental';
+const ROUTE_WS_DATASET_LIST = WS_HOST + '/api/ddf/cli/datasets';
+const ROUTE_WS_DATASET_DEFAULT = WS_HOST + '/api/ddf/cli/datasets/default';
 
 //const REQUEST_TIMEOUT = 2 * 60 * 60 * 1000;
 // Linux kernel TCP :: max 120 seconds
@@ -28,8 +30,8 @@ function wsRequest() {};
 
   GET: /api/ddf/cli/authenticate
 
-  PARAM: email
-  PARAM: password
+  @param email, String
+  @param password, String
 
   RESPONSE, data:
 
@@ -45,21 +47,57 @@ wsRequest.prototype.authenticate = function (data, callback) {
 
 /*
 
+  Request to WS :: Get List of Datasets
+
+  GET: /api/ddf/cli/datasets
+
+  RESPONSE, data: Array(Objects)
+
+    [
+      {name: 'validated1'},
+      {name: 'validated2'}
+    ]
+
+*/
+
+wsRequest.prototype.getDataSetList = function (data, callback) {
+  this.sendRequest('get', ROUTE_WS_DATASET_LIST, data, callback);
+};
+
+/*
+
+  Request to WS :: Set Default Dataset
+
+  POST: /api/ddf/cli/datasets/default
+
+  @param datasetName, String
+  @param commit, String
+
+  RESPONSE, data: not provided
+
+*/
+
+wsRequest.prototype.setDefaultDataSet = function (data, callback) {
+  this.sendRequest('post', ROUTE_WS_DATASET_DEFAULT, data, callback);
+};
+
+/*
+
   Request to WS :: Get Prestored Queries
 
   GET: /api/ddf/cli/prestored-query
 
   RESPONSE, data: Array(Objects)
 
-    [
-      {
-        "url": "http://localhost:3000/api/ddf/stats...lation,energy_use_total",
-        "datasetName": "ddf--gapminder_world-stub-1",
-        "version": 1466591220748,
-        "createdAt": "2016-06-22T10:27:00.748Z"
-      },
-      ...
-    ]
+  [
+    {
+      "url": "http://localhost:3000/api/ddf/stats...lation,energy_use_total",
+      "datasetName": "ddf--gapminder_world-stub-1",
+      "version": 1466591220748,
+      "createdAt": "2016-06-22T10:27:00.748Z"
+    },
+    ...
+  ]
 
 */
 
@@ -73,7 +111,7 @@ wsRequest.prototype.getPrestoredQueries = function (data, callback) {
 
   GET: /api/ddf/cli/dataset/status
 
-  PARAM: datasetName
+  @param datasetName, String
 
   RESPONSE, data: Object
 
@@ -103,7 +141,7 @@ wsRequest.prototype.getDatasetState = function (data, callback) {
 
   GET: /api/ddf/cli/transactions/latest/rollback
 
-  PARAM: datasetName
+  @param datasetName, String
 
   RESPONSE, data: not provided
 
@@ -119,8 +157,8 @@ wsRequest.prototype.rollback = function (data, callback) {
 
   GET: /api/ddf/cli/import-dataset
 
-  PARAM: github,    [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
-  PARAM: commit,    [aafed7d4dcda8d736f317e0cd3eaff009275cbb6]
+  @param github, String   [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
+  @param commit, String   [aafed7d4dcda8d736f317e0cd3eaff009275cbb6]
 
   RESPONSE, data: not provided
 
@@ -136,7 +174,7 @@ wsRequest.prototype.importDataset = function (data, callback) {
 
   GET: /api/ddf/cli/commit-of-latest-dataset-version
 
-  PARAM: github,    [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
+  @param github, String   [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
 
   RESPONSE, data: Object
 
@@ -157,8 +195,8 @@ wsRequest.prototype.getLatestCommit = function (data, callback) {
 
   GET: /api/ddf/cli/update-incremental
 
-  PARAM: path,        [/full/path/to/output_file.json]
-  PARAM: githubUrl,   [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
+  @param path, String         [/full/path/to/output_file.json]
+  @param githubUrl, String    [git@github.com:valor-software/ddf--gapminder_world-stub-1.git]
 
   RESPONSE, data: not provided
 
@@ -169,7 +207,11 @@ wsRequest.prototype.updateDataset = function (data, callback) {
   //this.sendRequest('post', ROUTE_WS_UPDATE, data, callback);
 };
 
+
+
 /* Internal */
+
+
 
 wsRequest.prototype.addToken = function () {
 

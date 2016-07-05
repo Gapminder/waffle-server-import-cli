@@ -21,7 +21,8 @@
       "dataset-choose-update": "dataset-choose-update",
       "results-overview": "choose-flow",
       "dataset-choose-check-state": "dataset-choose-check-state",
-      "dataset-choose-rollback": "dataset-choose-rollback"
+      "dataset-choose-rollback": "dataset-choose-rollback",
+      "dataset-choose-default": "dataset-choose-default"
     }
   },
 
@@ -64,6 +65,17 @@
     "type": "step::dynamic",
     "back": "choose-flow",
     "next": "choose-flow"
-  }
+  },
 
+  "dataset-choose-default": {
+    "type": "step::dynamic",
+    "back": "choose-flow",
+    "next": "dataset-choose-default-version"
+  },
+
+  "dataset-choose-default-version": {
+    "type": "step::dynamic",
+    "back": "dataset-choose-default",
+    "next": "choose-flow"
+  }
 }

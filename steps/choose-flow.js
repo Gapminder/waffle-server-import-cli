@@ -13,6 +13,8 @@ util.inherits(step, stepBase);
 
 // Question Definition
 
+let separator = new inquirer.Separator();
+
 let question = {
   'name': 'choose-flow',
   'type': 'list',
@@ -23,6 +25,7 @@ let question = {
       name: 'Register Repository',
       value: 'register-repository'
     },
+    //separator,
     {
       name: 'Import DataSet',
       value: 'dataset-choose-import'
@@ -32,6 +35,11 @@ let question = {
       value: 'dataset-choose-update'
     },
     {
+      name: 'RollBack Transaction',
+      value: 'dataset-choose-rollback'
+    },
+    //separator,
+    {
       name: 'Results Overview',
       value: 'results-overview'
     },
@@ -40,15 +48,15 @@ let question = {
       value: 'dataset-choose-check-state'
     },
     {
-      name: 'RollBack Transaction',
-      value: 'dataset-choose-rollback'
+      name: 'Default DataSet',
+      value: 'dataset-choose-default'
     }
   ]
 };
 
 // Own Process Implementation
 
-const wsRequest = require('./../service/ws-request');
+const wsRequest = require('./../service/request-ws');
 const formatter = require('./../service/formatter');
 
 step.prototype.process = function (inputValue) {

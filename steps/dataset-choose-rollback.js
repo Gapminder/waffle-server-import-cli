@@ -24,7 +24,7 @@ let question = {
 
 // Own Process Implementation
 
-const wsRequest = require('./../service/ws-request');
+const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
 
 step.prototype.preProcess  = function (done) {

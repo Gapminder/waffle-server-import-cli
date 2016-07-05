@@ -22,10 +22,10 @@ let question = {
 
 // Own Process Implementation
 
-const wsRequest = require('./../service/ws-request');
+const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
 const csvDiff = require('./../service/csv-diff');
-const longPolling = require('./../service/long-polling');
+const longPolling = require('./../service/request-polling');
 
 step.prototype.preProcess  = function (done) {
 
@@ -82,12 +82,14 @@ step.prototype.preProcess  = function (done) {
           return choiceData;
         });
         self.setQuestionChoices(choices, nextStrategy);
-        done();
+        cliUi.stop();
+        return done();
 
       } else {
         // error
         self.setQuestionChoices(choices, nextStrategy);
-        done("Get Commit List Failed");
+        cliUi.stop();
+        return done("Get Commit List Failed");
       }
     });
   });

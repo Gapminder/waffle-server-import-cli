@@ -17,7 +17,7 @@
  */
 
 const cliUi = require('./service/cli-ui');
-const wsRequest = require('./service/ws-request');
+const wsRequest = require('./service/request-ws');
 const csvDiff = require('./service/csv-diff');
 
 const gitHashFrom = process.env.FROM || '';
