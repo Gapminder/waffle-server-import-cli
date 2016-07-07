@@ -1,9 +1,9 @@
 'use strict';
 
-const stepBase = require('./../model/base-step');
 const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
+const stepBase = require('./../model/base-step');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -27,18 +27,21 @@ let question = {
 const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
 
+const NEXT_STEP_PATH = 'choose-flow';
+const HOLDER_KEY_REPO_LIST = 'repository-list';
+
 step.prototype.preProcess  = function (done) {
 
   let choices = [];
   let nextStrategy = {};
-  let repoList = this.holder.getResult('repository-list', []);
+  let repoList = this.holder.load(HOLDER_KEY_REPO_LIST, []);
 
   repoList.forEach(function(item){
     choices.push({
       name: item.github,
       value: item.github
     });
-    nextStrategy[item.github] = 'choose-flow';
+    nextStrategy[item.github] = NEXT_STEP_PATH;
   });
 
   this.setQuestionChoices(choices, nextStrategy);

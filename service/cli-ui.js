@@ -19,6 +19,7 @@ function uiProgress () {
   this.textBase = '* State: ';
   this.textIncrement = '.';
   this.intervalTimeout = 500;
+  this.timeStart = false;
 
   this.reset();
 };
@@ -30,28 +31,33 @@ uiProgress.prototype.reset = function () {
   return this;
 };
 
-uiProgress.prototype.state = function (state) {
+uiProgress.prototype.resetTime = function (keepTiming) {
+  if(!keepTiming || !this.timeStart) {
+    this.timeStart = new Date().getTime();
+  }
+};
 
-  let that = this;
+uiProgress.prototype.state = function (state, keepTiming) {
 
-  that.reset();
-  that.textState = state || '';
+  let self = this;
 
-  let timeStart = new Date().getTime();
+  self.reset();
+  self.resetTime(keepTiming);
+  self.textState = state || '';
 
-  that.intervalId = setInterval(function(){
+  self.intervalId = setInterval(function(){
 
     let timeNow = new Date().getTime();
-    let timeDiff = parseInt((timeNow - timeStart)/1000, 10);
+    let timeDiff = parseInt((timeNow - self.timeStart)/1000, 10);
     let timeWait = " (" + timeDiff + "s) ";
 
-    that.textLine += that.textIncrement;
-    if(that.textLine.length > 20) {
-      that.textLine = that.textIncrement;
+    self.textLine += self.textIncrement;
+    if(self.textLine.length > 20) {
+      self.textLine = self.textIncrement;
     }
-    inquirerUi.updateBottomBar(that.textBase + that.textState + timeWait + that.textLine);
+    inquirerUi.updateBottomBar(self.textBase + self.textState + timeWait + self.textLine);
 
-  }, that.intervalTimeout);
+  }, self.intervalTimeout);
 
   return this;
 };

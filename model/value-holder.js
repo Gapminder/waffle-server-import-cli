@@ -20,10 +20,10 @@ holder.prototype.getAll = function () {
 
 // Transfer Data between Steps
 
-holder.prototype.setResult = function(key, value) {
+holder.prototype.save = function(key, value) {
   this.dataTransfer[key] = value;
 };
-holder.prototype.getResult = function (key, defaultValue) {
+holder.prototype.load = function (key, defaultValue) {
   defaultValue = defaultValue || false;
   return this.dataTransfer[key] || defaultValue;
 };

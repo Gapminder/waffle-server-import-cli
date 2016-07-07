@@ -1,9 +1,9 @@
 'use strict';
 
-const stepBase = require('./../model/base-step');
 const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
+const stepBase = require('./../model/base-step');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -24,13 +24,16 @@ let question = {
 
 const wsRequest = require('./../service/request-ws');
 
+const HOLDER_KEY_AUTH_LOGIN = 'authentication-login';
+const HOLDER_KEY_TOKEN = 'auth-token';
+
 step.prototype.process = function (inputValue) {
 
   let done = this.async();
   cliUi.state("processing user password");
 
   let data = {
-    email: stepInstance.holder.get('authentication-login', ''),
+    email: stepInstance.holder.get(HOLDER_KEY_AUTH_LOGIN, ''),
     password: inputValue
   };
 
@@ -40,14 +43,14 @@ step.prototype.process = function (inputValue) {
 
     if(errorMsg) {
       cliUi.stop().logStart().error(errorMsg).logEnd();
-      stepInstance.setNextDynamic('authentication-login');
+      stepInstance.setNextDynamic(HOLDER_KEY_AUTH_LOGIN);
       // return done(errorMsg); :: inquirer bug, update after fix
       return done(null, true);
     }
 
     let responseData = wsResponse.getData();
 
-    stepInstance.holder.setResult('auth', responseData);
+    stepInstance.holder.save(HOLDER_KEY_TOKEN, responseData);
     stepInstance.setNextDynamic(false);
 
     cliUi.stop();

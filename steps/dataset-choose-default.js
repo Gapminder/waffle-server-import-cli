@@ -1,9 +1,9 @@
 'use strict';
 
-const stepBase = require('./../model/base-step');
 const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
+const stepBase = require('./../model/base-step');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -24,7 +24,9 @@ let question = {
 
 const wsRequest = require('./../service/request-ws');
 const formatter = require('./../service/formatter');
-//const _ = require('lodash');
+
+const NEXT_STEP_PATH = 'dataset-choose-default-version';
+const HOLDER_KEY_DATASET_LIST = 'dataset-list';
 
 step.prototype.preProcess  = function (done) {
 
@@ -42,7 +44,7 @@ step.prototype.preProcess  = function (done) {
     }
 
     let responseData = wsResponse.getData([]);
-    stepInstance.holder.setResult('dataset-list', responseData);
+    stepInstance.holder.save(HOLDER_KEY_DATASET_LIST, responseData);
 
     let nextStrategy = {};
     let selectedDefault = false;
@@ -51,7 +53,7 @@ step.prototype.preProcess  = function (done) {
 
     let choices = responseData.map(function(item){
 
-      nextStrategy[item.name] = 'dataset-choose-default-version';
+      nextStrategy[item.name] = NEXT_STEP_PATH;
 
       // detect default dataset
       if(item.isDefault) {

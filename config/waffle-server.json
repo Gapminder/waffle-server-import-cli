@@ -1,0 +1,18 @@
+[
+  {
+    "url": "http://localhost:3000",
+    "name": "local"
+  },
+  {
+    "url": "https://waffle-server-dev.gapminderdev.org",
+    "name": "gapminderdev.org, Dev"
+  },
+  {
+    "url": "https://waffle-server-stage.gapminderdev.org",
+    "name": "gapminderdev.org, Stage"
+  },
+  {
+    "url": "https://waffle-server.gapminderdev.org",
+    "name": "gapminderdev.org, Live"
+  }
+]

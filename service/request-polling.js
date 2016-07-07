@@ -32,7 +32,7 @@ longPolling.prototype._generateHash = function (obj) {
 
 longPolling.prototype._isSuccessful = function () {
 
-  cliUi.state("check state, is success");
+  cliUi.state("check state, is success", true);
 
   let responses = this.response.slice();
   const lastResponse = responses.pop();
@@ -43,18 +43,18 @@ longPolling.prototype._isSuccessful = function () {
 
   if(importCompleted) {
     // completed and has no errors
-    cliUi.state("check state, is success, completed");
+    cliUi.state("check state, is success, completed", true);
     return true;
   }
 
   if (importInProgress) {
     // failed, should have last error
-    cliUi.state("check state, is success, in progress");
+    cliUi.state("check state, is success, in progress", true);
     return false;
   }
 
   // failed, something went wrong
-  cliUi.state("check state, is success, failed");
+  cliUi.state("check state, is success, failed", true);
   return false;
 };
 
@@ -117,17 +117,17 @@ longPolling.prototype._shouldContinue = function () {
   let self = this;
 
   if(!self._hasNoErrors()) {
-    cliUi.state("check state, should not continue, has errors");
+    cliUi.state("check state, should not continue, has errors", true);
     return false;
   }
 
   if(!self._isMinimalRequestAmountReached()) {
-    cliUi.state("check state, should continue, minimal request amount not reached");
+    cliUi.state("check state, should continue, minimal request amount not reached", true);
     return true;
   }
 
   if(!self._isResponseChanged()) {
-    cliUi.state("check state, should not continue, response not changed");
+    cliUi.state("check state, should not continue, response not changed", true);
     return false;
   }
 
@@ -175,7 +175,7 @@ longPolling.prototype.checkDataSet = function (data, callback) {
 
       // setup message lines for report
       let reportMessage = self._getLatestRequestReport();
-      cliUi.state("check state, should continue ("+reportMessage+")");
+      cliUi.state("check state, should continue ("+reportMessage+")", true);
 
       // new request
       setTimeout(function(){

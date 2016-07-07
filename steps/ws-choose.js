@@ -14,10 +14,20 @@ util.inherits(step, stepBase);
 // Question Definition
 
 let question = {
-  'name': 'authentication-login',
-  'type': 'input',
-  'default': 'dev@gapminder.org',
-  'message': 'Authentication, Login'
+  'name': 'ws-choose',
+  'type': 'list',
+  'message': 'Waffle Server Source',
+  'default': 0,
+  'choices': [
+    {
+      name: 'Select from the List',
+      value: 'ws-list-choose'
+    },
+    {
+      name: 'Add new Source',
+      value: 'ws-list-add'
+    }
+  ]
 };
 
 // Own Process Implementation
@@ -25,21 +35,10 @@ let question = {
 step.prototype.process = function (inputValue) {
 
   let done = this.async();
-  cliUi.state("processing user login");
-
-  // START implement :: authentication check login
-
-  /*
-    if(inputValue != 'test') {
-      cliUi.stop();
-      return done(null, false);
-    }
-  */
-
-  // END implement :: authentication check login
+  cliUi.state("processing waffle server source");
 
   cliUi.stop();
-  return done(null, true);
+  done(null, true);
 };
 
 // Export Module and keep Context available for process (inquirer ctx)

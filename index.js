@@ -2,14 +2,13 @@
 
 const holder = require('./model/value-holder');
 
-// include static repos
+// include static repositories
 let repoListReserved = require('./config/repositories');
-holder.setResult('repository-list', repoListReserved);
+holder.save('repository-list', repoListReserved);
 
-// setup WS connection URL
-// command line :: WS_URL=http://localhost:3001 npm start
-let wsUrl = process.env.WS_URL ? process.env.WS_URL : 'http://localhost:3000';
-holder.setResult('config-ws-url', wsUrl);
+// include static waffle server sources
+let wsListReserved = require('./config/waffle-server');
+holder.save('waffle-server-list', wsListReserved);
 
 // require step definition
 const stepScheme = require('./config/scheme.json');

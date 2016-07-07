@@ -1,9 +1,9 @@
 'use strict';
 
-const stepBase = require('./../model/base-step');
 const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
+const stepBase = require('./../model/base-step');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -26,10 +26,13 @@ const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
 const longPolling = require('./../service/request-polling');
 
+const NEXT_STEP_PATH = 'choose-flow';
+const HOLDER_KEY_DATASET_IMPORT = 'dataset-choose-import';
+
 step.prototype.preProcess  = function (done) {
 
   let self = this;
-  let selectedDataSet = this.holder.get('dataset-choose-import', '');
+  let selectedDataSet = this.holder.get(HOLDER_KEY_DATASET_IMPORT, '');
 
   gitFlow.getCommitList(selectedDataSet, function(error, list) {
 
@@ -39,7 +42,7 @@ step.prototype.preProcess  = function (done) {
 
       let nextStrategy = {};
       let choices = list.map(function(item){
-        nextStrategy[item.hash] = 'choose-flow';
+        nextStrategy[item.hash] = NEXT_STEP_PATH;
         return {
           name: [item.hash, item.message].join(" "),
           value: item.hash
@@ -72,7 +75,7 @@ step.prototype.process = function (inputValue) {
   }
 
   let data = {
-    'github': stepInstance.holder.get('dataset-choose-import', false),
+    'github': stepInstance.holder.get(HOLDER_KEY_DATASET_IMPORT, false),
     'commit': inputValue
   };
 

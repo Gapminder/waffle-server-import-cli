@@ -1,9 +1,9 @@
 'use strict';
 
-const stepBase = require('./../model/base-step');
 const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
+const stepBase = require('./../model/base-step');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -21,9 +21,12 @@ let question = {
 
 // Own Process Implementation
 
-const fs = require('fs');
 const _ = require('lodash');
-const repoConfFile = "./config/repositories.json";
+const fs = require('fs');
+const path = require("path");
+
+const CONFIG_FILE_REPOS = path.resolve(__dirname, "./../config/repositories.json");
+const HOLDER_KEY_REPO_LIST = 'repository-list';
 
 step.prototype.process = function (inputValue) {
 
@@ -31,7 +34,7 @@ step.prototype.process = function (inputValue) {
   cliUi.state("register repository");
 
   inputValue = _.trim(inputValue);
-  let repoList = stepInstance.holder.getResult('repository-list', []);
+  let repoList = stepInstance.holder.load(HOLDER_KEY_REPO_LIST, []);
 
   let githubUrl = inputValue;
   let regexpFolder = /\/(.+)\.git/;
@@ -50,7 +53,7 @@ step.prototype.process = function (inputValue) {
 
   // Save Added :: change it to WS route
 
-  let reposJsonRaw = fs.readFileSync(repoConfFile);
+  let reposJsonRaw = fs.readFileSync(CONFIG_FILE_REPOS);
   let reposJson = JSON.parse(reposJsonRaw);
 
   let repoExists = _.find(reposJson, function(item) {
@@ -60,10 +63,10 @@ step.prototype.process = function (inputValue) {
   if(!repoExists) {
 
     repoList.push(repoNew);
-    stepInstance.holder.setResult('repository-list', repoList);
+    stepInstance.holder.save(HOLDER_KEY_REPO_LIST, repoList);
 
     reposJson.push(repoNew);
-    fs.writeFileSync(repoConfFile, JSON.stringify(reposJson));
+    fs.writeFileSync(CONFIG_FILE_REPOS, JSON.stringify(reposJson));
   }
 
   cliUi.stop();

@@ -13,32 +13,32 @@ util.inherits(step, stepBase);
 
 // Question Definition
 
-const sourceList = require('./../config/repositories');
-
 let question = {
-  'name': 'dataset-choose-update',
+  'name': 'ws-list-choose',
   'type': 'list',
-  'message': 'List of DataSet Repositories (github.com)',
+  'message': 'Select Waffle Server Source',
   'choices': []
 };
 
 // Own Process Implementation
 
-const NEXT_STEP_PATH = 'dataset-choose-update-hash';
-const HOLDER_KEY_REPO_LIST = 'repository-list';
+const wsRequest = require('./../service/request-ws');
+
+const NEXT_STEP_PATH = 'authentication-login';
+const HOLDER_KEY_WS_LIST = 'waffle-server-list';
 
 step.prototype.preProcess  = function (done) {
 
   let choices = [];
   let nextStrategy = {};
-  let repoList = this.holder.load(HOLDER_KEY_REPO_LIST, []);
+  let wsList = this.holder.load(HOLDER_KEY_WS_LIST, []);
 
-  repoList.forEach(function(item){
+  wsList.forEach(function(item){
     choices.push({
-      name: item.github,
-      value: item.github
+      name: item.name + " (" + item.url + ")",
+      value: item.url
     });
-    nextStrategy[item.github] = NEXT_STEP_PATH;
+    nextStrategy[item.url] = NEXT_STEP_PATH;
   });
 
   this.setQuestionChoices(choices, nextStrategy);
@@ -48,11 +48,10 @@ step.prototype.preProcess  = function (done) {
 step.prototype.process = function (inputValue) {
 
   let done = this.async();
-  cliUi.state("processing selected repo for update");
+  cliUi.state("processing select waffle server source");
 
   cliUi.stop();
   done(null, true);
-
 };
 
 // Export Module and keep Context available for process (inquirer ctx)

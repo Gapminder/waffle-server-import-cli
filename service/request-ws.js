@@ -5,22 +5,27 @@ const JSONStream = require('JSONStream');
 const wsResponse = require('./../model/ws-response');
 const holder = require('./../model/value-holder');
 
-const WS_HOST = holder.getResult('config-ws-url');
+// Predefined Routes
 
-const ROUTE_WS_AUTH = WS_HOST + '/api/ddf/cli/authenticate';
-const ROUTE_WS_LATEST_COMMIT = WS_HOST + '/api/ddf/cli/commit-of-latest-dataset-version';
-const ROUTE_WS_PRESTORED_QUERY = WS_HOST + '/api/ddf/cli/prestored-queries';
-const ROUTE_WS_DATASET_STATE = WS_HOST + '/api/ddf/cli/transactions/latest/status';
-const ROUTE_WS_ROLLBACK = WS_HOST + '/api/ddf/cli/transactions/latest/rollback';
-const ROUTE_WS_IMPORT = WS_HOST + '/api/ddf/cli/import-dataset';
-const ROUTE_WS_UPDATE = WS_HOST + '/api/ddf/cli/update-incremental';
-const ROUTE_WS_DATASET_LIST = WS_HOST + '/api/ddf/cli/datasets';
-const ROUTE_WS_DATASET_DEFAULT = WS_HOST + '/api/ddf/cli/datasets/default';
+const ROUTE_WS_AUTH             = '/api/ddf/cli/authenticate';
+const ROUTE_WS_IMPORT           = '/api/ddf/cli/import-dataset';
+const ROUTE_WS_UPDATE           = '/api/ddf/cli/update-incremental';
+const ROUTE_WS_ROLLBACK         = '/api/ddf/cli/transactions/latest/rollback';
+const ROUTE_WS_DATASET_LIST     = '/api/ddf/cli/datasets';
+const ROUTE_WS_LATEST_COMMIT    = '/api/ddf/cli/commit-of-latest-dataset-version';
+const ROUTE_WS_DATASET_STATE    = '/api/ddf/cli/transactions/latest/status';
+const ROUTE_WS_PRESTORED_QUERY  = '/api/ddf/cli/prestored-queries';
+const ROUTE_WS_DATASET_DEFAULT  = '/api/ddf/cli/datasets/default';
 
 //const REQUEST_TIMEOUT = 2 * 60 * 60 * 1000;
 // Linux kernel TCP :: max 120 seconds
 const REQUEST_TIMEOUT = 110 * 1000;
 const REQUEST_TOKEN_PARAM = 'waffle-server-token';
+const REQUEST_TYPE_GET = 'get';
+const REQUEST_TYPE_POST = 'post';
+
+const HOLDER_KEY_TOKEN = 'auth-token';
+const HOLDER_KEY_WS_SOURCE = 'ws-list-choose';
 
 function wsRequest() {};
 
@@ -42,7 +47,7 @@ function wsRequest() {};
 */
 
 wsRequest.prototype.authenticate = function (data, callback) {
-  this.sendRequest('post', ROUTE_WS_AUTH, data, callback);
+  this.sendRequest(REQUEST_TYPE_POST, ROUTE_WS_AUTH, data, callback);
 };
 
 /*
@@ -61,7 +66,7 @@ wsRequest.prototype.authenticate = function (data, callback) {
 */
 
 wsRequest.prototype.getDataSetList = function (data, callback) {
-  this.sendRequest('get', ROUTE_WS_DATASET_LIST, data, callback);
+  this.sendRequest(REQUEST_TYPE_GET, ROUTE_WS_DATASET_LIST, data, callback);
 };
 
 /*
@@ -78,7 +83,7 @@ wsRequest.prototype.getDataSetList = function (data, callback) {
 */
 
 wsRequest.prototype.setDefaultDataSet = function (data, callback) {
-  this.sendRequest('post', ROUTE_WS_DATASET_DEFAULT, data, callback);
+  this.sendRequest(REQUEST_TYPE_POST, ROUTE_WS_DATASET_DEFAULT, data, callback);
 };
 
 /*
@@ -102,7 +107,7 @@ wsRequest.prototype.setDefaultDataSet = function (data, callback) {
 */
 
 wsRequest.prototype.getPrestoredQueries = function (data, callback) {
-  this.sendRequest('get', ROUTE_WS_PRESTORED_QUERY, data, callback);
+  this.sendRequest(REQUEST_TYPE_GET, ROUTE_WS_PRESTORED_QUERY, data, callback);
 };
 
 /*
@@ -132,7 +137,7 @@ wsRequest.prototype.getPrestoredQueries = function (data, callback) {
 */
 
 wsRequest.prototype.getDatasetState = function (data, callback) {
-  this.sendRequest('get', ROUTE_WS_DATASET_STATE, data, callback);
+  this.sendRequest(REQUEST_TYPE_GET, ROUTE_WS_DATASET_STATE, data, callback);
 };
 
 /*
@@ -148,7 +153,7 @@ wsRequest.prototype.getDatasetState = function (data, callback) {
 */
 
 wsRequest.prototype.rollback = function (data, callback) {
-  this.sendRequest('post', ROUTE_WS_ROLLBACK, data, callback);
+  this.sendRequest(REQUEST_TYPE_POST, ROUTE_WS_ROLLBACK, data, callback);
 };
 
 /*
@@ -165,7 +170,7 @@ wsRequest.prototype.rollback = function (data, callback) {
 */
 
 wsRequest.prototype.importDataset = function (data, callback) {
-  this.sendRequest('post', ROUTE_WS_IMPORT, data, callback);
+  this.sendRequest(REQUEST_TYPE_POST, ROUTE_WS_IMPORT, data, callback);
 };
 
 /*
@@ -186,7 +191,7 @@ wsRequest.prototype.importDataset = function (data, callback) {
 */
 
 wsRequest.prototype.getLatestCommit = function (data, callback) {
-  this.sendRequest('get', ROUTE_WS_LATEST_COMMIT, data, callback);
+  this.sendRequest(REQUEST_TYPE_GET, ROUTE_WS_LATEST_COMMIT, data, callback);
 };
 
 /*
@@ -204,24 +209,26 @@ wsRequest.prototype.getLatestCommit = function (data, callback) {
 
 wsRequest.prototype.updateDataset = function (data, callback) {
   this.sendStream(ROUTE_WS_UPDATE, data, callback);
-  //this.sendRequest('post', ROUTE_WS_UPDATE, data, callback);
 };
 
 
 
 /* Internal */
 
+wsRequest.prototype.configureSource = function (path) {
+  let wsSource = holder.get(HOLDER_KEY_WS_SOURCE, '');
+  return wsSource + path;
+};
 
+wsRequest.prototype.addToken = function (path) {
 
-wsRequest.prototype.addToken = function () {
-
-  let tokenData = holder.getResult('auth', false);
+  let tokenData = holder.load(HOLDER_KEY_TOKEN, false);
 
   if(!tokenData) {
-    return '';
+    return path;
   }
 
-  return '?' + REQUEST_TOKEN_PARAM + '=' + encodeURIComponent(tokenData.token);
+  return path + '?' + REQUEST_TOKEN_PARAM + '=' + encodeURIComponent(tokenData.token);
 };
 
 /*
@@ -240,10 +247,12 @@ wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
   let requestInstance;
 
   // validate value between get|post
-  rType = rType != 'get' ? 'post' : rType;
-  ROUTE_WS += this.addToken();
+  rType = rType != REQUEST_TYPE_GET ? REQUEST_TYPE_POST : rType;
 
-  if(rType == 'get') {
+  ROUTE_WS = this.addToken(ROUTE_WS);
+  ROUTE_WS = this.configureSource(ROUTE_WS);
+
+  if(rType == REQUEST_TYPE_GET) {
     requestInstance = request.get(ROUTE_WS).query(data);
   } else {
     requestInstance = request.post(ROUTE_WS).type('form').send(data);
@@ -270,7 +279,8 @@ wsRequest.prototype.sendStream = function (ROUTE_WS, data, callback) {
 
   let objectStream = JSONStream.stringify();
 
-  ROUTE_WS += this.addToken();
+  ROUTE_WS = this.addToken(ROUTE_WS);
+  ROUTE_WS = this.configureSource(ROUTE_WS);
 
   let requestInstance = request
     .post(ROUTE_WS)
@@ -288,7 +298,6 @@ wsRequest.prototype.sendStream = function (ROUTE_WS, data, callback) {
 
     let changes = {};
     changes[fileName] = data.diff.changes[fileName];
-    //console.log("streaming:", fileName);
 
     objectStream.write({
       commit: data.commit,
@@ -299,7 +308,6 @@ wsRequest.prototype.sendStream = function (ROUTE_WS, data, callback) {
     });
   }
 
-  //console.log("\n\n\n\n\n\n\n\n");
   objectStream.end();
 };
 

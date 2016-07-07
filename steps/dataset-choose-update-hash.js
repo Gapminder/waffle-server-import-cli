@@ -1,9 +1,9 @@
 'use strict';
 
-const stepBase = require('./../model/base-step');
 const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
+const stepBase = require('./../model/base-step');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -27,13 +27,17 @@ const gitFlow = require('./../service/git-flow');
 const csvDiff = require('./../service/csv-diff');
 const longPolling = require('./../service/request-polling');
 
+const NEXT_STEP_PATH = 'choose-flow';
+const HOLDER_KEY_DATASET_UPDATE = 'dataset-choose-update';
+const HOLDER_KEY_DATASET_UPDATE_DATA = 'dataset-update-data';
+
 step.prototype.preProcess  = function (done) {
 
   let self = this;
   cliUi.state("get latest update hash commit from Waffle-Server");
 
   let data = {
-    'github': this.holder.get('dataset-choose-update', false)
+    'github': this.holder.get(HOLDER_KEY_DATASET_UPDATE, false)
   };
 
   wsRequest.getLatestCommit(data, function(error, wsResponse) {
@@ -51,7 +55,7 @@ step.prototype.preProcess  = function (done) {
 
     // get commit list
 
-    self.holder.setResult('dataset-update-data', responseData);
+    self.holder.save(HOLDER_KEY_DATASET_UPDATE_DATA, responseData);
 
     let selectedDataSet = responseData.github;
     let commitFrom = gitFlow.getShortHash(responseData.commit);
@@ -68,7 +72,7 @@ step.prototype.preProcess  = function (done) {
 
         let nextStrategy = {};
         let choices = list.map(function(item, index){
-          nextStrategy[item.hash] = 'choose-flow';
+          nextStrategy[item.hash] = NEXT_STEP_PATH;
           let choiceData = {
             name: [item.hash, item.message].join(" "),
             value: item.hash
@@ -95,7 +99,6 @@ step.prototype.preProcess  = function (done) {
   });
 };
 
-
 step.prototype.process = function (inputValue) {
 
   let done = this.async();
@@ -107,7 +110,7 @@ step.prototype.process = function (inputValue) {
     return done(null, true);
   }
 
-  let datasetData = stepInstance.holder.getResult('dataset-update-data');
+  let datasetData = stepInstance.holder.load(HOLDER_KEY_DATASET_UPDATE_DATA);
   let commitFrom = gitFlow.getShortHash(datasetData.commit);
 
   csvDiff.process({

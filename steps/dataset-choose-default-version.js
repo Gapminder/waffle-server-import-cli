@@ -1,9 +1,9 @@
 'use strict';
 
-const stepBase = require('./../model/base-step');
 const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
+const stepBase = require('./../model/base-step');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -25,12 +25,16 @@ let question = {
 const wsRequest = require('./../service/request-ws');
 const formatter = require('./../service/formatter');
 
+const NEXT_STEP_PATH = 'choose-flow';
+const HOLDER_KEY_DATASET_LIST = 'dataset-list';
+const HOLDER_KEY_DATASET_DEFAULT = 'dataset-choose-default';
+
 step.prototype.preProcess  = function (done) {
 
   let self = this;
 
-  let datasetSelected = stepInstance.holder.get('dataset-choose-default', '');
-  let datasetList = stepInstance.holder.getResult('dataset-list', []);
+  let datasetSelected = stepInstance.holder.get(HOLDER_KEY_DATASET_DEFAULT, '');
+  let datasetList = stepInstance.holder.load(HOLDER_KEY_DATASET_LIST, []);
   let datasetVersions = [];
 
   datasetList.forEach(function(item){
@@ -42,7 +46,7 @@ step.prototype.preProcess  = function (done) {
   let nextStrategy = {};
   let choices = datasetVersions.map(function(item){
 
-    nextStrategy[item.commit] = 'choose-flow';
+    nextStrategy[item.commit] = NEXT_STEP_PATH;
 
     let choiceData = {
       name: item.commit + " (" + formatter.date(item.createdAt) + ")",
@@ -73,7 +77,7 @@ step.prototype.process = function (inputValue) {
   }
 
   let data = {
-    'datasetName': stepInstance.holder.get('dataset-choose-default', ''),
+    'datasetName': stepInstance.holder.get(HOLDER_KEY_DATASET_DEFAULT, ''),
     'commit': inputValue
   };
 
@@ -87,13 +91,11 @@ step.prototype.process = function (inputValue) {
       return done(null, true);
     }
 
-    // ToDo :: data response
-    
-    //let operationMsg = wsResponse.getMessage();
-    console.log(wsResponse);
-    cliUi.stop().logPrint(["OK"]);
+    let operationData = wsResponse.getData();
+    let message = "Default DataSet was set :: ";
+    message += operationData.name + " / " + operationData.commit + " / " + formatter.date(operationData.createdAt);
 
-    cliUi.stop();
+    cliUi.stop().logPrint([message]);
     return done(null, true);
   });
 };
