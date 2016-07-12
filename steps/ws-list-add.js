@@ -16,7 +16,7 @@ util.inherits(step, stepBase);
 let question = {
   'name': 'ws-list-add',
   'type': 'input',
-  'message': 'Add new Waffle Server Source'
+  'message': 'Add new Waffle Server Endpoint'
 };
 
 // Own Process Implementation
@@ -33,7 +33,7 @@ const HOLDER_KEY_WS_LIST = 'waffle-server-list';
 step.prototype.process = function (inputValue) {
 
   let done = this.async();
-  cliUi.state("add waffle server source");
+  cliUi.state("add waffle server endpoint");
 
   // https?:\/\/(www\.)?([-a-zA-Z0-9@%._\+~#=]{2,256})([:]{1})?([0-9]{2,5})?([-a-zA-Z0-9@:%_\+.~#?&/=]*)?
 
@@ -44,10 +44,10 @@ step.prototype.process = function (inputValue) {
 
   if(!urlParse.hostname) {
     cliUi.stop();
-    return done(null, "Invalid source URL");
+    return done(null, "Invalid endpoint URL");
   }
 
-  // Register new Source
+  // Register new Endpoint
 
   let wsList = stepInstance.holder.load(HOLDER_KEY_WS_LIST, []);
   let wsListJsonRaw = fs.readFileSync(CONFIG_FILE_WS);

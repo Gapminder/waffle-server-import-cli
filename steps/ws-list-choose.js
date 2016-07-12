@@ -16,7 +16,7 @@ util.inherits(step, stepBase);
 let question = {
   'name': 'ws-list-choose',
   'type': 'list',
-  'message': 'Select Waffle Server Source',
+  'message': 'Select Waffle Server Endpoint',
   'choices': []
 };
 
@@ -46,7 +46,7 @@ step.prototype.preProcess  = function (done) {
 step.prototype.process = function (inputValue) {
 
   let done = this.async();
-  cliUi.state("processing select waffle server source");
+  cliUi.state("processing select waffle server endpoint");
 
   cliUi.stop();
   done(null, true);
