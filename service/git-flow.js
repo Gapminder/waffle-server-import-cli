@@ -17,9 +17,7 @@ const GIT_SILENT = true;
 simpleGit.silent(GIT_SILENT);
 
 function gitFlow() {
-  if(!fs.existsSync(sourceFolderPath)) {
-    fs.mkdirSync(sourceFolderPath);
-  }
+  
 };
 
 
@@ -186,7 +184,7 @@ gitFlow.prototype.validateDataset = function (data, callback) {
       return callback(error);
     }
 
-    let streamValidator = new StreamValidator(gitFolder, {includeTags: 'WAFFLE_SERVER', excludeRules: 'FILENAME_DOES_NOT_MATCH_HEADER'});
+    let streamValidator = new StreamValidator(gitFolder, {includeTags: 'WAFFLE_SERVER', excludeRules: 'FILENAME_DOES_NOT_MATCH_HEADER', isCheckHidden: true});
     let issues = [];
 
     streamValidator.on('issue', function(issue) {

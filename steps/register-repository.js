@@ -26,7 +26,7 @@ const fs = require('fs');
 const path = require("path");
 const envConst = require('./../model/env-const');
 
-const CONFIG_FILE_REPOS = path.join(envConst.PATH_CONFIG, "repositories.json");
+const CONFIG_FILE_REPOS = envConst.PATH_FILE_REPOS;
 const HOLDER_KEY_REPO_LIST = 'repository-list';
 
 step.prototype.process = function (inputValue) {

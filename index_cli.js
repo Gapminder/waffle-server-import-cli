@@ -5,9 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const home = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
-// DDF-Validator error when path contain "."
-// const appPath = path.join(home,".ws-importer-cli");
-const appPath = path.join(home,"ws-importer-cli");
+const appPath = path.join(home,".ws-importer-cli");
 
 if(!fs.existsSync(appPath)) {
   fs.mkdirSync(appPath);

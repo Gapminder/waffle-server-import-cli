@@ -15,13 +15,8 @@ csvDiff.prototype.process = function (data, callback) {
   let gitHashFrom = data.hashFrom;
   let gitHashTo = data.hashTo;
 
-  // prepare folder
+
   let sourceFolderPath = envConst.PATH_REQUESTS;
-
-  if(!fs.existsSync(sourceFolderPath)) {
-    fs.mkdirSync(sourceFolderPath);
-  }
-
   let dataRequest = {};
   let gitDiffFileStatus = {};
 

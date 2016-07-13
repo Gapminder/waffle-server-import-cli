@@ -27,7 +27,7 @@ const url = require("url");
 const path = require("path");
 const envConst = require('./../model/env-const');
 
-const CONFIG_FILE_WS = path.join(envConst.PATH_CONFIG, "waffle-server.json");
+const CONFIG_FILE_WS = envConst.PATH_FILE_WS;
 const HOLDER_KEY_WS_LIST = 'waffle-server-list';
 
 step.prototype.process = function (inputValue) {

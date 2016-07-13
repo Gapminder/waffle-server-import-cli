@@ -13,8 +13,6 @@ util.inherits(step, stepBase);
 
 // Question Definition
 
-const sourceList = require('./../config/repositories');
-
 let question = {
   'name': 'dataset-choose-update',
   'type': 'list',
