@@ -16,7 +16,7 @@ util.inherits(step, stepBase);
 let question = {
   'name': 'ws-choose',
   'type': 'list',
-  'message': 'Waffle Server Source',
+  'message': 'Waffle Server Endpoint',
   'default': 0,
   'choices': [
     {
@@ -24,7 +24,7 @@ let question = {
       value: 'ws-list-choose'
     },
     {
-      name: 'Add new Source',
+      name: 'Add new Endpoint',
       value: 'ws-list-add'
     }
   ]
@@ -35,7 +35,7 @@ let question = {
 step.prototype.process = function (inputValue) {
 
   let done = this.async();
-  cliUi.state("processing waffle server source");
+  cliUi.state("processing waffle server endpoint");
 
   cliUi.stop();
   done(null, true);
