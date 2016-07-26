@@ -79,6 +79,8 @@ step.prototype.process = function (inputValue) {
     'commit': inputValue
   };
 
+  cliUi.state("processing Import Dataset, validation");
+
   gitFlow.validateDataset(data, function(error) {
 
     if(error) {
@@ -86,6 +88,8 @@ step.prototype.process = function (inputValue) {
       // return done(errorMsg); :: inquirer bug, update after fix
       return done(null, true);
     }
+
+    cliUi.state("processing Import Dataset, send request");
 
     wsRequest.importDataset(data, function(error, wsResponse) {
 

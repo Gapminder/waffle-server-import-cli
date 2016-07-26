@@ -125,7 +125,7 @@ step.prototype.process = function (inputValue) {
       'commit': inputValue
     };
 
-    cliUi.state("processing Update Dataset, send request");
+    cliUi.state("processing Update Dataset, validation");
 
     gitFlow.validateDataset(data, function(error) {
 
@@ -152,6 +152,8 @@ step.prototype.process = function (inputValue) {
         // return done(errorMsg); :: inquirer bug, update after fix
         return done(null, true);
       }
+
+      cliUi.state("processing Update Dataset, send request");
 
       wsRequest.updateDataset(data, function(error, wsResponse) {
 
