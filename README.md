@@ -5,7 +5,7 @@
 Make sure you have node.js (version 4.x.x or higher) installed on your computer.
 
 ```bash
-    npm i -g gapminder/waffle-server-import-cli
+    npm i -g waffle-server-import-cli
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ Make sure you have node.js (version 4.x.x or higher) installed on your computer.
 Launch tool with following command.
 
 ```bash
-    ws-importer-cli
+    ws-cli
 ```
 
 ## Use Cases
