@@ -6,7 +6,7 @@ const cliUi = require('./../service/cli-ui');
 
 let longPolling = function () {
   this.responseLimit = 3;
-  this.requestInterval = 3000;
+  this.requestInterval = 7000;
   this.reset();
 };
 
