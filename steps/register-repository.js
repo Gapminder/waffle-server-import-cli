@@ -38,7 +38,7 @@ step.prototype.process = function (inputValue) {
   let repoList = stepInstance.holder.load(HOLDER_KEY_REPO_LIST, []);
 
   let githubUrl = inputValue;
-  let regexpFolder = /\/(.+)\.git/;
+  let regexpFolder = /:(.+)\/(.+)\.git/;
   let regexpFolderRes = regexpFolder.exec(githubUrl);
 
   if(!regexpFolderRes) {
@@ -46,10 +46,11 @@ step.prototype.process = function (inputValue) {
     return done(null, "Invalid repo URL");
   }
 
-  let gitFolder = regexpFolderRes[1];
+  let gitFolder = regexpFolderRes[2];
+  let gitRootFolder = regexpFolderRes[1];
   let repoNew = {
     github: inputValue,
-    folder: gitFolder
+    folder: gitRootFolder + '/' + gitFolder
   };
 
   // Save Added :: change it to WS route

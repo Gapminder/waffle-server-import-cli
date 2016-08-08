@@ -33,16 +33,22 @@ gitFlow.prototype.configDir = function (github) {
 
 
 gitFlow.prototype.getRepoName = function (github) {
-  let regexpFolder = /\/(.+)\.git/;
+  let regexpFolder = /:(.+)\/(.+)\.git/;
   let regexpFolderRes = regexpFolder.exec(github);
-  let regexpFolderGitFolder = regexpFolderRes[1] || false;
-  return regexpFolderGitFolder || '';
+  let regexpFolderGitFolder = regexpFolderRes[2] || false;
+  let regexpFolderRootGitFolder = regexpFolderRes[1] || false;
+  let repoName = regexpFolderRootGitFolder + '/' + regexpFolderGitFolder;
+  return repoName.length > 1 ? repoName : '';
 };
 
 gitFlow.prototype.getRepoFolder = function (github) {
   let regexpFolderGitFolder = this.getRepoName(github);
   let targetFolder = sourceFolderPath + regexpFolderGitFolder;
   if(!fs.existsSync(targetFolder)) {
+    let targetFolderRoot = path.dirname(targetFolder);
+    if(!fs.existsSync(targetFolderRoot)) {
+      fs.mkdirSync(targetFolderRoot);
+    }
     fs.mkdirSync(targetFolder);
   }
   return targetFolder;
