@@ -4,3 +4,5 @@
 node_modules
 requests/*
 repos/*
+config/repositories.json
+config/waffle-server.json

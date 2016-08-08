@@ -21,15 +21,19 @@ let envInit = function () {
 
   // check location for Config Files
   if(!fs.existsSync(envConst.PATH_CONFIG)) {
-
     fs.mkdirSync(envConst.PATH_CONFIG);
+  }
 
-    let configFileRepositoriesBase = path.join(envConst.PATH_APP_BASE, "config", "repositories.json");
-    let configFileEndpointsBase = path.join(envConst.PATH_APP_BASE, "config", "waffle-server.json");
-
+  // check that base file from sample created (repositories)
+  if(!fs.existsSync(configFileRepositoriesTarget)) {
+    let configFileRepositoriesBase = path.join(envConst.PATH_APP_BASE, "config", "sample.repositories.json");
     let dataListRepos = fs.readFileSync(configFileRepositoriesBase);
     fs.writeFileSync(configFileRepositoriesTarget, dataListRepos);
+  }
 
+  // check that base file from sample created (waffle-server)
+  if(!fs.existsSync(configFileEndpointsTarget)) {
+    let configFileEndpointsBase = path.join(envConst.PATH_APP_BASE, "config", "sample.waffle-server.json");
     let dataListWS = fs.readFileSync(configFileEndpointsBase);
     fs.writeFileSync(configFileEndpointsTarget, dataListWS);
   }
