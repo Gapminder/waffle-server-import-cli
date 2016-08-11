@@ -10,22 +10,22 @@ Formatter.prototype.date = function (dateRaw) {
 
   dateFormat.push(date.getFullYear());
   dateFormat.push("-");
-  dateFormat.push(this.leadZero(date.getMonth()));
+  dateFormat.push(this.leadZero(date.getUTCMonth() + 1));
   dateFormat.push("-");
-  dateFormat.push(this.leadZero(date.getDay()));
+  dateFormat.push(this.leadZero(date.getUTCDate()));
   dateFormat.push(" ");
-  dateFormat.push(this.leadZero(date.getHours()));
+  dateFormat.push(this.leadZero(date.getUTCHours()));
   dateFormat.push(":");
-  dateFormat.push(this.leadZero(date.getMinutes()));
+  dateFormat.push(this.leadZero(date.getUTCMinutes()));
   dateFormat.push(":");
-  dateFormat.push(this.leadZero(date.getSeconds()));
+  dateFormat.push(this.leadZero(date.getUTCSeconds()));
 
   return dateFormat.join("");
 };
 
 Formatter.prototype.leadZero = function (input) {
   return ('0' + input).slice(-2);
-}
+};
 
 module.exports = new Formatter();
 
