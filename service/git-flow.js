@@ -190,7 +190,12 @@ gitFlow.prototype.validateDataset = function (data, callback) {
       return callback(error);
     }
 
-    let streamValidator = new StreamValidator(gitFolder, {includeTags: 'WAFFLE_SERVER', excludeRules: 'FILENAME_DOES_NOT_MATCH_HEADER', isCheckHidden: true});
+    let streamValidator = new StreamValidator(gitFolder, {
+      includeTags: 'WAFFLE_SERVER',
+      excludeRules: 'FILENAME_DOES_NOT_MATCH_HEADER',
+      isCheckHidden: true,
+      indexlessMode: true});
+    
     let issues = [];
 
     streamValidator.on('issue', function(issue) {
