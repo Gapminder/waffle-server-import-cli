@@ -34,7 +34,9 @@ async.waterfall([
   if(error) {
     cliUi.error(error);
   }
+
   return console.timeEnd('done');
+  process.exit(0);
 });
 
 return;
