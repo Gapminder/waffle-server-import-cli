@@ -14,7 +14,7 @@ const WS_LOGIN = process.env.LOGIN || false;
 const WS_PASS = process.env.PASS || false;
 
 if (!GIT_REPO || !WS_LOGIN || !WS_PASS) {
-  console.log("Some parameter was missed (REPO, LOGIN, PASS)");
+  cliUi.error("Some parameter was missed (REPO, LOGIN, PASS)");
   return;
 }
 
@@ -169,6 +169,7 @@ function incrementalUpdate(item, callback) {
     gitFlow.validateDataset(data, function(error) {
 
       if(error) {
+        cliUi.stop();
         return callback('validation error');
       }
 
@@ -178,6 +179,7 @@ function incrementalUpdate(item, callback) {
         let errorMsg = error ? error.toString() : wsResponse.getError();
 
         if(errorMsg) {
+          cliUi.stop();
           return callback(errorMsg);
         }
 

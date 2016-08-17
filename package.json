@@ -1,6 +1,6 @@
 {
   "name": "waffle-server-import-cli",
-  "version": "2.3.7",
+  "version": "2.3.8",
   "description": "WS import CLI",
   "main": "index.js",
   "bin": {
@@ -9,6 +9,7 @@
   "scripts": {
     "start": "npm run cli",
     "cli": "node index.js",
+    "set-default": "node index_auto_default.js",
     "diff": "node index_diff.js",
     "import": "node index_auto.js"
   },
