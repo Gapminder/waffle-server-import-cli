@@ -9,7 +9,8 @@
   "scripts": {
     "start": "npm run cli",
     "cli": "node index.js",
-    "diff": "node index_diff.js"
+    "diff": "node index_diff.js",
+    "import": "node index_auto.js"
   },
   "repository": {
     "type": "git",
