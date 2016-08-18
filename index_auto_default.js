@@ -2,6 +2,7 @@
 
 const async = require('async');
 
+require('./service/env-init');
 const holder = require('./model/value-holder');
 const wsRequest = require('./service/request-ws');
 const cliUi = require('./service/cli-ui');
