@@ -34,7 +34,9 @@ async.waterfall([
   if(error) {
     cliUi.error(error);
   }
-  return console.timeEnd('done');
+  console.timeEnd('done');
+  process.exit(0);
+  return;
 });
 
 return;
@@ -110,6 +112,5 @@ function setDefaultDataset(callback) {
     cliUi.success(message);
 
     callback();
-    process.exit(0);
   });
 }

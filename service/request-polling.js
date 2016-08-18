@@ -166,7 +166,7 @@ longPolling.prototype.checkDataSet = function (data, callback) {
       // stop, because operation completed
       if(self._isSuccessful()) {
         // correct state and has no errors
-        return callback(self._completeRequest(true, 'Dataset was imported successfully'));
+        return callback(self._completeRequest(true, 'Operation completed successfully'));
       } else {
         // last error message
         return callback(self._completeRequest(false, self.responseLastError));

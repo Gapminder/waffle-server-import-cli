@@ -11,6 +11,8 @@ const longPolling = require('./service/request-polling');
 const csvDiff = require('./service/csv-diff');
 
 const GIT_REPO = process.env.REPO || false;
+const GIT_FROM = process.env.FROM || false;
+const GIT_TO = process.env.TO || false;
 const WS_LOGIN = process.env.LOGIN || false;
 const WS_PASS = process.env.PASS || false;
 
@@ -36,8 +38,9 @@ async.waterfall([
     cliUi.error(error);
   }
 
-  return console.timeEnd('done');
+  console.timeEnd('done');
   process.exit(0);
+  return;
 });
 
 return;
@@ -89,10 +92,11 @@ function repoImport(callback) {
 
   let commitList = holder.load('repo-commit-list', []);
   const firstCommit = commitList[0];
+  const importCommitHash = GIT_FROM || firstCommit.hash;
 
   let data = {
     'github': GIT_REPO,
-    'commit': firstCommit.hash
+    'commit': importCommitHash
   };
 
   cliUi.state("processing Import Dataset, validation");
@@ -126,7 +130,7 @@ function repoImport(callback) {
           //cliUi.stop().logPrint([state.message]);
         }
 
-        cliUi.stop().success("Repo Import: OK");
+        cliUi.stop().success("Repo Import: OK (based on #"+importCommitHash+")");
         return callback();
       });
     });
@@ -136,22 +140,44 @@ function repoImport(callback) {
 function repoUpdate(callback) {
 
   let commitList = holder.load('repo-commit-list', []);
-  let firstCommit = commitList.shift();
+  const firstCommit = commitList[0];
+  const importCommitHash = GIT_FROM || firstCommit.hash;
 
-  holder.save('repo-update-commit-prev', firstCommit);
+  // preprocess commit list
 
-  async.mapSeries(commitList, incrementalUpdate, function () {
+  let importCommitIndex = -1;
+  let latestCommitIndex = commitList.length - 1;
+
+  let filteredList = commitList.filter(function(item, itemIndex){
+
+    const result = (importCommitIndex === -1 || itemIndex > latestCommitIndex) ? false : true;
+
+    importCommitIndex = (item.hash === importCommitHash) ? itemIndex : importCommitIndex;
+    latestCommitIndex = (item.hash === GIT_TO) ? itemIndex : latestCommitIndex;
+
+    console.log("item", itemIndex, item);
+    console.log("result", result);
+    console.log("indexes", importCommitIndex, latestCommitIndex);
+
+    return result;
+  });
+
+  console.log("importCommitHash", importCommitHash);
+
+  holder.save('repo-update-commit-prev', importCommitHash);
+
+  async.mapSeries(filteredList, incrementalUpdate, function () {
     callback();
   });
 }
 
 function incrementalUpdate(item, callback) {
 
-  let prevItem = holder.load('repo-update-commit-prev');
+  let prevItemHash = holder.load('repo-update-commit-prev');
 
   /* process */
 
-  const commitFrom = prevItem.hash;
+  const commitFrom = prevItemHash;
   const commitTo = item.hash;
 
   csvDiff.process({
@@ -199,8 +225,8 @@ function incrementalUpdate(item, callback) {
             //cliUi.stop().logPrint([state.message]);
           }
 
-          cliUi.stop().success("Repo Updated (from: " + commitFrom + "; to: " + commitTo + "): OK");
-          holder.save('repo-update-commit-prev', item);
+          cliUi.stop().success("Repo Updated: OK (from: #" + commitFrom + "; to: #" + commitTo + ")");
+          holder.save('repo-update-commit-prev', item.hash);
           return callback();
         });
       });
