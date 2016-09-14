@@ -108,8 +108,9 @@ longPolling.prototype._getLatestRequestReport = function () {
   let mEntities = 'Entities: ' + this.responseLastState.entities;
   let mConcepts = 'Concepts: ' + this.responseLastState.concepts;
   let mDatapoints = 'DataPoints: ' + this.responseLastState.datapoints;
+  let mTranslations = 'Translations: ' + this.responseLastState.translations;
 
-  return mConcepts+"; "+mEntities+"; "+mDatapoints;
+  return `${mConcepts}; ${mEntities}; ${mDatapoints}; ${mTranslations}`;
 };
 
 longPolling.prototype._shouldContinue = function () {
