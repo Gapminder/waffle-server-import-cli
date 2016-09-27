@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-let appDirBase = path.dirname(require.main.filename);
+const appDirBase = path.dirname(__dirname);
 
 let appDir = appDirBase;
 if(!!process.env.APP_PATH) {

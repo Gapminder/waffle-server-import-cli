@@ -1,17 +1,15 @@
 {
   "name": "waffle-server-import-cli",
-  "version": "2.3.9",
+  "version": "2.4.2",
   "description": "WS import CLI",
-  "main": "index.js",
+  "main": "index.api.js",
   "bin": {
     "ws-cli": "index_cli.js"
   },
   "scripts": {
-    "start": "npm run cli",
-    "cli": "node index.js",
-    "set-default": "node index_auto_default.js",
-    "diff": "node index_diff.js",
-    "import": "node index_auto.js"
+    "start": "node index.js",
+    "api:import-update": "node cli.import-update.js",
+    "api:set-default": "node cli.set-default.js"
   },
   "repository": {
     "type": "git",

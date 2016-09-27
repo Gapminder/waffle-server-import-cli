@@ -1,57 +1,80 @@
 'use strict';
 
 const async = require('async');
+require('./../service/env-init');
 
-require('./service/env-init');
-const holder = require('./model/value-holder');
-const wsRequest = require('./service/request-ws');
-const cliUi = require('./service/cli-ui');
-const gitFlow = require('./service/git-flow');
-const longPolling = require('./service/request-polling');
-const csvDiff = require('./service/csv-diff');
+const holder = require('./../model/value-holder');
+const wsRequest = require('./../service/request-ws');
+const cliUi = require('./../service/cli-ui');
+const gitFlow = require('./../service/git-flow');
+const longPolling = require('./../service/request-polling');
+const csvDiff = require('./../service/csv-diff');
 
-const GIT_REPO = process.env.REPO || false;
-const GIT_FROM = process.env.FROM || false;
-const GIT_TO = process.env.TO || false;
-const WS_LOGIN = process.env.LOGIN || false;
-const WS_PASS = process.env.PASS || false;
+/**
+ *
+ * Automatically Import and Update Repo
+ * @param {Object} options
+ * @param {Function} complete
+ *
+ *
+ * Object options
+ * @attribute {String} repo, github url to repository
+ * @attribute {String} from, (optional) hash of the commit for Import
+ * @attribute {String} to, (optional) hash of the commit where to stop Update
+ * @attribute {String} login, authentication param to WS
+ * @attribute {String} pass, authentication param to WS
+ *
+ */
 
-if (!GIT_REPO || !WS_LOGIN || !WS_PASS) {
-  cliUi.error("Some parameter was missed (REPO, LOGIN, PASS)");
-  return;
-}
+function CliToolApiAutoImport (options, complete) {
 
-console.time('done');
+  options = options || {};
 
+  // validate
 
-/* setup flow */
-
-holder.set('ws-list-choose', 'http://localhost:3000');
-
-async.waterfall([
-  authentication,
-  repoInit,
-  repoImport,
-  repoUpdate
-], function(error, success) {
-  if(error) {
-    cliUi.error(error);
+  if (!options.repo || !options.login || !options.pass) {
+    let message = "Some parameter was missed (REPO, LOGIN, PASS)";
+    cliUi.error(message);
+    return complete(message);
   }
 
-  console.timeEnd('done');
-  process.exit(0);
-  return;
-});
+  console.time('time::done');
 
-return;
+  /* setup flow */
 
-/* private */
+  holder.set('ws-list-choose', 'http://localhost:3000');
+  holder.save('cli-options', options);
+
+  async.waterfall([
+    authentication,
+    repoInit,
+    repoImport,
+    repoUpdate
+  ], function(error, success) {
+    
+    if(error) {
+      cliUi.error(error);
+      return complete(error);
+    }
+
+    console.timeEnd('time::done');
+    return complete();
+  });
+}
+
+module.exports = CliToolApiAutoImport;
+
+
+
+/* additional :: private usage */
 
 function authentication(callback) {
 
+  const cliOptions = holder.load('cli-options');
+
   let data = {
-    email: WS_LOGIN,
-    password: WS_PASS
+    email: cliOptions.login,
+    password: cliOptions.pass
   };
 
   wsRequest.authenticate(data, function(error, wsResponse) {
@@ -72,7 +95,9 @@ function authentication(callback) {
 
 function repoInit(callback) {
 
-  gitFlow.getCommitList(GIT_REPO, function(error, list) {
+  const cliOptions = holder.load('cli-options');
+
+  gitFlow.getCommitList(cliOptions.repo, function(error, list) {
 
     cliUi.stop();
 
@@ -91,11 +116,12 @@ function repoInit(callback) {
 function repoImport(callback) {
 
   let commitList = holder.load('repo-commit-list', []);
+  const cliOptions = holder.load('cli-options');
   const firstCommit = commitList[0];
-  const importCommitHash = GIT_FROM || firstCommit.hash;
+  const importCommitHash = cliOptions.from || firstCommit.hash;
 
   let data = {
-    'github': GIT_REPO,
+    'github': cliOptions.repo,
     'commit': importCommitHash
   };
 
@@ -140,10 +166,11 @@ function repoImport(callback) {
 function repoUpdate(callback) {
 
   let commitList = holder.load('repo-commit-list', []);
+  const cliOptions = holder.load('cli-options');
   const firstCommit = commitList[0];
-  const importCommitHash = GIT_FROM || firstCommit.hash;
+  const importCommitHash = cliOptions.from || firstCommit.hash;
 
-  // preprocess commit list
+  // pre-process commit list
 
   let importCommitIndex = -1;
   let latestCommitIndex = commitList.length - 1;
@@ -153,16 +180,10 @@ function repoUpdate(callback) {
     const result = (importCommitIndex === -1 || itemIndex > latestCommitIndex) ? false : true;
 
     importCommitIndex = (item.hash === importCommitHash) ? itemIndex : importCommitIndex;
-    latestCommitIndex = (item.hash === GIT_TO) ? itemIndex : latestCommitIndex;
-
-    console.log("item", itemIndex, item);
-    console.log("result", result);
-    console.log("indexes", importCommitIndex, latestCommitIndex);
+    latestCommitIndex = (item.hash === cliOptions.to) ? itemIndex : latestCommitIndex;
 
     return result;
   });
-
-  console.log("importCommitHash", importCommitHash);
 
   holder.save('repo-update-commit-prev', importCommitHash);
 
@@ -173,7 +194,8 @@ function repoUpdate(callback) {
 
 function incrementalUpdate(item, callback) {
 
-  let prevItemHash = holder.load('repo-update-commit-prev');
+  const prevItemHash = holder.load('repo-update-commit-prev');
+  const cliOptions = holder.load('cli-options');
 
   /* process */
 
@@ -183,12 +205,12 @@ function incrementalUpdate(item, callback) {
   csvDiff.process({
     'hashFrom': commitFrom,
     'hashTo': commitTo,
-    'github': GIT_REPO
+    'github': cliOptions.repo
   }, function(error, result) {
 
     let data = {
       'diff': result,
-      'github': GIT_REPO,
+      'github': cliOptions.repo,
       'commit': commitTo
     };
 
@@ -213,7 +235,7 @@ function incrementalUpdate(item, callback) {
         let operationMsg = wsResponse.getMessage();
 
         let dataState = {
-          'datasetName': gitFlow.getRepoName(GIT_REPO)
+          'datasetName': gitFlow.getRepoName(cliOptions.repo)
         };
 
         longPolling.checkDataSet(dataState, function(state){
