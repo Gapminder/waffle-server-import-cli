@@ -15,7 +15,9 @@ const options = {
   from: process.env.FROM || false,
   to: process.env.TO || false,
   login: process.env.LOGIN || false,
-  pass: process.env.PASS || false
+  pass: process.env.PASS || false,
+  ws_host: process.env.WS_HOST || false,
+  ws_port: process.env.WS_PORT || '3000'
 };
 
 cliApiImportUpdate(options, function(error){

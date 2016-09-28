@@ -23,6 +23,8 @@ const csvDiff = require('./../service/csv-diff');
  * @attribute {String} to, (optional) hash of the commit where to stop Update
  * @attribute {String} login, authentication param to WS
  * @attribute {String} pass, authentication param to WS
+ * @attribute {String} ws_host, WS-Endpoint host
+ * @attribute {String} ws_port, WS-Endpoint port
  *
  */
 
@@ -33,7 +35,7 @@ function CliToolApiAutoImport (options, complete) {
   // validate
 
   if (!options.repo || !options.login || !options.pass) {
-    let message = "Some parameter was missed (REPO, LOGIN, PASS)";
+    let message = "Some parameter was missed (REPO, LOGIN, PASS, WS_HOST, WS_PORT)";
     cliUi.error(message);
     return complete(message);
   }
@@ -42,7 +44,10 @@ function CliToolApiAutoImport (options, complete) {
 
   /* setup flow */
 
-  holder.set('ws-list-choose', 'http://localhost:3000');
+  const wsHost = options.ws_host || 'http://localhost';
+  const wsPort = options.ws_port || '3000';
+
+  holder.set('ws-list-choose', `${wsHost}:${wsPort}`);
   holder.save('cli-options', options);
 
   async.waterfall([
