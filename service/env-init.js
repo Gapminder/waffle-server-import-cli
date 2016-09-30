@@ -18,6 +18,7 @@ let envInit = function () {
 
   let configFileRepositoriesTarget = path.join(envConst.PATH_CONFIG, "repositories.json");
   let configFileEndpointsTarget = path.join(envConst.PATH_CONFIG, "waffle-server.json");
+  let logFileDebug = path.join(envConst.PATH_CONFIG, "debug.response.log");
 
   // check location for Config Files
   if(!fs.existsSync(envConst.PATH_CONFIG)) {
@@ -41,6 +42,7 @@ let envInit = function () {
   // setup ready file path consts
   envConst['PATH_FILE_REPOS'] = configFileRepositoriesTarget;
   envConst['PATH_FILE_WS'] = configFileEndpointsTarget;
+  envConst['PATH_FILE_DEBUG'] = logFileDebug;
 };
 
 module.exports = new envInit();

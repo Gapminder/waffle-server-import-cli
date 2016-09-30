@@ -27,6 +27,15 @@ const REQUEST_TYPE_POST = 'post';
 const HOLDER_KEY_TOKEN = 'auth-token';
 const HOLDER_KEY_WS_SOURCE = 'ws-list-choose';
 
+// Logger
+/*
+var fs = require('fs');
+var util = require('util');
+const envConst = require('./../model/env-const');
+const LOG_FILE_PATH = envConst.PATH_FILE_DEBUG;
+var log_file = fs.createWriteStream(LOG_FILE_PATH, {flags : 'w'});
+*/
+
 function wsRequest() {};
 
 /*
@@ -260,6 +269,14 @@ wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
 
   requestInstance.timeout(REQUEST_TIMEOUT)
     .end(function(error, response){
+
+      /*
+      log_file.write('\n**************************\n');
+      log_file.write('REQUEST: ' + util.format(ROUTE_WS) + '\n');
+      log_file.write('ERROR: ' + util.format(error) + '\n');
+      log_file.write('RESPONSE: ' + util.format(response) + '\n');
+      */
+
       callback(error, new wsResponse(response));
     });
 

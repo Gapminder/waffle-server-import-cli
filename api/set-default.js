@@ -40,7 +40,10 @@ function CliToolApiSetDefault (options, complete) {
 
   /* setup flow */
 
-  holder.set('ws-list-choose', 'http://localhost:3000');
+  const wsHost = options.ws_host || 'http://localhost';
+  const wsPort = options.ws_port || '3000';
+
+  holder.set('ws-list-choose', `${wsHost}:${wsPort}`);
   holder.save('cli-options', options);
 
   async.waterfall([

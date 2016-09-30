@@ -74,6 +74,7 @@ longPolling.prototype._hasNoErrors = function () {
   return true;
 };
 
+// deprecated
 longPolling.prototype._isResponseChanged = function () {
 
   let self = this;
@@ -90,8 +91,11 @@ longPolling.prototype._isResponseChanged = function () {
   return !responseWasNotChanged;
 };
 
-longPolling.prototype._isMinimalRequestAmountReached = function () {
 
+longPolling.prototype._isMinimalRequestAmountReached = function () {
+  return true;
+
+  // deprecated
   if(this.responseCounter >= this.responseLimit) {
     return true;
   }
@@ -127,10 +131,13 @@ longPolling.prototype._shouldContinue = function () {
     return true;
   }
 
+  /*
+  // change logic that detect complete of operation
   if(!self._isResponseChanged()) {
     cliUi.state("check state, should not continue, response not changed", true);
     return false;
   }
+  */
 
   return true;
 };
@@ -162,7 +169,7 @@ longPolling.prototype.checkDataSet = function (data, callback) {
     const responseData = wsResponse.getData([]);
     self._addResponse(responseData);
 
-    if(!self._shouldContinue()) {
+    if(!self._shouldContinue() || self._isSuccessful()) {
 
       // stop, because operation completed
       if(self._isSuccessful()) {
