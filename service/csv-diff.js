@@ -137,9 +137,9 @@ csvDiff.prototype.process = function (data, callback) {
             } else {
               // modified
               let oldColumn = value.substring(1, value.length - 1);
-              fileDiffData.header.update.push({
-                oldColumn: diffResultColumns[index + 1]
-              });
+              let diffColumns = {};
+              diffColumns[diffResultColumns[index + 1]] = oldColumn;
+              fileDiffData.header.update.push(diffColumns);
             }
           }
 
@@ -286,17 +286,16 @@ csvDiff.prototype.process = function (data, callback) {
           // empty modifier symbol
         } else {
           // check that there is no new columns were added
-          if(fileDiffData.header.create.length) {
+          if (fileDiffData.header.create.length) {
 
             let dataRow = {};
             let dataRowOrigin = {};
 
-            // check that file with datapoints
-            value.forEach(function(valueCell, indexCell){
+            value.forEach(function (valueCell, indexCell) {
               let columnKey = diffResultColumns[indexCell];
-
-              if(fileDiffData.header.create.indexOf(columnKey) == -1) {
-                if(isDataPointsFile) {
+              if (fileDiffData.header.create.indexOf(columnKey) == -1) {
+                // check that file with datapoints
+                if (isDataPointsFile) {
                   // collect original values for datapoints
                   dataRowOrigin[columnKey] = valueCell;
                 }
@@ -311,16 +310,58 @@ csvDiff.prototype.process = function (data, callback) {
             dataRowChanged[diffResultGidField] = value[0];
             dataRowChanged["data-update"] = dataRow;
 
-            if(isDataPointsFile) {
+            if (isDataPointsFile) {
+              dataRowChanged["data-origin"] = dataRowOrigin;
+            }
+
+            fileDiffData.body.change.push(dataRowChanged);
+          }
+
+          // check that there is no renamed columns
+          if (fileDiffData.header.update.length) {
+
+            let dataRow = {};
+            let dataRowOrigin = {};
+
+            // check that file with datapoints
+            value.forEach(function (valueCell, indexCell) {
+              let columnKey = diffResultColumns[indexCell];
+
+              // not new column
+              if (fileDiffData.header.create.indexOf(columnKey) == -1) {
+                // is this changed column
+                let columnKeyOld = columnKey;
+                let oldColumnIndex = fileDiffData.header.update.findIndex(function (updateElement) {
+                  return !!updateElement[columnKey];
+                });
+                if (oldColumnIndex !== -1) {
+                  // get old column name
+                  columnKeyOld = fileDiffData.header.update[oldColumnIndex][columnKey];
+                }
+
+                dataRow[columnKey] = valueCell;
+                if (isDataPointsFile) {
+                  dataRowOrigin[columnKeyOld] = valueCell;
+                }
+              } else {
+                // new column
+                dataRow[columnKey] = valueCell;
+              }
+            });
+
+            let dataRowChanged = {};
+            dataRowChanged["gid"] = diffResultGidField;
+            dataRowChanged[diffResultGidField] = value[0];
+            dataRowChanged["data-update"] = dataRow;
+
+            if (isDataPointsFile) {
               dataRowChanged["data-origin"] = dataRowOrigin;
             }
 
             fileDiffData.body.change.push(dataRowChanged);
           }
         }
-
       });
-
     }
 
     // clear remove header section for removed files
