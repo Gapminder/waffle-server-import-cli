@@ -140,6 +140,7 @@ csvDiff.prototype.process = function (data, callback) {
               let diffColumns = {};
               diffColumns[diffResultColumns[index + 1]] = oldColumn;
               fileDiffData.header.update.push(diffColumns);
+              fileDiffData.header.remove.push(oldColumn);
             }
           }
 
