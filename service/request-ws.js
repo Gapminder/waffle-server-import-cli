@@ -5,6 +5,9 @@ const JSONStream = require('JSONStream');
 const wsResponse = require('./../model/ws-response');
 const holder = require('./../model/value-holder');
 
+const Address4 = require('ip-address').Address4;
+const Address6 = require('ip-address').Address6;
+
 // Predefined Routes
 
 const ROUTE_WS_AUTH             = '/api/ddf/cli/authenticate';
@@ -226,8 +229,34 @@ wsRequest.prototype.updateDataset = function (data, callback) {
 
 wsRequest.prototype.configureSource = function (path) {
   let wsSource = holder.get(HOLDER_KEY_WS_SOURCE, '');
+  wsSource = this._configureSource(wsSource);
   return wsSource + path;
 };
+
+wsRequest.prototype._configureSource = function (wsSource) {
+
+  // detect is that localhost
+
+  if (wsSource.indexOf('localhost') !== -1) {
+    return wsSource;
+  }
+
+  // detect if that IP
+
+  const match = wsSource.match(/^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/im);
+  const wsSourceFixed = match[1] || wsSource;
+
+  const address4 = new Address4(wsSourceFixed);
+  const address6 = new Address6(wsSourceFixed);
+
+  if (address4.isValid() || address6.isValid()) {
+    return wsSource;
+  }
+
+  // other cases - add 'import' prefix to host
+
+  return wsSource.replace(wsSourceFixed, 'import-' + wsSourceFixed);
+}
 
 wsRequest.prototype.addToken = function (path) {
 
