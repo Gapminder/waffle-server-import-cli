@@ -1,13 +1,14 @@
 {
   "name": "waffle-server-import-cli",
-  "version": "2.4.14",
+  "version": "2.4.15",
   "description": "WS import CLI",
   "main": "index.api.js",
   "bin": {
     "ws-cli": "index_cli.js"
   },
   "scripts": {
-    "start": "node index.js",
+    "stop-track-config": "git update-index --assume-unchanged ./config/*",
+    "start": "npm run stop-track-config && node index.js",
     "api:import-update": "node cli.import-update.js",
     "api:set-default": "node cli.set-default.js"
   },
