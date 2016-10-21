@@ -22,6 +22,10 @@ let question = {
   'default': 0,
   'choices': [
     {
+      name: 'List datasets and versions',
+      value: 'results-overview'
+    },
+    {
       name: 'Register Repository',
       value: 'register-repository'
     },
@@ -39,11 +43,7 @@ let question = {
       value: 'dataset-choose-rollback'
     },
     //separator,
-    {
-      name: 'Results Overview',
-      value: 'results-overview'
-    },
-    {
+     {
       name: 'Check State',
       value: 'dataset-choose-check-state'
     },
