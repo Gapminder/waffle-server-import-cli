@@ -7,7 +7,7 @@
     "ws-cli": "index_cli.js"
   },
   "scripts": {
-    "stop-track-config": "git update-index --assume-unchanged ./config/*",
+    "stop-track-config": "git update-index --assume-unchanged ./config/repositories.json ./config/waffle-server.json",
     "start": "npm run stop-track-config && node index.js",
     "api:import-update": "node cli.import-update.js",
     "api:set-default": "node cli.set-default.js"
