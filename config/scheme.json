@@ -36,10 +36,10 @@
     "back": false,
     "exit": true,
     "next": {
+      "results-overview": "choose-flow",
       "register-repository": "register-repository",
       "dataset-choose-import": "dataset-choose-import",
       "dataset-choose-update": "dataset-choose-update",
-      "results-overview": "choose-flow",
       "dataset-choose-check-state": "dataset-choose-check-state",
       "dataset-choose-rollback": "dataset-choose-rollback",
       "dataset-choose-default": "dataset-choose-default"
