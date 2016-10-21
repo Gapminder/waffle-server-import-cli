@@ -65,8 +65,17 @@ gitFlow.prototype.registerRepo = function (github, callback) {
     cliUi.state("git, download updates");
     simpleGit.fetch('origin', 'master', function(error, result){
 
+      if(error) {
+        return callback(error);
+      }
+
       simpleGit.reset(['--hard', 'origin/master'], function(error, result){
-        callback();
+
+        if(error) {
+          return callback(error);
+        }
+
+        return callback();
       });
     });
   });
@@ -83,6 +92,10 @@ gitFlow.prototype.getCommitList = function (github, callback) {
     cliUi.state("git, process log");
     simpleGit.log(function(error, result){
 
+      if(error) {
+        return callback(error);
+      }
+
       let commits = result.all;
       let commitsList = commits.map(function(item){
         return {
@@ -91,7 +104,7 @@ gitFlow.prototype.getCommitList = function (github, callback) {
         };
       });
 
-      callback(false, commitsList);
+      return callback(false, commitsList);
     });
 
   });
@@ -110,6 +123,10 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
 
     cliUi.state("git, get diff, file-names only");
     simpleGit.diff([hashFrom + '..' + hashTo, "--name-only"], function(error, result) {
+
+      if(error) {
+        return callback(error);
+      }
 
       let resultGitDiff = result;
       let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
