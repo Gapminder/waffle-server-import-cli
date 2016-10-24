@@ -8,6 +8,22 @@ Make sure you have node.js (version 4.x.x or higher) installed on your computer.
     npm i -g waffle-server-import-cli
 ```
 
+### SSH-key
+
+**Skip this step if you already have ssh-key registered in GitHub**
+
+Cli-tool works with github repositories by SSH. So, ssh-key should be added and configured in your Environment for appropriate usage.
+
+`Windows users`: do following with `git-cli` terminal.
+
+- check that you haven't key: `ls -al ~/.ssh`
+- generate new one: `ssh-keygen -t rsa -b 4096 -C "your_email@example.com"` (**keep `password` empty**)
+- add your key to ssh-agent: `eval "$(ssh-agent -s)"` and `ssh-add ~/.ssh/id_rsa`
+- add it to your GitHub account. Past it into `Settings/SSH and GPG keys`.
+- test connection: `ssh -T git@github.com`
+
+More details available [here](https://help.github.com/articles/generating-an-ssh-key/)
+
 ## Usage
 
 Launch tool with following command.
