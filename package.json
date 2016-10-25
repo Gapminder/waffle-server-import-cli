@@ -39,6 +39,7 @@
     "ip-address": "5.8.2",
     "lodash": "4.11.1",
     "router": "1.1.4",
+    "shelljs": "0.7.4",
     "simple-git": "1.37.0",
     "superagent": "2.0.0"
   }

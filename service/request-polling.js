@@ -113,7 +113,7 @@ longPolling.prototype._getLatestRequestReport = function () {
   let mConcepts = 'Concepts: ' + this.responseLastState.concepts;
   let mDatapoints = 'DataPoints: ' + this.responseLastState.datapoints;
   let mTranslations = 'Translations: ' + this.responseLastState.translations;
-
+//TODO include approximate total time in process line
   return `${mConcepts}; ${mEntities}; ${mDatapoints}; ${mTranslations}`;
 };
 
