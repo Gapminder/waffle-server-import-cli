@@ -93,40 +93,35 @@ step.prototype.process = function (inputValue) {
     cliUi.state("processing Import Dataset, send request");
 
     wsRequest.importDataset(data, function (error, wsResponse) {
-//TODO calculate number of rows
-      shell.exec('wc -l repos/VS-work/ddf--gapminder--systema_globalis--light/*.csv | grep "total$"', function(err, stdout){
+      shell.exec(`wc -l repos/VS-work/ddf--gapminder--systema_globalis--light/*.csv | grep "total$"`, {silent:true}, function (err, stdout) {
         let numberOfRows = parseInt(stdout);
-        return numberOfRows;
-      });
 
-      let errorMsg = error ? error.toString() : wsResponse.getError();
+        let errorMsg = error ? error.toString() : wsResponse.getError();
 
-      if (errorMsg) {
-        cliUi.stop().logStart().error(errorMsg).logEnd();
-        // return done(errorMsg); :: inquirer bug, update after fix
-        return done(null, true);
-      }
-
-      let dataState = {
-        'datasetName': gitFlow.getRepoName(data.github)
-      'numberOfRows': numberOfRows;
-      };
-
-      longPolling.checkDataSet(dataState, function (state) {
-//TODO
-        // state.success
-        if (!state.success) {
-          cliUi.stop().logStart().error(state.message).logEnd();
-        } else {
-          cliUi.stop().logPrint([state.message]);
+        if (errorMsg) {
+          cliUi.stop().logStart().error(errorMsg).logEnd();
+          // return done(errorMsg); :: inquirer bug, update after fix
+          return done(null, true);
         }
-        return done(null, true);
+
+        let dataState = {
+          'datasetName': gitFlow.getRepoName(data.github)
+        };
+
+        longPolling.setTimeStart(numberOfRows);
+        longPolling.checkDataSet(dataState, function (state) {
+
+          // state.success
+          if (!state.success) {
+            cliUi.stop().logStart().error(state.message).logEnd();
+          } else {
+            cliUi.stop().logPrint([state.message]);
+          }
+          return done(null, true);
+        });
       });
-
     });
-
   });
-
 };
 
 // Export Module and keep Context available for process (inquirer ctx)
