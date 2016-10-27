@@ -126,7 +126,14 @@ longPolling.prototype._getLatestRequestReport = function () {
   let mTranslations = 'Translations: ' + this.responseLastState.translations;
   let mTotalTime = 'Total approximate time: ' + moment.duration(TotalTime, 'seconds').format("y[y] M[m] d[d] hh:mm:ss[s]", { trim: "left" });
 
-  return `${mConcepts}; ${mEntities}; ${mDatapoints}; ${mTranslations}; ${mTotalTime}`;
+  // create log message
+  let logMessage = `${mConcepts}; ${mEntities}; ${mDatapoints};`;
+  if(this.responseLastState.translations) {
+    logMessage += ` ${mTranslations};`;
+  }
+  logMessage += ` ${mTotalTime}`;
+
+  return logMessage;
 };
 
 longPolling.prototype.setTimeStart = function(numberOfRows) {
