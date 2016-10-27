@@ -3,6 +3,9 @@
 let inquirer = require('inquirer');
 let inquirerUi = new inquirer.ui.BottomBar();
 
+const moment = require('moment');
+require('moment-duration-format');
+
 const SEPARATOR_LINE = "-------------------------------------------------------------------------";
 const SEPARATOR_UI = "\n\n\n\n\n\n\n\n\n\n";
 
@@ -49,7 +52,7 @@ uiProgress.prototype.state = function (state, keepTiming) {
 
     let timeNow = new Date().getTime();
     let timeDiff = parseInt((timeNow - self.timeStart)/1000, 10);
-    let timeWait = " (" + timeDiff + "s) ";
+    let timeWait = " (" + moment.duration(timeDiff, 'seconds').format("y[Y] M[M] d[D] hh:mm:ss[s]") + ") ";
 
     self.textLine += self.textIncrement;
     if(self.textLine.length > 20) {
