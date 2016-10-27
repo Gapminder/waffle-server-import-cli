@@ -26,6 +26,7 @@ const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
 const csvDiff = require('./../service/csv-diff');
 const longPolling = require('./../service/request-polling');
+const shell = require('shelljs');
 
 const NEXT_STEP_PATH = 'choose-flow';
 const HOLDER_KEY_DATASET_UPDATE = 'dataset-choose-update';
@@ -157,31 +158,39 @@ step.prototype.process = function (inputValue) {
 
       wsRequest.updateDataset(data, function(error, wsResponse) {
 
-        let errorMsg = error ? error.toString() : wsResponse.getError();
+        let gitRepoPath = gitFlow.getRepoFolder(data.github);
+        let commandLinesOfCode = `wc -l ${gitRepoPath}/*.csv | grep "total$"`;
 
-        if(errorMsg) {
-          cliUi.stop().logStart().error(errorMsg).logEnd();
-          // return done(errorMsg); :: inquirer bug, update after fix
-          return done(null, true);
-        }
+        shell.exec(commandLinesOfCode, {silent: true}, function (err, stdout) {
+          let numberOfRows = parseInt(stdout);
 
-        let operationMsg = wsResponse.getMessage();
+          let errorMsg = error ? error.toString() : wsResponse.getError();
 
-        let dataState = {
-          'datasetName': gitFlow.getRepoName(datasetData.github)
-        };
-
-        longPolling.checkDataSet(dataState, function(state){
-
-          // state.success
-          if(!state.success) {
-            cliUi.stop().logStart().error(state.message).logEnd();
-          } else {
-            cliUi.stop().logPrint([state.message]);
+          if(errorMsg) {
+            cliUi.stop().logStart().error(errorMsg).logEnd();
+            // return done(errorMsg); :: inquirer bug, update after fix
+            return done(null, true);
           }
-          return done(null, true);
-        });
 
+          let operationMsg = wsResponse.getMessage();
+
+          let dataState = {
+            'datasetName': gitFlow.getRepoName(datasetData.github)
+          };
+
+          longPolling.setTimeStart(numberOfRows);
+          longPolling.checkDataSet(dataState, function(state){
+
+            // state.success
+            if(!state.success) {
+              cliUi.stop().logStart().error(state.message).logEnd();
+            } else {
+              cliUi.stop().logPrint([state.message]);
+            }
+            return done(null, true);
+          });
+
+        });
       });
 
     });
