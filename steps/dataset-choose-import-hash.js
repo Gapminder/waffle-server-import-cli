@@ -4,7 +4,6 @@ const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
 const stepBase = require('./../model/base-step');
-const shell = require('shelljs');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -26,6 +25,7 @@ let question = {
 const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
 const longPolling = require('./../service/request-polling');
+const shell = require('shelljs');
 
 const NEXT_STEP_PATH = 'choose-flow';
 const HOLDER_KEY_DATASET_IMPORT = 'dataset-choose-import';
@@ -80,13 +80,6 @@ step.prototype.process = function (inputValue) {
     'commit': inputValue
   };
 
-  // full path to datasets
-  let fullPath = gitFlow.getRepoFolder(data.github);
-
-  // total number of rows
-  let command = `wc -l ${fullPath}/*.csv | grep "total$"`;
-
-
   cliUi.state("processing Import Dataset, validation");
 
   gitFlow.validateDataset(data, function (error) {
@@ -100,7 +93,11 @@ step.prototype.process = function (inputValue) {
     cliUi.state("processing Import Dataset, send request");
 
     wsRequest.importDataset(data, function (error, wsResponse) {
-      shell.exec(command, {silent: true}, function (err, stdout) {
+
+      let gitRepoPath = gitFlow.getRepoFolder(data.github);
+      let commandLinesOfCode = `wc -l ${gitRepoPath}/*.csv | grep "total$"`;
+
+      shell.exec(commandLinesOfCode, {silent: true}, function (err, stdout) {
         let numberOfRows = parseInt(stdout);
 
         let errorMsg = error ? error.toString() : wsResponse.getError();
