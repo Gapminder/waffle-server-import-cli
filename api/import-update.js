@@ -9,6 +9,7 @@ const cliUi = require('./../service/cli-ui');
 const gitFlow = require('./../service/git-flow');
 const longPolling = require('./../service/request-polling');
 const csvDiff = require('./../service/csv-diff');
+const shell = require('shelljs');
 
 /**
  *
@@ -141,28 +142,36 @@ function repoImport(callback) {
     cliUi.state("processing Import Dataset, send request");
     wsRequest.importDataset(data, function(error, wsResponse) {
 
-      let errorMsg = error ? error.toString() : wsResponse.getError();
+      let gitRepoPath = gitFlow.getRepoFolder(data.github);
+      let commandLinesOfCode = `wc -l ${gitRepoPath}/*.csv | grep "total$"`;
 
-      if(errorMsg) {
-        cliUi.stop();
-        return callback(errorMsg);
-      }
+      shell.exec(commandLinesOfCode, {silent: true}, function (err, stdout) {
+        let numberOfRows = parseInt(stdout);
 
-      let dataState = {
-        'datasetName': gitFlow.getRepoName(data.github)
-      };
+        let errorMsg = error ? error.toString() : wsResponse.getError();
 
-      longPolling.checkDataSet(dataState, function(state){
-
-        // state.success
-        if(!state.success) {
-          cliUi.stop().logStart().error(state.message).logEnd();
-        } else {
-          //cliUi.stop().logPrint([state.message]);
+        if(errorMsg) {
+          cliUi.stop();
+          return callback(errorMsg);
         }
 
-        cliUi.stop().success("Repo Import: OK (based on #"+importCommitHash+")");
-        return callback();
+        let dataState = {
+          'datasetName': gitFlow.getRepoName(data.github)
+        };
+
+        longPolling.setTimeStart(numberOfRows);
+        longPolling.checkDataSet(dataState, function(state){
+
+          // state.success
+          if(!state.success) {
+            cliUi.stop().logStart().error(state.message).logEnd();
+          } else {
+            //cliUi.stop().logPrint([state.message]);
+          }
+
+          cliUi.stop().success("Repo Import: OK (based on #"+importCommitHash+")");
+          return callback();
+        });
       });
     });
   });
