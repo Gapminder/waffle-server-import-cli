@@ -80,6 +80,13 @@ step.prototype.process = function (inputValue) {
     'commit': inputValue
   };
 
+  // full path to datasets
+  let fullPath = gitFlow.getRepoFolder(data.github);
+
+  // total number of rows
+  let command = `wc -l ${fullPath}/*.csv | grep "total$"`;
+
+
   cliUi.state("processing Import Dataset, validation");
 
   gitFlow.validateDataset(data, function (error) {
@@ -93,7 +100,7 @@ step.prototype.process = function (inputValue) {
     cliUi.state("processing Import Dataset, send request");
 
     wsRequest.importDataset(data, function (error, wsResponse) {
-      shell.exec(`wc -l repos/VS-work/ddf--gapminder--systema_globalis--light/*.csv | grep "total$"`, {silent:true}, function (err, stdout) {
+      shell.exec(command, {silent: true}, function (err, stdout) {
         let numberOfRows = parseInt(stdout);
 
         let errorMsg = error ? error.toString() : wsResponse.getError();

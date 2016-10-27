@@ -3,6 +3,8 @@
 const crypto = require('crypto');
 const wsRequest = require('./request-ws');
 const cliUi = require('./../service/cli-ui');
+const moment = require('moment');
+require('moment-duration-format');
 
 let longPolling = function () {
   this.responseLimit = 3;
@@ -113,16 +115,16 @@ longPolling.prototype._getLatestRequestReport = function () {
   let timeNow = new Date().getTime();
   let timeDiff = (timeNow - timeStart) / 1000;
 
-  let TotalTime = ((this.numberOfRows * (timeDiff / (this.responseLastState.entities +
+  let TotalTime = Math.round(this.numberOfRows * (timeDiff / (this.responseLastState.entities +
     this.responseLastState.concepts +
     this.responseLastState.datapoints +
-    this.responseLastState.translations)))/60).toFixed(2);
+    this.responseLastState.translations)));
 
   let mEntities = 'Entities: ' + this.responseLastState.entities;
   let mConcepts = 'Concepts: ' + this.responseLastState.concepts;
   let mDatapoints = 'DataPoints: ' + this.responseLastState.datapoints;
   let mTranslations = 'Translations: ' + this.responseLastState.translations;
-  let mTotalTime = 'Total time: ' + TotalTime + ' min';
+  let mTotalTime = 'Total approximate time: ' + moment.duration(TotalTime, 'seconds').format("y[y] M[m] d[d] hh:mm:ss[s]", { trim: "left" });
 
   return `${mConcepts}; ${mEntities}; ${mDatapoints}; ${mTranslations}; ${mTotalTime}`;
 };
