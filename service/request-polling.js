@@ -34,8 +34,6 @@ longPolling.prototype._generateHash = function (obj) {
 
 longPolling.prototype._isSuccessful = function () {
 
-  cliUi.state("check state, is success", true);
-
   let responses = this.response.slice();
   const lastResponse = responses.pop();
   const status = lastResponse.transaction.status;
@@ -45,18 +43,18 @@ longPolling.prototype._isSuccessful = function () {
 
   if(importCompleted) {
     // completed and has no errors
-    cliUi.state("check state, is success, completed", true);
+    cliUi.state("check state, completed", true);
     return true;
   }
 
   if (importInProgress) {
     // failed, should have last error
-    cliUi.state("check state, is success, in progress", true);
+    cliUi.state("check state, in progress", true);
     return false;
   }
 
   // failed, something went wrong
-  cliUi.state("check state, is success, failed", true);
+  cliUi.state("check state, failed", true);
   return false;
 };
 
@@ -111,29 +109,28 @@ longPolling.prototype._getLatestRequestReport = function () {
     return 'no data';
   }
 
-  let timeStart = this.timeStart.getTime();
-  let timeNow = new Date().getTime();
-  let timeDiff = (timeNow - timeStart) / 1000;
+  let logMessage = [];
 
-  let TotalTime = Math.round(this.numberOfRows * (timeDiff / (this.responseLastState.entities +
-    this.responseLastState.concepts +
-    this.responseLastState.datapoints +
-    this.responseLastState.translations)));
+  const timeStart = this.timeStart.getTime();
+  const timeNow = new Date().getTime();
+  const timeDiff = (timeNow - timeStart) / 1000;
 
-  let mEntities = 'Entities: ' + this.responseLastState.entities;
-  let mConcepts = 'Concepts: ' + this.responseLastState.concepts;
-  let mDatapoints = 'DataPoints: ' + this.responseLastState.datapoints;
-  let mTranslations = 'Translations: ' + this.responseLastState.translations;
-  let mTotalTime = 'Total approximate time: ' + moment.duration(TotalTime, 'seconds').format("y[y] M[m] d[d] hh:mm:ss[s]", { trim: "left" });
+  const dataEntities = this.responseLastState.entities || 0;
+  const dataConcepts = this.responseLastState.concepts || 0;
+  const dataDatapoints = this.responseLastState.datapoints || 0;
+  const dataTranslations = this.responseLastState.translations || 0;
 
-  // create log message
-  let logMessage = `${mConcepts}; ${mEntities}; ${mDatapoints};`;
-  if(this.responseLastState.translations) {
-    logMessage += ` ${mTranslations};`;
-  }
-  logMessage += ` ${mTotalTime}`;
+  const TIME_LOG_FORMAT = "y[y] M[m] d[d] hh:mm:ss[s]";
+  const totalItemsDone = dataEntities + dataConcepts + dataDatapoints + dataTranslations;
+  const TotalTime = totalItemsDone ? Math.round(this.numberOfRows * (timeDiff / totalItemsDone)) : 0;
 
-  return logMessage;
+  logMessage.push(dataEntities ? 'Entities: ' + dataEntities + ';': '');
+  logMessage.push(dataConcepts ? 'Concepts: ' + dataConcepts + ';' : '');
+  logMessage.push(dataDatapoints ? 'DataPoints: ' + dataDatapoints + ';' : '');
+  logMessage.push(dataTranslations ? 'Translations: ' + dataTranslations + ';' : '');
+  logMessage.push(TotalTime ? 'Total approximate time: ' + moment.duration(TotalTime, 'seconds').format(TIME_LOG_FORMAT, { trim: "left" }) + ';' : '');
+
+  return logMessage.filter(function(value){ return !!value; }).join(' ');
 };
 
 longPolling.prototype.setTimeStart = function(numberOfRows) {
@@ -207,7 +204,9 @@ longPolling.prototype.checkDataSet = function (data, callback) {
 
       // setup message lines for report
       let reportMessage = self._getLatestRequestReport();
-      cliUi.state("check state, should continue ("+reportMessage+")", true);
+      if(reportMessage) {
+        cliUi.state("in progress: "+reportMessage, true);
+      }
 
       // new request
       setTimeout(function(){
