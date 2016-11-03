@@ -98,7 +98,7 @@ step.prototype.process = function (inputValue) {
         logRows.push("> " + item.datasetName);
         logRows.push("  - version : " + item.version);
         logRows.push("  - date    : " + formatter.date(item.createdAt));
-        logRows.push("  - url     : " + item.url);
+        //logRows.push("  - url     : " + item.url);
       });
       logRows.push("\n");
 
