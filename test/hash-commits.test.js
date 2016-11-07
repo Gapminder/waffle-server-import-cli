@@ -15,13 +15,12 @@ describe('hash commits', ()=> {
 
   it('should return correct hash commits', done=> {
 
-    getCommitListTest.getCommitListByGithubUrl(options, function (err, commitsList) {
+    getCommitListTest.getCommitListByGithubUrl(options, function (err, commits) {
 
-      expect(commitsList).to.be.instanceof(Array);
-      expect(commitsList).to.have.lengthOf(4);
-      expect(commitsList).to.deep.equal(['acd712c', '4e3a3fe', '4265f17', '193ae23']);
+      expect(commits).to.be.instanceof(Array);
+      expect(commits).to.have.length.above(3);
 
-      commitsList.forEach(function (commit) {
+      commits.forEach(function (commit) {
         expect(commit).to.be.a('string').length(7);
       });
 

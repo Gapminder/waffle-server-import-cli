@@ -6,7 +6,6 @@ require('./../service/env-init');
 
 const holder = require('./../model/value-holder');
 const cliUi = require('./../service/cli-ui');
-const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
 
 function CliToolApiGetCommitList(options, onComplete) {
