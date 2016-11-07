@@ -190,10 +190,12 @@ longPolling.prototype.checkDataSet = function (data, callback) {
     const responseData = wsResponse.getData([]);
     self._addResponse(responseData);
 
-    if(!self._shouldContinue() || self._isSuccessful()) {
+    const isSuccessful = self._isSuccessful();
+
+    if(!self._shouldContinue() || isSuccessful) {
 
       // stop, because operation completed
-      if(self._isSuccessful()) {
+      if(isSuccessful) {
         // correct state and has no errors
         return callback(self._completeRequest(true, 'Operation completed successfully'));
       } else {
