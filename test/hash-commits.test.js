@@ -22,7 +22,7 @@ describe('hash commits', ()=> {
       expect(commitsList).to.deep.equal(['acd712c', '4e3a3fe', '4265f17', '193ae23']);
 
       commitsList.forEach(function (commit) {
-        expect(commit).to.be.a('string');
+        expect(commit).to.be.a('string').length(7);
       });
 
       done()

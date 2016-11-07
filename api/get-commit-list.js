@@ -32,48 +32,21 @@ function CliToolApiGetCommitList(options, onComplete) {
   holder.save('cli-options', options);
 
   async.waterfall([
-    authentication,
-    repoInit,
     getCommitListByGithubUrl
-  ], function (error, hashCommitList) {
+  ], function (error, hashCommits) {
 
     if (error) {
       cliUi.error(error);
       return onComplete(error);
     }
     console.timeEnd('time::done');
-    return onComplete(null, hashCommitList);
+    return onComplete(null, hashCommits);
   });
 }
 
 module.exports = CliToolApiGetCommitList;
 
-function authentication(callback) {
-
-  const cliOptions = holder.load('cli-options');
-
-  let data = {
-    email: cliOptions.login,
-    password: cliOptions.pass
-  };
-
-  wsRequest.authenticate(data, function (error, wsResponse) {
-
-    let errorMsg = error ? error.toString() : wsResponse.getError();
-
-    if (errorMsg) {
-      return callback(errorMsg);
-    }
-
-    let responseData = wsResponse.getData();
-    holder.save('auth-token', responseData);
-    cliUi.success("Authenticate: OK");
-
-    return callback();
-  });
-}
-
-function repoInit(callback) {
+function getCommitListByGithubUrl(callback) {
 
   const cliOptions = holder.load('cli-options');
 
@@ -89,19 +62,14 @@ function repoInit(callback) {
     holder.save('repo-commit-list', list);
     cliUi.success("Repo Init: OK");
 
-    return callback();
+    const arrayHash = [];
+
+    const commitList = holder.load('repo-commit-list', []);
+
+    _.map(commitList, function (name) {
+      arrayHash.push(`${name.hash}`);
+    });
+
+    return callback(null, arrayHash);
   });
-}
-
-function getCommitListByGithubUrl(callback) {
-
-  const arrayHash = [];
-
-  const commitList = holder.load('repo-commit-list', []);
-
-  _.map(commitList, function (name) {
-    arrayHash.push(`${name.hash}`);
-  });
-
-  return callback(null, arrayHash);
 }
