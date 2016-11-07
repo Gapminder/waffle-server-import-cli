@@ -7,6 +7,8 @@
     "ws-cli": "index_cli.js"
   },
   "scripts": {
+    "test": "mocha",
+    "test:coverage": "istanbul --include-all-sources cover _mocha -- -R spec './test/hash-commits.test.js'",
     "stop-track-config": "git update-index --assume-unchanged ./config/repositories.json ./config/waffle-server.json",
     "start": "npm run stop-track-config && node index.js",
     "api:import-update": "node cli.import-update.js",
@@ -39,10 +41,14 @@
     "inquirer": "1.0.2",
     "ip-address": "5.8.2",
     "lodash": "4.11.1",
+    "mocha": "3.1.2",
     "moment-duration-format": "1.3.0",
     "router": "1.1.4",
     "shelljs": "0.7.4",
     "simple-git": "1.37.0",
     "superagent": "2.0.0"
+  },
+  "devDependencies": {
+    "mocha": "3.1.2"
   }
 }

@@ -9,7 +9,7 @@ const cliUi = require('./../service/cli-ui');
 const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
 
-function CliToolApiGetCommitList(options, complete) {
+function CliToolApiGetCommitList(options, onComplete) {
 
   options = options || {};
 
@@ -18,7 +18,7 @@ function CliToolApiGetCommitList(options, complete) {
   if (!options.repo || !options.login || !options.pass) {
     const message = "Some parameter was missed (REPO, LOGIN, PASS)";
     cliUi.error(message);
-    return complete(message);
+    return onComplete(message);
   }
 
   console.time('time::done');
@@ -35,15 +35,14 @@ function CliToolApiGetCommitList(options, complete) {
     authentication,
     repoInit,
     getCommitListByGithubUrl
-  ], function (error, success) {
+  ], function (error, hashCommitList) {
 
     if (error) {
       cliUi.error(error);
-      return complete(error);
+      return onComplete(error);
     }
-
     console.timeEnd('time::done');
-    return complete();
+    return onComplete(null, hashCommitList);
   });
 }
 
@@ -104,5 +103,5 @@ function getCommitListByGithubUrl(callback) {
     arrayHash.push(`${name.hash}`);
   });
 
-  return callback();
+  return callback(null, arrayHash);
 }
