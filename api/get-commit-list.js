@@ -3,34 +3,20 @@
 const _ = require('lodash');
 require('./../service/env-init');
 
-const holder = require('./../model/value-holder');
-const cliUi = require('./../service/cli-ui');
 const gitFlow = require('./../service/git-flow');
 
 function CliToolApiGetCommitList(githubUrl, onComplete) {
 
-  // validate
-
   if (!githubUrl) {
     const message = "Github Url was missed";
-    cliUi.error(message);
     return onComplete(message);
   }
 
-  console.time('time::done');
-
-  /* setup flow */
-
-  holder.save('cli-options', githubUrl);
-
-  getCommitListByGithubUrl(function (error, hashCommits) {
+  getCommitListByGithubUrl(githubUrl, function (error, hashCommits) {
 
     if (error) {
-      cliUi.error(error);
       return onComplete(error);
     }
-
-    console.timeEnd('time::done');
 
     return onComplete(null, hashCommits);
   });
@@ -38,27 +24,20 @@ function CliToolApiGetCommitList(githubUrl, onComplete) {
 
 module.exports = CliToolApiGetCommitList;
 
-function getCommitListByGithubUrl(callback) {
+function getCommitListByGithubUrl(githubUrl, callback) {
 
-  const cliOptions = holder.load('cli-options');
+  gitFlow.getCommitList(githubUrl, function (error, list) {
 
-  gitFlow.getCommitList(cliOptions.repo, function (error, list) {
-
-    cliUi.stop();
 
     if (error) {
       return callback(error);
     }
 
     list.reverse();
-    holder.save('repo-commit-list', list);
-    cliUi.success("Repo Init: OK");
 
     const arrayHash = [];
 
-    const commitList = holder.load('repo-commit-list', []);
-
-    _.map(commitList, function (name) {
+    _.map(list, function (name) {
       arrayHash.push(`${name.hash}`);
     });
 
