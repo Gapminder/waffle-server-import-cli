@@ -1,8 +1,6 @@
 'use strict';
 
-const _ = require('lodash');
-const async = require('async');
-require('./../service/env-init');
+const _ = require('lodash');require('./../service/env-init');
 
 const holder = require('./../model/value-holder');
 const cliUi = require('./../service/cli-ui');
@@ -30,9 +28,7 @@ function CliToolApiGetCommitList(options, onComplete) {
   holder.set('ws-list-choose', `${wsHost}:${wsPort}`);
   holder.save('cli-options', options);
 
-  async.waterfall([
-    getCommitListByGithubUrl
-  ], function (error, hashCommits) {
+    getCommitListByGithubUrl(function (error, hashCommits) {
 
     if (error) {
       cliUi.error(error);
