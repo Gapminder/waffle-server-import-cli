@@ -7,14 +7,12 @@ const holder = require('./../model/value-holder');
 const cliUi = require('./../service/cli-ui');
 const gitFlow = require('./../service/git-flow');
 
-function CliToolApiGetCommitList(options, onComplete) {
-
-  options = options || {};
+function CliToolApiGetCommitList(githubUrl, onComplete) {
 
   // validate
 
-  if (!options.repo) {
-    const message = "Parameter (REPO) was missed";
+  if (!githubUrl) {
+    const message = "Github Url was missed";
     cliUi.error(message);
     return onComplete(message);
   }
@@ -23,7 +21,7 @@ function CliToolApiGetCommitList(options, onComplete) {
 
   /* setup flow */
 
-  holder.save('cli-options', options);
+  holder.save('cli-options', githubUrl);
 
   getCommitListByGithubUrl(function (error, hashCommits) {
 
