@@ -1,6 +1,7 @@
 'use strict';
 
-const _ = require('lodash');require('./../service/env-init');
+const _ = require('lodash');
+require('./../service/env-init');
 
 const holder = require('./../model/value-holder');
 const cliUi = require('./../service/cli-ui');
@@ -12,8 +13,8 @@ function CliToolApiGetCommitList(options, onComplete) {
 
   // validate
 
-  if (!options.repo || !options.login || !options.pass) {
-    const message = "Some parameter was missed (REPO, LOGIN, PASS)";
+  if (!options.repo) {
+    const message = "Parameter (REPO) was missed";
     cliUi.error(message);
     return onComplete(message);
   }
@@ -22,19 +23,17 @@ function CliToolApiGetCommitList(options, onComplete) {
 
   /* setup flow */
 
-  const wsHost = options.ws_host || 'http://localhost';
-  const wsPort = options.ws_port || '3000';
-
-  holder.set('ws-list-choose', `${wsHost}:${wsPort}`);
   holder.save('cli-options', options);
 
-    getCommitListByGithubUrl(function (error, hashCommits) {
+  getCommitListByGithubUrl(function (error, hashCommits) {
 
     if (error) {
       cliUi.error(error);
       return onComplete(error);
     }
+
     console.timeEnd('time::done');
+
     return onComplete(null, hashCommits);
   });
 }
