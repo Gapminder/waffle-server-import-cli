@@ -11,27 +11,7 @@ function CliToolApiGetCommitList(githubUrl, onComplete) {
     const message = "Github Url was missed";
     return onComplete(message);
   }
-
-  getCommitListByGithubUrl(githubUrl, function (error, hashCommits) {
-
-    if (error) {
-      return onComplete(error);
-    }
-
-    return onComplete(null, hashCommits);
-  });
-}
-
-module.exports = CliToolApiGetCommitList;
-
-function getCommitListByGithubUrl(githubUrl, callback) {
-
   gitFlow.getCommitList(githubUrl, function (error, list) {
-
-
-    if (error) {
-      return callback(error);
-    }
 
     list.reverse();
 
@@ -40,7 +20,14 @@ function getCommitListByGithubUrl(githubUrl, callback) {
     _.map(list, function (name) {
       arrayHash.push(`${name.hash}`);
     });
-
-    return callback(null, arrayHash);
+    if (error) {
+      return onComplete(error);
+    }
+    return onComplete(null, arrayHash);
   });
 }
+
+module.exports = CliToolApiGetCommitList;
+
+
+
