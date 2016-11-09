@@ -112,7 +112,8 @@ gitFlow.prototype.getCommitList = function (github, callback) {
       let commitsList = commits.map(function(item){
         return {
           hash: self.getShortHash(item.hash),
-          message: item.message
+          message: item.message,
+          date: item.date
         };
       });
 
