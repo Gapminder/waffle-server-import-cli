@@ -1,8 +1,8 @@
 'use strict';
 
-const daff = require('daff');
 const fs = require('fs');
 const async = require("async");
+const path = require("path");
 
 const gitFlow = require('./git-flow');
 const cliUi = require('./cli-ui');
@@ -13,19 +13,84 @@ function csvDiff() {};
 
 csvDiff.prototype.process = function (data, callback) {
 
-  data.sourceFolder = envConst.PATH_REPOS;
-  gitCsvDiff.process(data, function(error, result) {
+  const resultToFile = data.resultToFile ? true : false;
+  const translations = data.translations ? true : false;
+  const githubUrl = data.github;
 
-    if(!!error) {
-      cliUi.stop().error(error);
+  let sourceFolderPath = envConst.PATH_REQUESTS;
+  let dataRequest = {};
+  let gitDiffFileStatus = {};
+
+  gitFlow.getFileDiffByHashes(data, gitDiffFileStatus, function (error, gitDiffFileList) {
+
+    if (!!error) {
       return callback(error);
     }
 
-    cliUi.stop().success("* Diff generation completed!");
-    return callback(false, result);
+    async.mapSeries(
+      gitDiffFileList,
+      // iteration
+      function (fileName, doneMapLimit) {
+
+        gitFlow.showFileStateByHash(data, fileName, function (error, result) {
+
+          // external lib
+          gitCsvDiff.process(fileName, result, gitDiffFileStatus[fileName], function(error, csvDiffResult) {
+
+            // save result of each file
+            dataRequest[csvDiffResult.file] = csvDiffResult.diff;
+            return doneMapLimit(error);
+          });
+
+        });
+
+      },
+      // callback
+      function (error) {
+
+        if (!!error) {
+          return callback(error);
+        }
+
+        let result = {
+          'files': gitDiffFileStatus,
+          'changes': dataRequest
+        };
+
+        // additional option
+        if (translations) {
+          gitCsvDiff.translations(result);
+        }
+
+        let resultFileName = getFileNameResult(sourceFolderPath, githubUrl);
+        fs.writeFileSync(resultFileName, JSON.stringify(result));
+
+        cliUi.stop().success("* Diff generation completed!");
+        return callback(false, result);
+      }
+    );
+
   });
 
 };
+
+function getFileNameResult(pathFolder, github) {
+
+  const fileParts = /:(.*)\/(.*).git/.exec(github);
+
+  const filePartsResult = [];
+  filePartsResult.push('result');
+
+  if (!fileParts) {
+    filePartsResult.push('default');
+  } else {
+    filePartsResult.push(fileParts[1]);
+    filePartsResult.push(fileParts[2]);
+  }
+
+  filePartsResult.push('output.json');
+  return path.resolve(pathFolder, filePartsResult.join("--"));
+}
 
 // Export Module
 
