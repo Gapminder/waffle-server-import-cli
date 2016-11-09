@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "mocha",
-    "test:coverage": "istanbul --include-all-sources cover _mocha -- -R spec './test/hash-commits.test.js'",
+    "test:coverage": "istanbul --include-all-sources cover _mocha -- -R spec './test/*.test.js'",
     "stop-track-config": "git update-index --assume-unchanged ./config/repositories.json ./config/waffle-server.json",
     "start": "npm run stop-track-config && node index.js",
     "api:import-update": "node cli.import-update.js",
