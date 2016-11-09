@@ -18,9 +18,7 @@ function CliToolApiGetCommitList(githubUrl, onComplete) {
       return onComplete(error);
     }
 
-    const arrayHash =  _.map(commits, 'hash').reverse();
-
-    return onComplete(null, arrayHash);
+    return onComplete(null, _.map(commits, 'hash').reverse());
   });
 }
 
