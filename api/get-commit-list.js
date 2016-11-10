@@ -18,7 +18,9 @@ function CliToolApiGetCommitList(githubUrl, onComplete) {
       return onComplete(error);
     }
 
-    return onComplete(null, _.map(commits, 'hash').reverse());
+    const sortedCommitsByDate = _.sortBy(commits, 'date');
+
+    return onComplete(null, _.map(sortedCommitsByDate, 'hash'));
   });
 }
 
