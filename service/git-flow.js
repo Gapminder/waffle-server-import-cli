@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const async = require("async");
@@ -71,7 +72,7 @@ gitFlow.prototype.registerRepo = function (github, callback) {
   var githubUrlDescriptor = getGithubUrlDescriptor(github);
 
   cliUi.state("git, clone repo");
-  gitw(gitFolder).clone(github, gitFolder, ['-b', githubUrlDescriptor.branch], function(error, result){
+  gitw(gitFolder).clone(githubUrlDescriptor.url, gitFolder, ['-b', githubUrlDescriptor.branch], function(error, result){
 
     cliUi.state("git, download updates");
     gitw(gitFolder).fetch('origin', githubUrlDescriptor.branch, function(error, result){
@@ -262,7 +263,8 @@ function getGithubUrlDescriptor(githubUrl) {
   return {
     account: regexpFolderRes[1] || '',
     repo: regexpFolderRes[2] || '',
-    branch: regexpFolderRes[4] || 'master'
+    branch: regexpFolderRes[4] || 'master',
+    url: _.first(_.split(githubUrl, "#"))
   }
 }
 // Export Module
