@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const async = require("async");
+const shell = require("shelljs");
 const cliUi = require('./../service/cli-ui');
 const envConst = require('./../model/env-const');
 
@@ -11,14 +12,15 @@ const StreamValidator = ddfValidation.StreamValidator;
 
 let sourceFolderPath = envConst.PATH_REPOS;
 
-const simpleGit = require('simple-git')();
+const simpleGit = require('simple-git');
 const GIT_SILENT = true;
 
-simpleGit.silent(GIT_SILENT);
-
 function gitFlow() {
-  
-};
+}
+
+function gitw(pathToGit) {
+  return simpleGit(pathToGit).silent(GIT_SILENT);
+}
 
 
 gitFlow.prototype.getShortHash = function (commit) {
@@ -26,30 +28,38 @@ gitFlow.prototype.getShortHash = function (commit) {
 };
 
 gitFlow.prototype.configDir = function (github) {
-  let gitFolder = this.getRepoFolder(github);
-  simpleGit._baseDir = gitFolder;
-  return gitFolder + "/";
+  return this.getRepoFolder(github) + "/";
 };
 
 
 gitFlow.prototype.getRepoName = function (github) {
-  let regexpFolder = /:(.+)\/(.+)\.git/;
-  let regexpFolderRes = regexpFolder.exec(github);
-  let regexpFolderGitFolder = regexpFolderRes[2] || false;
-  let regexpFolderRootGitFolder = regexpFolderRes[1] || false;
-  let repoName = regexpFolderRootGitFolder + '/' + regexpFolderGitFolder;
-  return repoName.length > 1 ? repoName : '';
+  const githubUrlDescriptor = getGithubUrlDescriptor(github);
+
+  if (!githubUrlDescriptor.account || !githubUrlDescriptor.repo) {
+    return '';
+  }
+
+  const accountAndRepo = `${githubUrlDescriptor.account}/${githubUrlDescriptor.repo}`;
+  const isBranchSpecified = githubUrlDescriptor.branch && githubUrlDescriptor.branch !== 'master';
+
+  return isBranchSpecified ? `${accountAndRepo}#${githubUrlDescriptor.branch}` : accountAndRepo;
+};
+
+gitFlow.prototype.getRepoPath = function (github) {
+  const githubUrlDescriptor = getGithubUrlDescriptor(github);
+
+  if (githubUrlDescriptor.account && githubUrlDescriptor.repo) {
+    return path.join(githubUrlDescriptor.account, githubUrlDescriptor.repo, githubUrlDescriptor.branch)
+  }
+
+  return '';
 };
 
 gitFlow.prototype.getRepoFolder = function (github) {
-  let regexpFolderGitFolder = this.getRepoName(github);
-  let targetFolder = sourceFolderPath + regexpFolderGitFolder;
+  let regexpFolderGitFolder = this.getRepoPath(github);
+  let targetFolder = path.join(sourceFolderPath, regexpFolderGitFolder);
   if(!fs.existsSync(targetFolder)) {
-    let targetFolderRoot = path.dirname(targetFolder);
-    if(!fs.existsSync(targetFolderRoot)) {
-      fs.mkdirSync(targetFolderRoot);
-    }
-    fs.mkdirSync(targetFolder);
+    shell.mkdir('-p', targetFolder);
   }
   return targetFolder;
 };
@@ -58,18 +68,19 @@ gitFlow.prototype.registerRepo = function (github, callback) {
 
   let self = this;
   let gitFolder = this.configDir(github);
+  var githubUrlDescriptor = getGithubUrlDescriptor(github);
 
   cliUi.state("git, clone repo");
-  simpleGit.clone(github, gitFolder, function(error, result){
+  gitw(gitFolder).clone(github, gitFolder, ['-b', githubUrlDescriptor.branch], function(error, result){
 
     cliUi.state("git, download updates");
-    simpleGit.fetch('origin', 'master', function(error, result){
+    gitw(gitFolder).fetch('origin', githubUrlDescriptor.branch, function(error, result){
 
       if(error) {
         return callback(error);
       }
 
-      simpleGit.reset(['--hard', 'origin/master'], function(error, result){
+      gitw(gitFolder).reset(['--hard', `origin/${githubUrlDescriptor.branch}`], function(error, result){
 
         if(error) {
           return callback(error);
@@ -90,7 +101,7 @@ gitFlow.prototype.getCommitList = function (github, callback) {
   this.registerRepo(github, function(){
 
     cliUi.state("git, process log");
-    simpleGit.log(function(error, result){
+    gitw(gitFolder).log(function(error, result){
 
       if(error) {
         return callback(error);
@@ -122,7 +133,7 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
   this.registerRepo(github, function(){
 
     cliUi.state("git, get diff, file-names only");
-    simpleGit.diff([hashFrom + '..' + hashTo, "--name-only"], function(error, result) {
+    gitw(gitFolder).diff([hashFrom + '..' + hashTo, "--name-only"], function(error, result) {
 
       if(error) {
         return callback(error);
@@ -139,7 +150,7 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
       });
 
       cliUi.state("git, get diff, file-names with states");
-      simpleGit.diff([hashFrom + '..' + hashTo, "--name-status"], function(error, result) {
+      gitw(gitFolder).diff([hashFrom + '..' + hashTo, "--name-status"], function(error, result) {
 
         result.split("\n").filter(function(value) {
           return !!value && value.indexOf(".csv") != -1;
@@ -161,34 +172,34 @@ gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
   let gitRepo = data.github;
 
   let self = this;
-  this.configDir(gitRepo);
+  const gitFolder = this.configDir(gitRepo);
 
   let gitHashFrom = data.hashFrom + ':' + fileName;
   let gitHashTo = data.hashTo + ':' + fileName;
 
   async.waterfall(
-    [
-      function(done) {
+      [
+        function(done) {
 
-        simpleGit.show([gitHashFrom], function(error, result){
-          result = !!error ? '' : result;
-          return done(null, result);
-        });
+          gitw(gitFolder).show([gitHashFrom], function(error, result){
+            result = !!error ? '' : result;
+            return done(null, result);
+          });
 
-      },
-      function(dataFrom, done) {
+        },
+        function(dataFrom, done) {
 
-        simpleGit.show([gitHashTo], function(error, result){
-          result = !!error ? '' : result;
-          return done(null, {from: dataFrom, to: result});
-        });
+          gitw(gitFolder).show([gitHashTo], function(error, result){
+            result = !!error ? '' : result;
+            return done(null, {from: dataFrom, to: result});
+          });
 
+        }
+      ],
+      // callback
+      function(error, result) {
+        callback(error, result);
       }
-    ],
-    // callback
-    function(error, result) {
-      callback(error, result);
-    }
   );
 };
 
@@ -201,7 +212,7 @@ gitFlow.prototype.validateDataset = function (data, callback) {
 
   let gitFolder = this.configDir(gitRepo);
 
-  simpleGit.checkout(gitCommit, function(error, result) {
+  gitw(gitFolder).checkout(gitCommit, function(error, result) {
 
     if(error) {
       return callback(error);
@@ -213,7 +224,7 @@ gitFlow.prototype.validateDataset = function (data, callback) {
       excludeDirs: '.gitingore README.md',
       isCheckHidden: true,
       indexlessMode: true});
-    
+
     let issues = [];
 
     streamValidator.on('issue', function(issue) {
@@ -232,6 +243,15 @@ gitFlow.prototype.validateDataset = function (data, callback) {
 
 };
 
+function getGithubUrlDescriptor(githubUrl) {
+  const regexpFolderRes = /:(.+)\/(.+)\.git(#(.+))?/.exec(githubUrl);
+
+  return {
+    account: regexpFolderRes[1] || '',
+    repo: regexpFolderRes[2] || '',
+    branch: regexpFolderRes[4] || 'master'
+  }
+}
 // Export Module
 
 module.exports = new gitFlow();
