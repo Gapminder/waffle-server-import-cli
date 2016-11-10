@@ -243,6 +243,19 @@ gitFlow.prototype.validateDataset = function (data, callback) {
 
 };
 
+gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github) {
+  const filePath = getGithubUrlDescriptor(github);
+
+  const filePartsResult = [];
+  filePartsResult.push('result');
+  filePartsResult.push(filePath.account);
+  filePartsResult.push(filePath.repo);
+  filePartsResult.push(filePath.branch);
+  filePartsResult.push('output.json');
+
+  return path.resolve(pathFolder, filePartsResult.join("--"));
+}
+
 function getGithubUrlDescriptor(githubUrl) {
   const regexpFolderRes = /:(.+)\/(.+)\.git(#(.+))?/.exec(githubUrl);
 

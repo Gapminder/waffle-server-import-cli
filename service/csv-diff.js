@@ -62,7 +62,7 @@ csvDiff.prototype.process = function (data, callback) {
           gitCsvDiff.translations(result);
         }
 
-        let resultFileName = getFileNameResult(sourceFolderPath, githubUrl);
+        let resultFileName = gitFlow.getDiffFileNameResult(sourceFolderPath, githubUrl);
         fs.writeFileSync(resultFileName, JSON.stringify(result));
 
         cliUi.stop().success("* Diff generation completed!");
@@ -73,24 +73,6 @@ csvDiff.prototype.process = function (data, callback) {
   });
 
 };
-
-function getFileNameResult(pathFolder, github) {
-
-  const fileParts = /:(.*)\/(.*).git/.exec(github);
-
-  const filePartsResult = [];
-  filePartsResult.push('result');
-
-  if (!fileParts) {
-    filePartsResult.push('default');
-  } else {
-    filePartsResult.push(fileParts[1]);
-    filePartsResult.push(fileParts[2]);
-  }
-
-  filePartsResult.push('output.json');
-  return path.resolve(pathFolder, filePartsResult.join("--"));
-}
 
 // Export Module
 
