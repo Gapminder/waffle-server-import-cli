@@ -152,7 +152,7 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
 
       // fix path with folders
       gitDiffFileList.forEach(function(item, index, arr){
-        arr[index] = path.parse(item).base;
+        //arr[index] = path.parse(item).base;
       });
 
       cliUi.state("git, get diff, file-names with states");
@@ -253,7 +253,7 @@ gitFlow.prototype.validateDataset = function (data, callback) {
     let streamValidator = new StreamValidator(gitFolder, {
       includeTags: 'WAFFLE_SERVER',
       excludeRules: 'FILENAME_DOES_NOT_MATCH_HEADER',
-      excludeDirs: '.gitingore README.md',
+      excludeDirs: '.gitingore README.md datapackage.json',
       isCheckHidden: true,
       indexlessMode: true});
 
