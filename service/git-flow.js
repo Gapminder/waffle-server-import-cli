@@ -81,7 +81,7 @@ gitFlow.prototype.registerRepo = function (github, callback) {
         return callback(error);
       }
 
-      gitw(gitFolder).reset(['--hard', `origin/${githubUrlDescriptor.branch}`], function(error, result){
+      gitw(gitFolder).reset(['--hard', 'origin/' + githubUrlDescriptor.branch], function(error, result){
 
         if(error) {
           return callback(error);
@@ -129,8 +129,12 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
   let hashFrom = data.hashFrom;
   let hashTo = data.hashTo;
 
-  let self = this;
   let gitFolder = this.configDir(github);
+
+  const metadata = {
+    datapackageOld: {},
+    datapackageNew: {}
+  };
 
   this.registerRepo(github, function(){
 
@@ -161,8 +165,34 @@ gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callb
           gitDiffFileStatus[fileStat[1]] = fileStat[0];
         });
 
-        callback(null, gitDiffFileList);
+        gitw(gitFolder).checkout(hashFrom, function(error) {
 
+          if(error) {
+            return callback(error);
+          }
+
+          const pathDatapackageOld = gitFolder + 'datapackage.json';
+          if(fs.existsSync(pathDatapackageOld)) {
+            const contentRaw = metadata.datapackageOld = fs.readFileSync(pathDatapackageOld);
+            metadata.datapackageOld = JSON.parse(contentRaw);
+          }
+
+          gitw(gitFolder).checkout(hashTo, function(error) {
+
+            if(error) {
+              return callback(error);
+            }
+
+            const pathDatapackageNew = gitFolder + 'datapackage.json';
+            if(fs.existsSync(pathDatapackageNew)) {
+              const contentRaw = fs.readFileSync(pathDatapackageNew);
+              metadata.datapackageNew = JSON.parse(contentRaw);
+            }
+
+            callback(null, gitDiffFileList, metadata);
+
+          });
+        });
       });
     });
 
@@ -237,6 +267,7 @@ gitFlow.prototype.validateDataset = function (data, callback) {
       if(issues.length) {
         return callback(issues);
       }
+      cliUi.stop().success("* Validation completed!");
       return callback(null);
     });
 
@@ -245,7 +276,7 @@ gitFlow.prototype.validateDataset = function (data, callback) {
 
 };
 
-gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github) {
+gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github, additional) {
   const filePath = getGithubUrlDescriptor(github);
 
   const filePartsResult = [];
@@ -253,8 +284,12 @@ gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github) {
   filePartsResult.push(filePath.account);
   filePartsResult.push(filePath.repo);
   filePartsResult.push(filePath.branch);
-  filePartsResult.push('output.json');
 
+  if(additional) {
+    filePartsResult.push(additional);
+  }
+
+  filePartsResult.push('output.txt');
   return path.resolve(pathFolder, filePartsResult.join("--"));
 }
 

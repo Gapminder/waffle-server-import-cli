@@ -12,33 +12,45 @@ const gitCsvDiff = require('git-csv-diff');
 function csvDiff() {};
 
 csvDiff.prototype.process = function (data, callback) {
-
-  const resultToFile = data.resultToFile ? true : false;
-  const translations = data.translations ? true : false;
   const githubUrl = data.github;
 
   let sourceFolderPath = envConst.PATH_REQUESTS;
-  let dataRequest = {};
   let gitDiffFileStatus = {};
 
-  gitFlow.getFileDiffByHashes(data, gitDiffFileStatus, function (error, gitDiffFileList) {
+  gitFlow.getFileDiffByHashes(data, gitDiffFileStatus, function (error, gitDiffFileList, metaData) {
 
     if (!!error) {
       return callback(error);
     }
+
+    const resultFileName = gitFlow.getDiffFileNameResult(sourceFolderPath, githubUrl);
+    const resultFileLangName = gitFlow.getDiffFileNameResult(sourceFolderPath, githubUrl, 'lang');
+
+    const streams = {
+      diff: fs.createWriteStream(resultFileName),
+      lang: fs.createWriteStream(resultFileLangName)
+    };
+
+    const datapackages = {
+      old: metaData.datapackageOld,
+      new: metaData.datapackageNew
+    };
 
     async.mapSeries(
       gitDiffFileList,
       // iteration
       function (fileName, doneMapLimit) {
 
-        gitFlow.showFileStateByHash(data, fileName, function (error, result) {
+        gitFlow.showFileStateByHash(data, fileName, function (error, dataDiff) {
+
+          const metaData = {
+            fileName: fileName,
+            fileModifier: gitDiffFileStatus[fileName],
+            datapackage: datapackages
+          };
 
           // external lib
-          gitCsvDiff.process(fileName, result, gitDiffFileStatus[fileName], function(error, csvDiffResult) {
-
-            // save result of each file
-            dataRequest[csvDiffResult.file] = csvDiffResult.diff;
+          gitCsvDiff.processUpdated(metaData, dataDiff, streams, function(){
             return doneMapLimit(error);
           });
 
@@ -48,25 +60,21 @@ csvDiff.prototype.process = function (data, callback) {
       // callback
       function (error) {
 
+        // close streams
+        streams.diff.end();
+        streams.lang.end();
+
         if (!!error) {
           return callback(error);
         }
 
-        let result = {
-          'files': gitDiffFileStatus,
-          'changes': dataRequest
+        const resultFiles = {
+          diff: resultFileName,
+          lang: resultFileLangName
         };
 
-        // additional option
-        if (translations) {
-          gitCsvDiff.translations(result);
-        }
-
-        let resultFileName = gitFlow.getDiffFileNameResult(sourceFolderPath, githubUrl);
-        fs.writeFileSync(resultFileName, JSON.stringify(result));
-
         cliUi.stop().success("* Diff generation completed!");
-        return callback(false, result);
+        return callback(false, resultFiles);
       }
     );
 
