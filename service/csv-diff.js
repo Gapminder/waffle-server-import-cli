@@ -13,8 +13,7 @@ function csvDiff() {};
 
 csvDiff.prototype.process = function (data, callback) {
   const githubUrl = data.github;
-
-  let sourceFolderPath = envConst.PATH_REQUESTS;
+  const sourceFolderPath = data.resultPath ? data.resultPath : envConst.PATH_REQUESTS;
   let gitDiffFileStatus = {};
 
   gitFlow.getFileDiffByHashes(data, gitDiffFileStatus, function (error, gitDiffFileList, metaData) {

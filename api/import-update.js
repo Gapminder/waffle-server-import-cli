@@ -216,11 +216,13 @@ function incrementalUpdate(item, callback) {
   const commitFrom = prevItemHash;
   const commitTo = item.hash;
 
-  csvDiff.process({
+  const diffOptions = {
     'hashFrom': commitFrom,
     'hashTo': commitTo,
     'github': cliOptions.repo
-  }, function(error, result) {
+  };
+
+  csvDiff.process(diffOptions, function(error, result) {
 
     let data = {
       'diff': result,
@@ -237,7 +239,7 @@ function incrementalUpdate(item, callback) {
       }
 
       cliUi.state("processing Update Dataset, send request");
-      wsRequest.updateDataset(data, function(error, wsResponse) {
+      wsRequest.updateDataset(diffOptions, function(error, wsResponse) {
 
         let errorMsg = error ? error.toString() : wsResponse.getError();
 

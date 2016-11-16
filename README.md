@@ -178,3 +178,22 @@ List of DataSets are provided by Waffle Server and included only already Importe
 
 Tool displays list of Versions available to choose as Default.
 List of Versions are provided by Waffle Server.
+
+## API
+
+### generateDiff
+
+```
+const cliApi = require('waffle-server-import-cli');
+
+const diffOptions = {
+  hashFrom: '66a50bb',
+  hashTo: '163bd00',
+  github: 'git@github.com:VS-work/ddf--ws-testing.git',
+  resultPath: './any-folder-for-result-files'
+};
+
+cliApi.generateDiff(diffOptions, function() {
+  console.log("Done!");
+});
+```

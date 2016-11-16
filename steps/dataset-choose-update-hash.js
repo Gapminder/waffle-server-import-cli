@@ -114,11 +114,13 @@ step.prototype.process = function (inputValue) {
   let datasetData = stepInstance.holder.load(HOLDER_KEY_DATASET_UPDATE_DATA);
   let commitFrom = gitFlow.getShortHash(datasetData.commit);
 
-  csvDiff.process({
+  const diffOptions = {
     'hashFrom': commitFrom,
     'hashTo': inputValue,
     'github': datasetData.github
-  }, function(error, result) {
+  };
+
+  csvDiff.process(diffOptions, function(error, result) {
 
     let data = {
       'diff': result,
@@ -127,7 +129,6 @@ step.prototype.process = function (inputValue) {
     };
 
     cliUi.state("processing Update Dataset, validation");
-
     gitFlow.validateDataset(data, function(error) {
 
       if(error) {
@@ -155,8 +156,7 @@ step.prototype.process = function (inputValue) {
       }
 
       cliUi.state("processing Update Dataset, send request");
-
-      wsRequest.updateDataset(data, function(error, wsResponse) {
+      wsRequest.updateDataset(diffOptions, function(error, wsResponse) {
 
         let gitRepoPath = gitFlow.getRepoFolder(data.github);
         let commandLinesOfCode = `wc -l ${gitRepoPath}/*.csv | grep "total$"`;

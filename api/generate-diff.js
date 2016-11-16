@@ -1,0 +1,46 @@
+'use strict';
+
+const cliUi = require('./../service/cli-ui');
+const csvDiff = require('./../service/csv-diff');
+
+/**
+ *
+ * Generate difference between commits
+ *
+ * @param {Object} options
+ * @param {Function} complete
+ *
+ * Object options
+ * @attribute {String} hashFrom, hash of the commit for start-border range of Difference
+ * @attribute {String} hashTo, hash of the commit for end-border range of Difference
+ * @attribute {String} github, github url to repository
+ *
+ */
+
+function cliApiGenerateDiff (options, complete) {
+
+  options = options || {};
+
+  // validate
+
+  if (!options.hashFrom || !options.hashTo || !options.github) {
+    const message = "Some parameter was missed (Hash From, Hash To or Repo Url)";
+    cliUi.error(message);
+    return callback(message);
+  }
+
+  console.time('time::done');
+
+  csvDiff.process(options, function(error, result) {
+
+    console.timeEnd('time::done');
+
+    if (!!error) {
+      return complete(error);
+    }
+
+    return complete(error, result);
+  });
+}
+
+module.exports = cliApiGenerateDiff;

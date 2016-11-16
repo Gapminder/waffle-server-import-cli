@@ -220,7 +220,8 @@ wsRequest.prototype.getLatestCommit = function (data, callback) {
 */
 
 wsRequest.prototype.updateDataset = function (data, callback) {
-  this.sendStream(ROUTE_WS_UPDATE, data, callback);
+  this.sendRequest(REQUEST_TYPE_POST, ROUTE_WS_UPDATE, data, callback);
+  //this.sendStream(ROUTE_WS_UPDATE, data, callback);
 };
 
 
@@ -312,6 +313,8 @@ wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
 };
 
 /*
+
+ !!! Deprecated, was used for Incremental Update
 
  sendStream, method POST with Streaming
 
