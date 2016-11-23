@@ -114,46 +114,46 @@ step.prototype.process = function (inputValue) {
   let datasetData = stepInstance.holder.load(HOLDER_KEY_DATASET_UPDATE_DATA);
   let commitFrom = gitFlow.getShortHash(datasetData.commit);
 
-  const diffOptions = {
-    'hashFrom': commitFrom,
-    'hashTo': inputValue,
-    'github': datasetData.github
+  let data = {
+    'github': datasetData.github,
+    'commit': inputValue
   };
 
-  csvDiff.process(diffOptions, function(error, result) {
+  cliUi.state("processing Update Dataset, validation");
+  gitFlow.validateDataset(data, function(error) {
 
-    let data = {
-      'diff': result,
-      'github': datasetData.github,
-      'commit': inputValue
+    if(error) {
+
+      error.forEach(function(index, item, array){
+        let fileName = item.path;
+
+        let message = [];
+        message.push("TYPE: ");
+        message.push(item.type);
+        message.push("; ");
+        message.push("FILE: ");
+        message.push(fileName);
+        message.push("; ");
+        message.push("DATA: ");
+        message.push();
+        message.push();
+
+        array[index] = message.join("");
+      });
+
+      cliUi.stop().logStart().error("ValidationError").logEnd().logPrint(error);
+      // return done(errorMsg); :: inquirer bug, update after fix
+      return done(null, true);
+    }
+
+    const diffOptions = {
+      'hashFrom': commitFrom,
+      'hashTo': inputValue,
+      'github': datasetData.github
     };
 
-    cliUi.state("processing Update Dataset, validation");
-    gitFlow.validateDataset(data, function(error) {
-
-      if(error) {
-
-        error.forEach(function(index, item, array){
-          let fileName = item.path;
-
-          let message = [];
-          message.push("TYPE: ");
-          message.push(item.type);
-          message.push("; ");
-          message.push("FILE: ");
-          message.push(fileName);
-          message.push("; ");
-          message.push("DATA: ");
-          message.push();
-          message.push();
-
-          array[index] = message.join("");
-        });
-
-        cliUi.stop().logStart().error("ValidationError").logEnd().logPrint(error);
-        // return done(errorMsg); :: inquirer bug, update after fix
-        return done(null, true);
-      }
+    cliUi.state("processing Update Dataset, generate diff");
+    csvDiff.process(diffOptions, function(error, result) {
 
       cliUi.state("processing Update Dataset, send request");
       wsRequest.updateDataset(diffOptions, function(error, wsResponse) {

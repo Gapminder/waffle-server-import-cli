@@ -216,27 +216,27 @@ function incrementalUpdate(item, callback) {
   const commitFrom = prevItemHash;
   const commitTo = item.hash;
 
-  const diffOptions = {
-    'hashFrom': commitFrom,
-    'hashTo': commitTo,
-    'github': cliOptions.repo
+  let data = {
+    'github': cliOptions.repo,
+    'commit': commitTo
   };
 
-  csvDiff.process(diffOptions, function(error, result) {
+  cliUi.state("processing Update Dataset, validation");
+  gitFlow.validateDataset(data, function(error) {
 
-    let data = {
-      'diff': result,
-      'github': cliOptions.repo,
-      'commit': commitTo
+    if(error) {
+      cliUi.stop();
+      return callback('validation error');
+    }
+
+    const diffOptions = {
+      'hashFrom': commitFrom,
+      'hashTo': commitTo,
+      'github': cliOptions.repo
     };
 
-    cliUi.state("processing Update Dataset, validation");
-    gitFlow.validateDataset(data, function(error) {
-
-      if(error) {
-        cliUi.stop();
-        return callback('validation error');
-      }
+    cliUi.state("processing Update Dataset, generate diff");
+    csvDiff.process(diffOptions, function(error, result) {
 
       cliUi.state("processing Update Dataset, send request");
       wsRequest.updateDataset(diffOptions, function(error, wsResponse) {
