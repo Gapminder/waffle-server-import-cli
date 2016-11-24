@@ -1,6 +1,6 @@
 {
   "name": "waffle-server-import-cli",
-  "version": "2.5.4",
+  "version": "2.5.5",
   "description": "WS import CLI",
   "main": "index.api.js",
   "bin": {
@@ -36,7 +36,7 @@
     "contentful": "3.3.5",
     "csvtojson": "0.5.3",
     "ddf-validation": "^0.13.0",
-    "git-csv-diff": "1.1.4",
+    "git-csv-diff": "1.1.5",
     "inquirer": "1.0.2",
     "ip-address": "5.8.2",
     "lodash": "4.11.1",
