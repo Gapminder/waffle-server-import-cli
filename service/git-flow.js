@@ -251,11 +251,9 @@ gitFlow.prototype.validateDataset = function (data, callback) {
     }
 
     let streamValidator = new StreamValidator(gitFolder, {
-      includeTags: 'WAFFLE_SERVER',
-      excludeRules: 'FILENAME_DOES_NOT_MATCH_HEADER',
-      excludeDirs: '.gitingore README.md datapackage.json',
-      isCheckHidden: true,
-      indexlessMode: true});
+      excludeDirs: '.gitingore .git',
+      isCheckHidden: true
+    });
 
     let issues = [];
 
