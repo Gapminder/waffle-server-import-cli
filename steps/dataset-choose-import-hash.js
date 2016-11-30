@@ -33,6 +33,8 @@ const HOLDER_KEY_DATASET_IMPORT = 'dataset-choose-import';
 step.prototype.preProcess = function (done) {
 
   let self = this;
+  let nextStrategy = {};
+  let choices = [];
   let selectedDataSet = this.holder.get(HOLDER_KEY_DATASET_IMPORT, '');
 
   gitFlow.getCommitList(selectedDataSet, function (error, list) {
@@ -41,8 +43,7 @@ step.prototype.preProcess = function (done) {
 
       list.reverse();
 
-      let nextStrategy = {};
-      let choices = list.map(function (item) {
+      choices = list.map(function (item) {
         nextStrategy[item.hash] = NEXT_STEP_PATH;
         return {
           name: [item.hash, item.message].join(" "),
@@ -57,8 +58,8 @@ step.prototype.preProcess = function (done) {
     } else {
       // error
       self.setQuestionChoices(choices, nextStrategy);
-      cliUi.stop();
-      return done("Get Commit List Failed");
+      cliUi.stop().error("Get Commit List Failed");
+      return done(null, false);
     }
   });
 };
