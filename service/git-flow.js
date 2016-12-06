@@ -251,6 +251,7 @@ gitFlow.prototype.validateDataset = function (data, callback) {
     }
 
     let streamValidator = new StreamValidator(gitFolder, {
+      excludeRules: 'WRONG_DATA_POINT_HEADER',
       excludeDirs: '.gitingore .git',
       isCheckHidden: true
     });
@@ -263,6 +264,7 @@ gitFlow.prototype.validateDataset = function (data, callback) {
 
     streamValidator.on('finish', function(err) {
       if(issues.length) {
+        cliUi.stop().error("* Validation Error!");
         return callback(issues);
       }
       cliUi.stop().success("* Validation completed!");

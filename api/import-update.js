@@ -135,7 +135,7 @@ function repoImport(callback) {
   gitFlow.validateDataset(data, function(error) {
 
     if(error) {
-      cliUi.stop();
+      cliUi.stop().error("Validation Error");
       return callback(error);
     }
 
@@ -225,7 +225,7 @@ function incrementalUpdate(item, callback) {
   gitFlow.validateDataset(data, function(error) {
 
     if(error) {
-      cliUi.stop();
+      cliUi.stop().error("Validation Error");
       return callback('validation error');
     }
 
