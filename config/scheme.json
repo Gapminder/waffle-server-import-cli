@@ -42,6 +42,7 @@
       "dataset-choose-update": "dataset-choose-update",
       "dataset-choose-check-state": "dataset-choose-check-state",
       "dataset-choose-rollback": "dataset-choose-rollback",
+      "dataset-choose-remove": "dataset-choose-remove",
       "dataset-choose-default": "dataset-choose-default"
     }
   },
@@ -82,6 +83,12 @@
   },
 
   "dataset-choose-rollback": {
+    "type": "step::dynamic",
+    "back": "choose-flow",
+    "next": "choose-flow"
+  },
+
+  "dataset-choose-remove": {
     "type": "step::dynamic",
     "back": "choose-flow",
     "next": "choose-flow"

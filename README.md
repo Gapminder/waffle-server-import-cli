@@ -94,13 +94,15 @@ New Item could be added through **Register Repository** option.
 
 Tool provides possibility to Update Datasets Incrementally.
 
+### 10. Remove DataSet
 
-### 10. RollBack Transaction
+Tool provides possibility to Remove any dataset which is not default or locked and is available for authorized user.
+
+### 11. RollBack Transaction
 
 Tool provides possibility to Rollback broken transaction.
 
-
-### 11. Results Overview
+### 12. Results Overview
 
 Tool will display List of Imported DataSets with Versions and Prestored Queries for them.
 
@@ -113,47 +115,51 @@ Tool will display List of Imported DataSets with Versions and Prestored Queries 
 ```
 
 
-### 12. Check State
+### 13. Check State
 
 Tool provides possibility to Check State of latest Transaction for selected DataSet.
 
 
-### 13. Default DataSet
+### 14. Default DataSet
 
 Tool provides possibility to Setup Default DataSet and it Version.
 
 
 
 
-### 14. Import DataSet / List of DataSet Repositories
+### 15. Import DataSet / List of DataSet Repositories
 
 Tool displays list of Registered repositories available for Importing.
 
 
-### 15. Import DataSet / List of Available Commits
+### 16. Import DataSet / List of Available Commits
 
 Tool displays list of commits generated based on Git Repository Log.
 Choose commit as State of Repository for Importing.
 
 
-### 16. Update DataSet / List of DataSet Repositories
+### 17. Update DataSet / List of DataSet Repositories
 
 Tool displays list of Registered repositories available for Updating Incrementally.
 
 
-### 17. Update DataSet / Choose Commit "To"
+### 18. Update DataSet / Choose Commit "To"
 
 Tool displays list of commits generated based on Git Repository Log available for Updating.
 Choose commit as state of Repository for Updating, means that all changes that were done between it and previous Version (commit) will be aggregated.
 
+### 19. Remove DataSet / List of DataSet Repositories
 
-### 18. RollBack Transaction / List of DataSet Repositories
+Tool displays list of DataSets available for Removing all related data and transactions according to permission of authorized user.
+List of DataSets are provided by Waffle Server and included only already Imported DataSets.
+
+### 20. RollBack Transaction / List of DataSet Repositories
 
 Tool displays list of DataSets available for Rolling Back last Transaction if it was broken.
 List of DataSets are provided by Waffle Server and included only already Imported DataSets.
 
 
-### 19. Check State / List of DataSet Repositories
+### 21. Check State / List of DataSet Repositories
 
 Tool displays list of Datasets available for overview.
 List of DataSets are provided by Waffle Server and included only already Imported DataSets.
@@ -168,13 +174,13 @@ Operation Result will be a List of DataSets with Versions and Prestored Queries 
 ```
 
 
-### 20. Default DataSet / Choose Default DataSet
+### 22. Default DataSet / Choose Default DataSet
 
 Tool displays list of DataSets available to choose as Default.
 List of DataSets are provided by Waffle Server and included only already Imported DataSets.
 
 
-### 21. Default DataSet / Choose Default DataSet Version
+### 23. Default DataSet / Choose Default DataSet Version
 
 Tool displays list of Versions available to choose as Default.
 List of Versions are provided by Waffle Server.
