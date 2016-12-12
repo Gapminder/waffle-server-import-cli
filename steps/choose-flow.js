@@ -42,6 +42,10 @@ let question = {
       name: 'RollBack Transaction',
       value: 'dataset-choose-rollback'
     },
+    {
+      name: 'Remove Dataset',
+      value: 'dataset-choose-remove'
+    },
     //separator,
      {
       name: 'Check State',

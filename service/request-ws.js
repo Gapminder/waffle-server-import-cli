@@ -14,6 +14,7 @@ const ROUTE_WS_AUTH             = '/api/ddf/cli/authenticate';
 const ROUTE_WS_IMPORT           = '/api/ddf/cli/import-dataset';
 const ROUTE_WS_UPDATE           = '/api/ddf/cli/update-incremental';
 const ROUTE_WS_ROLLBACK         = '/api/ddf/cli/transactions/latest/rollback';
+const ROUTE_WS_REMOVE_DATASET   = '/api/ddf/cli/remove-dataset';
 const ROUTE_WS_DATASET_LIST     = '/api/ddf/cli/datasets';
 const ROUTE_WS_LATEST_COMMIT    = '/api/ddf/cli/commit-of-latest-dataset-version';
 const ROUTE_WS_DATASET_STATE    = '/api/ddf/cli/transactions/latest/status';
@@ -166,6 +167,22 @@ wsRequest.prototype.getDatasetState = function (data, callback) {
 
 wsRequest.prototype.rollback = function (data, callback) {
   this.sendRequest(REQUEST_TYPE_POST, ROUTE_WS_ROLLBACK, data, callback);
+};
+
+/*
+
+ Request to WS :: Remove Dataset and all related data and transactions
+
+ GET: /api/ddf/cli/remove-dataset
+
+ @param datasetName, String
+
+ RESPONSE, data: not provided
+
+ */
+
+wsRequest.prototype.removeDataset = function (data, callback) {
+  this.sendRequest(REQUEST_TYPE_POST, ROUTE_WS_REMOVE_DATASET, data, callback);
 };
 
 /*

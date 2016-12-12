@@ -13,6 +13,7 @@ const datasetChooseUpdateHash = require('./dataset-choose-update-hash');
 const registerRepository = require('./register-repository');
 const datasetChooseCheckState = require('./dataset-choose-check-state');
 const datasetChooseRollback = require('./dataset-choose-rollback');
+const datasetChooseRemove = require('./dataset-choose-remove');
 const datasetChooseDefault = require('./dataset-choose-default');
 const datasetChooseDefaultVersion = require('./dataset-choose-default-version');
 
@@ -31,6 +32,7 @@ steps[datasetChooseImportHash.getName()] = datasetChooseImportHash;
 steps[datasetChooseUpdateHash.getName()] = datasetChooseUpdateHash;
 steps[datasetChooseCheckState.getName()] = datasetChooseCheckState;
 steps[datasetChooseRollback.getName()] = datasetChooseRollback;
+steps[datasetChooseRemove.getName()] = datasetChooseRemove;
 steps[datasetChooseDefault.getName()] = datasetChooseDefault;
 steps[datasetChooseDefaultVersion.getName()] = datasetChooseDefaultVersion;
 
