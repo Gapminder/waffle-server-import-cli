@@ -43,13 +43,19 @@
       "dataset-choose-check-state": "dataset-choose-check-state",
       "dataset-choose-rollback": "dataset-choose-rollback",
       "dataset-choose-remove": "dataset-choose-remove",
-      "dataset-choose-default": "dataset-choose-default"
+      "dataset-choose-default": "dataset-choose-default",
+      "generate-access-token": "generate-access-token"
     }
   },
 
   "register-repository": {
     "type": "step::static-single",
     "next": "choose-flow"
+  },
+
+  "generate-access-token": {
+    "type": "step::dynamic",
+    "back": "choose-flow"
   },
 
   "dataset-choose-import": {

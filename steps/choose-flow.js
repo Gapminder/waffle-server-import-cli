@@ -54,6 +54,10 @@ let question = {
     {
       name: 'Default DataSet',
       value: 'dataset-choose-default'
+    },
+    {
+      name: 'Generate Access Token',
+      value: 'generate-access-token'
     }
   ]
 };
