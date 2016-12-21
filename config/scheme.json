@@ -55,12 +55,21 @@
   "dataset-choose-import": {
     "type": "step::dynamic",
     "back": "choose-flow",
-    "next": "dataset-choose-import-hash"
+    "next": "dataset-choose-repo-type"
+  },
+
+  "dataset-choose-repo-type": {
+    "type": "step::static-multi",
+    "back": "dataset-choose-import",
+    "next": {
+      "public": "dataset-choose-import-hash",
+      "private": "dataset-choose-import-hash"
+    }
   },
 
   "dataset-choose-import-hash": {
     "type": "step::dynamic",
-    "back": "dataset-choose-import",
+    "back": "dataset-choose-repo-type",
     "next": "choose-flow"
   },
 

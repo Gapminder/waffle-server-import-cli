@@ -16,6 +16,7 @@ const datasetChooseRollback = require('./dataset-choose-rollback');
 const datasetChooseRemove = require('./dataset-choose-remove');
 const datasetChooseDefault = require('./dataset-choose-default');
 const datasetChooseDefaultVersion = require('./dataset-choose-default-version');
+const datasetChooseRepoType = require('./dataset-choose-repo-type');
 
 let steps = {};
 
@@ -35,5 +36,6 @@ steps[datasetChooseRollback.getName()] = datasetChooseRollback;
 steps[datasetChooseRemove.getName()] = datasetChooseRemove;
 steps[datasetChooseDefault.getName()] = datasetChooseDefault;
 steps[datasetChooseDefaultVersion.getName()] = datasetChooseDefaultVersion;
+steps[datasetChooseRepoType.getName()] = datasetChooseRepoType;
 
 module.exports = steps;

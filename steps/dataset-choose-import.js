@@ -22,7 +22,7 @@ let question = {
 
 // Own Process Implementation
 
-const NEXT_STEP_PATH = 'dataset-choose-import-hash';
+const NEXT_STEP_PATH = 'dataset-choose-repo-type';
 const HOLDER_KEY_REPO_LIST = 'repository-list';
 
 step.prototype.preProcess  = function (done) {

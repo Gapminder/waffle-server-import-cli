@@ -29,6 +29,7 @@ const shell = require('shelljs');
 
 const NEXT_STEP_PATH = 'choose-flow';
 const HOLDER_KEY_DATASET_IMPORT = 'dataset-choose-import';
+const HOLDER_KEY_DATASET_REPO_TYPE = 'dataset-choose-repo-type';
 
 step.prototype.preProcess = function (done) {
 
@@ -78,6 +79,7 @@ step.prototype.process = function (inputValue) {
 
   let data = {
     'github': stepInstance.holder.get(HOLDER_KEY_DATASET_IMPORT, false),
+    'repoType': stepInstance.holder.get(HOLDER_KEY_DATASET_REPO_TYPE, false),
     'commit': inputValue
   };
 
