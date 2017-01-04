@@ -137,6 +137,8 @@ Tool displays list of Registered repositories available for Importing.
 Tool displays list of commits generated based on Git Repository Log.
 Choose commit as State of Repository for Importing.
 
+*Important:* IF WS Host is not 'localhost' and not IP-address - prefix 'import-' will be added into the Endpoint.
+
 
 ### 17. Update DataSet / List of DataSet Repositories
 
