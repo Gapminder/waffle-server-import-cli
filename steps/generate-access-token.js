@@ -30,20 +30,40 @@ const gitFlow = require('./../service/git-flow');
 
 step.prototype.preProcess  = function (done) {
 
-  let choices = [];
-  let nextStrategy = {};
-  let repoList = this.holder.load(HOLDER_KEY_REPO_LIST, []);
+  const self = this;
+  const data = {};
 
-  repoList.forEach(function(item){
-    choices.push({
-      name: item.github,
-      value: item.github
+  wsRequest.privateDatasetList(data, function(error, wsResponse) {
+
+    let errorMsg = error ? error.toString() : wsResponse.getError();
+
+    if(errorMsg) {
+      // error
+      self.setQuestionChoices(choices, nextStrategy);
+      cliUi.stop().error(errorMsg);
+      return done(null, false);
+    }
+
+    const responseData = wsResponse.getData([]);
+
+    const choices = [];
+    const nextStrategy = {};
+
+    if(!responseData.length) {
+      cliUi.stop().warning("There is no available private Datasets");
+    }
+
+    responseData.forEach(function(item){
+      choices.push({
+        name: item.githubUrl,
+        value: item.githubUrl
+      });
+      nextStrategy[item.githubUrl] = NEXT_STEP_PATH;
     });
-    nextStrategy[item.github] = NEXT_STEP_PATH;
-  });
 
-  this.setQuestionChoices(choices, nextStrategy);
-  done();
+    self.setQuestionChoices(choices, nextStrategy);
+    done();
+  });
 };
 
 step.prototype.process = function (inputValue) {
