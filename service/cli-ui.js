@@ -10,6 +10,7 @@ const SEPARATOR_LINE = "--------------------------------------------------------
 const SEPARATOR_UI = "\n\n\n\n\n\n\n\n\n\n";
 
 const CONST_FONT_ERROR = "\x1b[31m* ERROR:\x1b[93m ";
+const CONST_FONT_YELLOW = "\x1b[33m* WARNING:\x1b[93m ";
 const CONST_FONT_GREEN = "\x1b[32m";
 const CONST_FONT_WHITE = "\x1b[0m";
 
@@ -101,6 +102,13 @@ uiProgress.prototype.error = function () {
 uiProgress.prototype.success = function () {
   let args = Array.prototype.slice.call(arguments);
   args[0] = CONST_FONT_GREEN + args[0];
+  args.push(CONST_FONT_WHITE);
+  console.log.apply(console, args);
+  return this;
+};
+uiProgress.prototype.warning = function () {
+  let args = Array.prototype.slice.call(arguments);
+  args[0] = CONST_FONT_YELLOW + args[0];
   args.push(CONST_FONT_WHITE);
   console.log.apply(console, args);
   return this;
