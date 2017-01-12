@@ -50,6 +50,12 @@ step.prototype.process = function (inputValue) {
   let done = this.async();
   cliUi.state("processing generation of access token");
 
+  // back & exit
+  if(!stepInstance.availableChoice(inputValue)) {
+    cliUi.stop();
+    return done(null, true);
+  }
+
   const data = {
     'datasetName': gitFlow.getRepoName(inputValue)
   };
