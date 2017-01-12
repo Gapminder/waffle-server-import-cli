@@ -23,6 +23,7 @@ const ROUTE_WS_PRESTORED_QUERY  = '/api/ddf/cli/prestored-queries';
 const ROUTE_WS_DATASET_DEFAULT  = '/api/ddf/cli/datasets/default';
 const ROUTE_WS_ACCESS_TOKEN     = '/api/ddf/cli/datasets/accessToken';
 const ROUTE_WS_PRIVATE_LIST     = '/api/ddf/cli/datasets/private';
+const ROUTE_WS_CACHE_CLEAN      = '/api/ddf/cli/cache/clean';
 
 //const REQUEST_TIMEOUT = 2 * 60 * 60 * 1000;
 // Linux kernel TCP :: max 120 seconds
@@ -70,7 +71,7 @@ wsRequest.prototype.authenticate = function (data, callback) {
 
  Request to WS :: Generate Access Token
 
- GET: /api/ddf/cli/datasets/accessToken
+ POST: /api/ddf/cli/datasets/accessToken
 
  @param datasetName, String
 
@@ -80,10 +81,24 @@ wsRequest.prototype.authenticate = function (data, callback) {
     accessToken: "aaabbbcccddd"
   }
 
- */
+*/
 
 wsRequest.prototype.getAccessToken = function (data, callback) {
   this.sendRequest(REQUEST_TYPE_POST, ROUTE_WS_ACCESS_TOKEN, data, callback);
+};
+
+/*
+
+ Request to WS :: Clean cache
+
+ POST: /api/ddf/cli/cache/clean
+
+ RESPONSE, data: not provided
+
+*/
+
+wsRequest.prototype.cacheClean = function (data, callback) {
+  this.sendRequest(REQUEST_TYPE_POST, ROUTE_WS_CACHE_CLEAN, data, callback);
 };
 
 /*

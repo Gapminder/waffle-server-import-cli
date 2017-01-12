@@ -44,7 +44,8 @@
       "dataset-choose-rollback": "dataset-choose-rollback",
       "dataset-choose-remove": "dataset-choose-remove",
       "dataset-choose-default": "dataset-choose-default",
-      "generate-access-token": "generate-access-token"
+      "generate-access-token": "generate-access-token",
+      "cache-clean": "choose-flow"
     }
   },
 

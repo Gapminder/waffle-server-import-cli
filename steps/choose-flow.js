@@ -58,6 +58,10 @@ let question = {
     {
       name: 'Generate Access Token',
       value: 'generate-access-token'
+    },
+    {
+      name: 'Invalidate Cache',
+      value: 'cache-clean'
     }
   ]
 };
@@ -111,6 +115,22 @@ step.prototype.process = function (inputValue) {
       logRows.push("\n");
 
       cliUi.stop().logPrint(logRows);
+      done(null, true);
+    });
+
+  } else if (inputValue == 'cache-clean') {
+
+    wsRequest.cacheClean({}, function(error, wsResponse) {
+
+      let errorMsg = error ? error.toString() : wsResponse.getError();
+
+      if(errorMsg) {
+        cliUi.stop().logStart().error(errorMsg).logEnd();
+        // return done(errorMsg); :: inquirer bug, update after fix
+        return done(null, true);
+      }
+
+      cliUi.stop().logStart().success("* Cache invalidated successfully!").logEnd();
       done(null, true);
     });
 

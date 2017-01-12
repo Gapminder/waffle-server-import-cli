@@ -26,7 +26,6 @@ const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
 
 const NEXT_STEP_PATH = 'choose-flow';
-const HOLDER_KEY_REPO_LIST = 'repository-list';
 
 step.prototype.preProcess  = function (done) {
 

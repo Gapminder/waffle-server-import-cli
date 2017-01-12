@@ -23,7 +23,6 @@ let question = {
 // Own Process Implementation
 
 const NEXT_STEP_PATH = 'choose-flow';
-const HOLDER_KEY_REPO_LIST = 'repository-list';
 
 const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
