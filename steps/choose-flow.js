@@ -47,7 +47,7 @@ let question = {
       value: 'dataset-choose-remove'
     },
     //separator,
-     {
+    {
       name: 'Check State',
       value: 'dataset-choose-check-state'
     },
@@ -58,6 +58,10 @@ let question = {
     {
       name: 'Generate Access Token',
       value: 'generate-access-token'
+    },
+    {
+      name: 'Reconnect (Import/Update)',
+      value: 'reconnect-import-update'
     },
     {
       name: 'Invalidate Cache',

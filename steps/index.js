@@ -18,6 +18,7 @@ const datasetChooseDefault = require('./dataset-choose-default');
 const datasetChooseDefaultVersion = require('./dataset-choose-default-version');
 const datasetChooseRepoType = require('./dataset-choose-repo-type');
 const generateAccessToken = require('./generate-access-token');
+const reconnectImportUpdate = require('./reconnect-import-update');
 
 let steps = {};
 
@@ -39,5 +40,6 @@ steps[datasetChooseDefault.getName()] = datasetChooseDefault;
 steps[datasetChooseDefaultVersion.getName()] = datasetChooseDefaultVersion;
 steps[datasetChooseRepoType.getName()] = datasetChooseRepoType;
 steps[generateAccessToken.getName()] = generateAccessToken;
+steps[reconnectImportUpdate.getName()] = reconnectImportUpdate;
 
 module.exports = steps;

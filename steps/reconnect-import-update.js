@@ -14,18 +14,20 @@ util.inherits(step, stepBase);
 // Question Definition
 
 let question = {
-  'name': 'generate-access-token',
+  'name': 'reconnect-import-update',
   'type': 'list',
-  'message': 'Choose DataSet from the List of Repositories (github.com)',
+  'message': 'List of DataSets in progress',
   'choices': []
 };
 
 // Own Process Implementation
 
-const NEXT_STEP_PATH = 'choose-flow';
-
 const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
+const longPolling = require('./../service/request-polling');
+const shell = require('shelljs');
+
+const NEXT_STEP_PATH = 'choose-flow';
 
 step.prototype.preProcess  = function (done) {
 
@@ -34,7 +36,7 @@ step.prototype.preProcess  = function (done) {
   const nextStrategy = {};
   const data = {};
 
-  wsRequest.privateDatasetList(data, function(error, wsResponse) {
+  wsRequest.getDatasetsInProgress(data, function(error, wsResponse) {
 
     let errorMsg = error ? error.toString() : wsResponse.getError();
 
@@ -48,12 +50,12 @@ step.prototype.preProcess  = function (done) {
     const responseData = wsResponse.getData([]);
 
     if(!responseData.length) {
-      cliUi.stop().warning("There is no available private Datasets");
+      cliUi.stop().warning("There are no available Datasets in Progress");
     }
 
     responseData.forEach(function(item){
       choices.push({
-        name: item.githubUrl,
+        name: item.name,
         value: item.githubUrl
       });
       nextStrategy[item.githubUrl] = NEXT_STEP_PATH;
@@ -62,38 +64,41 @@ step.prototype.preProcess  = function (done) {
     self.setQuestionChoices(choices, nextStrategy);
     done();
   });
+
 };
 
 step.prototype.process = function (inputValue) {
   let done = this.async();
-  cliUi.state("processing generation of access token");
+  cliUi.state("processing, connect to dataset in progress");
 
   // back & exit
-  if(!stepInstance.availableChoice(inputValue)) {
+  if (!stepInstance.availableChoice(inputValue)) {
     cliUi.stop();
     return done(null, true);
   }
 
-  const data = {
-    'datasetName': gitFlow.getRepoName(inputValue)
-  };
+  let gitRepoPath = gitFlow.getRepoFolder(inputValue);
+  let commandLinesOfCode = `wc -l ${gitRepoPath}/*.csv | grep "total$"`;
 
-  wsRequest.getAccessToken(data, function(error, wsResponse) {
+  shell.exec(commandLinesOfCode, {silent: true}, function (err, stdout) {
 
-    let errorMsg = error ? error.toString() : wsResponse.getError();
+    let numberOfRows = parseInt(stdout);
+    let dataState = {
+      'datasetName': gitFlow.getRepoName(inputValue)
+    };
 
-    if(errorMsg) {
-      cliUi.stop().logStart().error(errorMsg).logEnd();
-      // return done(errorMsg); :: inquirer bug, update after fix
+    longPolling.setTimeStart(numberOfRows);
+    longPolling.checkDataSet(dataState, function (state) {
+      // state.success
+      if (!state.success) {
+        cliUi.stop().logStart().error(state.message).logEnd();
+      } else {
+        cliUi.stop().logPrint([state.message]);
+      }
       return done(null, true);
-    }
-
-    let responseData = wsResponse.getData();
-    const message = `Generated Access Token :: ${responseData.accessToken}`;
-
-    cliUi.stop().logPrint([message]);
-    done(null, true);
+    });
   });
+
 };
 
 // Export Module and keep Context available for process (inquirer ctx)

@@ -45,6 +45,7 @@
       "dataset-choose-remove": "dataset-choose-remove",
       "dataset-choose-default": "dataset-choose-default",
       "generate-access-token": "generate-access-token",
+      "reconnect-import-update": "reconnect-import-update",
       "cache-clean": "choose-flow"
     }
   },
@@ -110,6 +111,12 @@
     "next": "choose-flow"
   },
 
+  "reconnect-import-update": {
+    "type": "step::dynamic",
+    "back": "choose-flow",
+    "next": "choose-flow"
+  },
+
   "dataset-choose-default": {
     "type": "step::dynamic",
     "back": "choose-flow",
@@ -121,4 +128,5 @@
     "back": "dataset-choose-default",
     "next": "choose-flow"
   }
+
 }

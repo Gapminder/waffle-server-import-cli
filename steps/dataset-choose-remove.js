@@ -30,6 +30,8 @@ const NEXT_STEP_PATH = 'choose-flow';
 step.prototype.preProcess  = function (done) {
 
   const self = this;
+  const choices = [];
+  const nextStrategy = {};
   const data = {};
 
   wsRequest.removableDatasetList(data, function(error, wsResponse) {
@@ -44,9 +46,6 @@ step.prototype.preProcess  = function (done) {
     }
 
     const responseData = wsResponse.getData([]);
-
-    const choices = [];
-    const nextStrategy = {};
 
     if(!responseData.length) {
       cliUi.stop().warning("There is no available Datasets for remove");

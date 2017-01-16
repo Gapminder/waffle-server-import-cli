@@ -60,6 +60,8 @@ step.prototype.preProcess  = function (done) {
 
     let selectedDataSet = responseData.github;
     let commitFrom = gitFlow.getShortHash(responseData.commit);
+    let choices = [];
+    let nextStrategy = {};
 
     gitFlow.getCommitList(selectedDataSet, function(error, list) {
 
@@ -71,8 +73,7 @@ step.prototype.preProcess  = function (done) {
           return item.hash == commitFrom;
         });
 
-        let nextStrategy = {};
-        let choices = list.map(function(item, index){
+        choices = list.map(function(item, index){
           nextStrategy[item.hash] = NEXT_STEP_PATH;
           let choiceData = {
             name: [item.hash, item.message].join(" "),

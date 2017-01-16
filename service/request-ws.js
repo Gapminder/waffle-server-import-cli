@@ -24,6 +24,7 @@ const ROUTE_WS_DATASET_DEFAULT  = '/api/ddf/cli/datasets/default';
 const ROUTE_WS_ACCESS_TOKEN     = '/api/ddf/cli/datasets/accessToken';
 const ROUTE_WS_PRIVATE_LIST     = '/api/ddf/cli/datasets/private';
 const ROUTE_WS_CACHE_CLEAN      = '/api/ddf/cli/cache/clean';
+const ROUTE_WS_RUNNING_DATASETS = '/api/ddf/cli/datasets/inProgress';
 
 //const REQUEST_TIMEOUT = 2 * 60 * 60 * 1000;
 // Linux kernel TCP :: max 120 seconds
@@ -118,6 +119,25 @@ wsRequest.prototype.cacheClean = function (data, callback) {
 
 wsRequest.prototype.getDataSetList = function (data, callback) {
   this.sendRequest(REQUEST_TYPE_GET, ROUTE_WS_DATASET_LIST, data, callback);
+};
+
+/*
+
+ Request to WS :: Get List of Running Datasets (Import/Update)
+
+ GET: /api/ddf/cli/datasets/inProgress
+
+ RESPONSE, data: Array(Objects)
+
+  [
+    {name: '...'},
+    {githubUrl: '...'}
+  ]
+
+*/
+
+wsRequest.prototype.getDatasetsInProgress = function (data, callback) {
+  this.sendRequest(REQUEST_TYPE_GET, ROUTE_WS_RUNNING_DATASETS, data, callback);
 };
 
 /*
