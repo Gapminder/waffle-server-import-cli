@@ -29,7 +29,7 @@ const shell = require('shelljs');
  *
  */
 
-function CliToolApiAutoImport (options, complete) {
+function CliToolApiAutoImport(options, complete) {
 
   options = options || {};
 
@@ -56,9 +56,9 @@ function CliToolApiAutoImport (options, complete) {
     repoInit,
     repoImport,
     repoUpdate
-  ], function(error, success) {
-    
-    if(error) {
+  ], function (error, success) {
+
+    if (error) {
       cliUi.error(error);
       return complete(error);
     }
@@ -69,7 +69,6 @@ function CliToolApiAutoImport (options, complete) {
 }
 
 module.exports = CliToolApiAutoImport;
-
 
 
 /* additional :: private usage */
@@ -83,7 +82,7 @@ function authentication(callback) {
     password: cliOptions.pass
   };
 
-  wsRequest.authenticate(data, function(error, wsResponse) {
+  wsRequest.authenticate(data, function (error, wsResponse) {
 
     let errorMsg = error ? error.toString() : wsResponse.getError();
 
@@ -103,11 +102,11 @@ function repoInit(callback) {
 
   const cliOptions = holder.load('cli-options');
 
-  gitFlow.getCommitList(cliOptions.repo, function(error, list) {
+  gitFlow.getCommitList(cliOptions.repo, function (error, list) {
 
     cliUi.stop();
 
-    if(error) {
+    if (error) {
       return callback(error);
     }
 
@@ -132,15 +131,15 @@ function repoImport(callback) {
   };
 
   cliUi.state("processing Import Dataset, validation");
-  gitFlow.validateDataset(data, function(error) {
+  gitFlow.validateDataset(data, function (error) {
 
-    if(error) {
+    if (error) {
       cliUi.stop().error("Validation Error");
       return callback(error);
     }
 
     cliUi.state("processing Import Dataset, send request");
-    wsRequest.importDataset(data, function(error, wsResponse) {
+    wsRequest.importDataset(data, function (error, wsResponse) {
 
       let gitRepoPath = gitFlow.getRepoFolder(data.github);
       let commandLinesOfCode = `wc -l ${gitRepoPath}/*.csv | grep "total$"`;
@@ -150,7 +149,7 @@ function repoImport(callback) {
 
         let errorMsg = error ? error.toString() : wsResponse.getError();
 
-        if(errorMsg) {
+        if (errorMsg) {
           cliUi.stop();
           return callback(errorMsg);
         }
@@ -160,16 +159,16 @@ function repoImport(callback) {
         };
 
         longPolling.setTimeStart(numberOfRows);
-        longPolling.checkDataSet(dataState, function(state){
+        longPolling.checkDataSet(dataState, function (state) {
 
           // state.success
-          if(!state.success) {
+          if (!state.success) {
             cliUi.stop().logStart().error(state.message).logEnd();
           } else {
             //cliUi.stop().logPrint([state.message]);
           }
 
-          cliUi.stop().success("Repo Import: OK (based on #"+importCommitHash+")");
+          cliUi.stop().success("Repo Import: OK (based on #" + importCommitHash + ")");
           return callback();
         });
       });
@@ -189,7 +188,7 @@ function repoUpdate(callback) {
   let importCommitIndex = -1;
   let latestCommitIndex = commitList.length - 1;
 
-  let filteredList = commitList.filter(function(item, itemIndex){
+  let filteredList = commitList.filter(function (item, itemIndex) {
 
     const result = (importCommitIndex === -1 || itemIndex > latestCommitIndex) ? false : true;
 
@@ -222,9 +221,9 @@ function incrementalUpdate(item, callback) {
   };
 
   cliUi.state("processing Update Dataset, validation");
-  gitFlow.validateDataset(data, function(error) {
+  gitFlow.validateDataset(data, function (error) {
 
-    if(error) {
+    if (error) {
       cliUi.stop().error("Validation Error");
       return callback('validation error');
     }
@@ -236,36 +235,51 @@ function incrementalUpdate(item, callback) {
     };
 
     cliUi.state("processing Update Dataset, generate diff");
-    csvDiff.process(diffOptions, function(error, result) {
+    csvDiff.process(diffOptions, function (error, result) {
 
       cliUi.state("processing Update Dataset, send request");
-      wsRequest.updateDataset(diffOptions, function(error, wsResponse) {
+      wsRequest.updateDataset(diffOptions, function (error, wsResponse) {
 
-        let errorMsg = error ? error.toString() : wsResponse.getError();
 
-        if(errorMsg) {
-          cliUi.stop();
-          return callback(errorMsg);
-        }
+        const gitRepoPath = gitFlow.getRepoFolder(data.github);
 
-        let operationMsg = wsResponse.getMessage();
+        const pathsToFiles = result.fileList.map((fileName) => {
+          return gitRepoPath + '/' + fileName;
+        }).join(" ");
 
-        let dataState = {
-          'datasetName': gitFlow.getRepoName(cliOptions.repo)
-        };
+        const getGrep = pathsToFiles.length > 1 ? ` | grep "total$"` : "";
 
-        longPolling.checkDataSet(dataState, function(state){
+        const commandLinesOfCode = pathsToFiles.length<1 ? `wc -l ""` : `wc -l ${pathsToFiles}${getGrep}`;
+        shell.exec(commandLinesOfCode, {silent: true}, function (err, stdout) {
+          const numberOfRows = parseInt(stdout);
 
-          // state.success
-          if(!state.success) {
-            cliUi.stop().logStart().error(state.message).logEnd();
-          } else {
-            //cliUi.stop().logPrint([state.message]);
+          const errorMsg = error ? error.toString() : wsResponse.getError();
+
+          if (errorMsg) {
+            cliUi.stop();
+            return callback(errorMsg);
           }
 
-          cliUi.stop().success("Repo Updated: OK (from: #" + commitFrom + "; to: #" + commitTo + ")");
-          holder.save('repo-update-commit-prev', item.hash);
-          return callback();
+          let operationMsg = wsResponse.getMessage();
+
+          let dataState = {
+            'datasetName': gitFlow.getRepoName(cliOptions.repo)
+          };
+
+          longPolling.setTimeStart(numberOfRows);
+          longPolling.checkDataSet(dataState, function (state) {
+
+            // state.success
+            if (!state.success) {
+              cliUi.stop().logStart().error(state.message).logEnd();
+            } else {
+              //cliUi.stop().logPrint([state.message]);
+            }
+
+            cliUi.stop().success("Repo Updated: OK (from: #" + commitFrom + "; to: #" + commitTo + ")");
+            holder.save('repo-update-commit-prev', item.hash);
+            return callback();
+          });
         });
       });
     });
