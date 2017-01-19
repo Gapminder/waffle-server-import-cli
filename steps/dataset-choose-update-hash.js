@@ -32,7 +32,7 @@ const NEXT_STEP_PATH = 'choose-flow';
 const HOLDER_KEY_DATASET_UPDATE = 'dataset-choose-update';
 const HOLDER_KEY_DATASET_UPDATE_DATA = 'dataset-update-data';
 
-step.prototype.preProcess  = function (done) {
+step.prototype.preProcess = function (done) {
 
   let self = this;
   cliUi.state("get latest update hash commit from Waffle-Server");
@@ -41,11 +41,11 @@ step.prototype.preProcess  = function (done) {
     'github': this.holder.get(HOLDER_KEY_DATASET_UPDATE, false)
   };
 
-  wsRequest.getLatestCommit(data, function(error, wsResponse) {
+  wsRequest.getLatestCommit(data, function (error, wsResponse) {
 
     let errorMsg = error ? error.toString() : wsResponse.getError();
 
-    if(errorMsg) {
+    if (errorMsg) {
       self.setQuestionChoices([], []);
       cliUi.stop().logStart().error(errorMsg).logEnd();
       // return done(errorMsg); :: inquirer bug, update after fix
@@ -63,26 +63,26 @@ step.prototype.preProcess  = function (done) {
     let choices = [];
     let nextStrategy = {};
 
-    gitFlow.getCommitList(selectedDataSet, function(error, list) {
+    gitFlow.getCommitList(selectedDataSet, function (error, list) {
 
-      if(!error) {
+      if (!error) {
 
         list.reverse();
 
-        let commitFromIndex = list.findIndex(function(item) {
+        let commitFromIndex = list.findIndex(function (item) {
           return item.hash == commitFrom;
         });
 
-        choices = list.map(function(item, index){
+        choices = list.map(function (item, index) {
           nextStrategy[item.hash] = NEXT_STEP_PATH;
           let choiceData = {
             name: [item.hash, item.message].join(" "),
             value: item.hash
           };
-          if(index < commitFromIndex) {
+          if (index < commitFromIndex) {
             choiceData['disabled'] = 'unavailable';
           }
-          if(index == commitFromIndex) {
+          if (index == commitFromIndex) {
             choiceData['disabled'] = 'FROM';
           }
           return choiceData;
@@ -107,7 +107,7 @@ step.prototype.process = function (inputValue) {
   cliUi.state("processing Update Dataset");
 
   // back & exit
-  if(!stepInstance.availableChoice(inputValue)) {
+  if (!stepInstance.availableChoice(inputValue)) {
     cliUi.stop();
     return done(null, true);
   }
@@ -121,11 +121,11 @@ step.prototype.process = function (inputValue) {
   };
 
   cliUi.state("processing Update Dataset, validation");
-  gitFlow.validateDataset(data, function(error) {
+  gitFlow.validateDataset(data, function (error) {
 
-    if(error) {
+    if (error) {
 
-      error.forEach(function(index, item, array){
+      error.forEach(function (index, item, array) {
         let fileName = item.path;
 
         let message = [];
@@ -154,20 +154,27 @@ step.prototype.process = function (inputValue) {
     };
 
     cliUi.state("processing Update Dataset, generate diff");
-    csvDiff.process(diffOptions, function(error, result) {
+    csvDiff.process(diffOptions, function (error, result) {
 
       cliUi.state("processing Update Dataset, send request");
-      wsRequest.updateDataset(diffOptions, function(error, wsResponse) {
+      wsRequest.updateDataset(diffOptions, function (error, wsResponse) {
 
-        let gitRepoPath = gitFlow.getRepoFolder(data.github);
-        let commandLinesOfCode = `wc -l ${gitRepoPath}/*.csv | grep "total$"`;
+        const gitRepoPath = gitFlow.getRepoFolder(data.github);
+
+        const pathsToFiles = result.fileList.map((fileName) => {
+          return gitRepoPath + '/' + fileName;
+        }).join(" ");
+
+        const getGrep = pathsToFiles.length > 1 ? ` | grep "total$"` : "";
+
+        const commandLinesOfCode = pathsToFiles.length<1 ? `wc -l ""` : `wc -l ${pathsToFiles}${getGrep}`;
 
         shell.exec(commandLinesOfCode, {silent: true}, function (err, stdout) {
-          let numberOfRows = parseInt(stdout);
+          const numberOfRows = parseInt(stdout);
 
-          let errorMsg = error ? error.toString() : wsResponse.getError();
+          const errorMsg = error ? error.toString() : wsResponse.getError();
 
-          if(errorMsg) {
+          if (errorMsg) {
             cliUi.stop().logStart().error(errorMsg).logEnd();
             // return done(errorMsg); :: inquirer bug, update after fix
             return done(null, true);
@@ -180,10 +187,10 @@ step.prototype.process = function (inputValue) {
           };
 
           longPolling.setTimeStart(numberOfRows);
-          longPolling.checkDataSet(dataState, function(state){
+          longPolling.checkDataSet(dataState, function (state) {
 
             // state.success
-            if(!state.success) {
+            if (!state.success) {
               cliUi.stop().logStart().error(state.message).logEnd();
             } else {
               cliUi.stop().logPrint([state.message]);
@@ -192,6 +199,7 @@ step.prototype.process = function (inputValue) {
           });
 
         });
+
       });
 
     });

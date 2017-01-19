@@ -69,7 +69,8 @@ csvDiff.prototype.process = function (data, callback) {
 
         const resultFiles = {
           diff: resultFileName,
-          lang: resultFileLangName
+          lang: resultFileLangName,
+          fileList: gitDiffFileList
         };
 
         cliUi.stop().success("* Diff generation completed!");
