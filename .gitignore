@@ -4,5 +4,6 @@
 node_modules
 requests/*
 repos/*
+coverage/*
 config/repositories.json
 config/waffle-server.json

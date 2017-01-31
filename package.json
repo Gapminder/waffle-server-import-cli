@@ -7,8 +7,7 @@
     "ws-cli": "index_cli.js"
   },
   "scripts": {
-    "test": "mocha",
-    "test:coverage": "istanbul --include-all-sources cover _mocha -- -R spec './test/*.test.js'",
+    "test": "istanbul --include-all-sources cover _mocha -- -R spec 'test/unit/**/*.spec.js'",
     "stop-track-config": "git update-index --assume-unchanged ./config/repositories.json ./config/waffle-server.json",
     "start": "npm run stop-track-config && node index.js",
     "api:import-update": "node cli.import-update.js",
@@ -47,6 +46,8 @@
     "superagent": "2.0.0"
   },
   "devDependencies": {
-    "mocha": "3.1.2"
+    "chai": "3.5.0",
+    "mocha": "3.1.2",
+    "sinon": "1.17.7"
   }
 }

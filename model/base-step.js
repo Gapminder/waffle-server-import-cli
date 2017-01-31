@@ -25,7 +25,6 @@ step.prototype.getName = function () {
   return this.hash;
 };
 step.prototype.process = function () {
-  console.log("DEBUG::base, process");
   return true;
 };
 step.prototype.filter = function (inputValue) {
@@ -84,7 +83,7 @@ step.prototype.run = function (holder, runner) {
   this.preProcess(function (error) {
 
     if(error) {
-      console.log("Exit:", error);
+      // Exit
       return true;
     }
 
