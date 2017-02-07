@@ -16,6 +16,7 @@ const ROUTE_WS_UPDATE           = '/api/ddf/cli/update-incremental';
 const ROUTE_WS_ROLLBACK         = '/api/ddf/cli/transactions/latest/rollback';
 const ROUTE_WS_REMOVE_DATASET   = '/api/ddf/cli/remove-dataset';
 const ROUTE_WS_REMOVABLE_LIST   = '/api/ddf/cli/datasets/removable';
+const ROUTE_WS_REMOVABLE_STATUS = '/api/ddf/cli/datasets/removalStatus';
 const ROUTE_WS_DATASET_LIST     = '/api/ddf/cli/datasets';
 const ROUTE_WS_LATEST_COMMIT    = '/api/ddf/cli/commit-of-latest-dataset-version';
 const ROUTE_WS_DATASET_STATE    = '/api/ddf/cli/transactions/latest/status';
@@ -263,6 +264,27 @@ wsRequest.prototype.removeDataset = function (data, callback) {
 
 wsRequest.prototype.removableDatasetList = function (data, callback) {
   this.sendRequest(REQUEST_TYPE_GET, ROUTE_WS_REMOVABLE_LIST, data, callback);
+};
+
+/*
+
+ Request to WS :: Get Status of Removal Dataset
+
+ GET: /api/ddf/cli/datasets/removableStatus
+
+ RESPONSE {
+
+            success: true,
+            data: {
+                    "concepts": "${AMOUNT_OF_CONCEPTS_REMOVED_SO_FAR}",
+                    "entities": "${AMOUNT_OF_ENTITIES_REMOVED_SO_FAR}",
+                    "datapoints": "${AMOUNT_OF_DATAPOINTS_REMOVED_SO_FAR}"
+                   }
+           }
+ */
+
+wsRequest.prototype.removableStatus = function (data, callback) {
+  this.sendRequest(REQUEST_TYPE_GET, ROUTE_WS_REMOVABLE_STATUS, data, callback);
 };
 
 /*
