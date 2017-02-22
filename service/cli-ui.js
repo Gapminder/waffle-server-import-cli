@@ -9,10 +9,13 @@ require('moment-duration-format');
 const SEPARATOR_LINE = "-------------------------------------------------------------------------";
 const SEPARATOR_UI = "\n\n\n\n\n\n\n\n\n\n";
 
-const CONST_FONT_ERROR = "\x1b[31m* ERROR:\x1b[93m ";
-const CONST_FONT_YELLOW = "\x1b[33m* WARNING:\x1b[93m ";
+const CONST_FONT_RED = "\x1b[31m";
+const CONST_FONT_YELLOW = "\x1b[33m";
 const CONST_FONT_GREEN = "\x1b[32m";
+const CONST_FONT_BLUE = "\x1b[34m";
 const CONST_FONT_WHITE = "\x1b[0m";
+const CONST_FONT_ERROR = `${CONST_FONT_RED}* ERROR:\x1b[93m `;
+const CONST_FONT_WARN = `${CONST_FONT_YELLOW}* WARNING:\x1b[93m `;
 
 function uiProgress () {
 
@@ -27,6 +30,12 @@ function uiProgress () {
 
   this.reset();
 };
+
+uiProgress.prototype.CONST_FONT_RED = CONST_FONT_RED;
+uiProgress.prototype.CONST_FONT_YELLOW = CONST_FONT_YELLOW;
+uiProgress.prototype.CONST_FONT_GREEN = CONST_FONT_GREEN;
+uiProgress.prototype.CONST_FONT_BLUE = CONST_FONT_BLUE;
+uiProgress.prototype.CONST_FONT_WHITE = CONST_FONT_WHITE;
 
 uiProgress.prototype.reset = function () {
   this.stop();
@@ -108,7 +117,7 @@ uiProgress.prototype.success = function () {
 };
 uiProgress.prototype.warning = function () {
   let args = Array.prototype.slice.call(arguments);
-  args[0] = CONST_FONT_YELLOW + args[0];
+  args[0] = CONST_FONT_WARN + args[0];
   args.push(CONST_FONT_WHITE);
   console.log.apply(console, args);
   return this;
