@@ -125,8 +125,7 @@ gitFlow.prototype.getCommitList = function (github, callback) {
         return {
           hash: self.getShortHash(item.hash),
           message: item.message,
-          date: item.date,
-          token: item.token
+          date: item.date
         };
       });
 

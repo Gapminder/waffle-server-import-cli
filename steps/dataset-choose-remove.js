@@ -91,7 +91,7 @@ step.prototype.process = function (inputValue) {
       return done(null, true);
     }
 
-      longPolling.checkDataSetForRemove(data, function (state) {
+      longPolling.checkDataSetRemovingStatus(data, function (state) {
         // state.success
         if (!state.success) {
           cliUi.stop().logStart().error(state.message).logEnd();

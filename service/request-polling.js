@@ -7,6 +7,11 @@ const moment = require('moment');
 const _ = require('lodash');
 require('moment-duration-format');
 
+const ERROR_DATASET_WAS_NOT_FOUND = `Dataset was not found for the given name`;
+const ERROR_DATASET_REMOVAL_IS_CORRUPTED = `Dataset removal is corrupted. Try to start removal again.`;
+const OPERATION_IS_COMPLETED = 'Operation is completed successfully';
+const OPERATION_IS_IN_PROGRESS = 'Operation is in progress';
+
 let longPolling = function () {
   this.responseLimit = 3;
   this.requestInterval = 7000;
@@ -61,15 +66,13 @@ longPolling.prototype._isSuccessful = function () {
 
 longPolling.prototype._hasNoErrors = function () {
 
-  let self = this;
-  const responseLength = self.response.length;
+  const self = this;
+  // check that responses has no errors
+  const lastError = _.findLast(self.response, (response) => _.get(response, 'transaction.lastError', false));
 
-  // check that response has no errors
-  for (let i = 0; i < responseLength; i += 1) {
-    if (!!this.response[i].transaction.lastError) {
-      self.responseLastError = this.response[i].transaction.lastError;
-      return false;
-    }
+  if (lastError) {
+    self.responseLastError = lastError;
+    return false;
   }
 
   return true;
@@ -79,6 +82,10 @@ longPolling.prototype._hasNoErrors = function () {
 longPolling.prototype._isResponseChanged = function () {
 
   let self = this;
+
+  if (self.response.length < self.responseLimit) {
+    return true;
+  }
 
   let responses = self.response.slice();
   const firstResponse = responses.shift();
@@ -116,10 +123,10 @@ longPolling.prototype._getLatestRequestReport = function () {
   const timeNow = new Date().getTime();
   const timeDiff = (timeNow - timeStart) / 1000;
 
-  const dataEntities = this.responseLastState.entities || 0;
-  const dataConcepts = this.responseLastState.concepts || 0;
-  const dataDatapoints = this.responseLastState.datapoints || 0;
-  const dataTranslations = this.responseLastState.translations || 0;
+  const dataEntities = _.get(this.responseLastState, 'entities', 0);
+  const dataConcepts = _.get(this.responseLastState, 'concepts', 0) ;
+  const dataDatapoints = _.get(this.responseLastState, 'datapoints', 0);
+  const dataTranslations = _.get(this.responseLastState, 'translations', 0);
 
   const TIME_LOG_FORMAT = "y[y] M[m] d[d] hh:mm:ss[s]";
   const totalItemsDone = dataEntities + dataConcepts + dataDatapoints + dataTranslations;
@@ -136,22 +143,22 @@ longPolling.prototype._getLatestRequestReport = function () {
   }).join(' ');
 };
 
-longPolling.prototype._getLatestRequestReportForRemove = function(wsResponse) {
+longPolling.prototype._getRemovalReportFromLatestRequest = function() {
 
-  let logMessage = [];
+  if (!this.responseLastState) {
+    return '';
+  }
 
-  let removedConcepts = _.get(wsResponse.response, 'data.concepts', 0);
-  let removedEntities = _.get(wsResponse.response, 'data.entities', 0);
-  let removedDatapoints = _.get(wsResponse.response, 'data.datapoints', 0);
+  let removedConcepts = _.get(this.responseLastState, 'concepts', 0);
+  let removedEntities = _.get(this.responseLastState, 'entities', 0);
+  let removedDatapoints = _.get(this.responseLastState, 'datapoints', 0);
 
-  logMessage.push(removedEntities ? 'Entities: ' + removedEntities + ';' : '');
-  logMessage.push(removedConcepts ? 'Concepts: ' + removedConcepts + ';' : '');
-  logMessage.push(removedDatapoints ? 'DataPoints: ' + removedDatapoints + ';' : '');
-
-  return logMessage.filter(function (value) {
-    return !!value;
-  }).join(' ');
+  return `${toStringRemovedDocs(removedConcepts, 'Concepts')}${toStringRemovedDocs(removedEntities, 'Entities')}${toStringRemovedDocs(removedDatapoints, 'DataPoints')}`;
 };
+
+function toStringRemovedDocs(numDocuments, type) {
+  return numDocuments ? `${type}: ${numDocuments}; ` : '';
+}
 
 longPolling.prototype.setTimeStart = function (numberOfRows) {
   this.timeStart = new Date();
@@ -172,20 +179,12 @@ longPolling.prototype._shouldContinue = function () {
     return true;
   }
 
-  /*
-   // change logic that detect complete of operation
-   if(!self._isResponseChanged()) {
-   cliUi.state("check state, should not continue, response not changed", true);
-   return false;
-   }
-   */
-
   return true;
 };
 
-longPolling.prototype._completeRequest = function (state, message) {
+longPolling.prototype._completeRequest = function (state, message, reportFunction = '_getLatestRequestReport') {
 
-  message = state ? message + "\n" + this._getLatestRequestReport() : message;
+  message = state ? message + "\n" + this[reportFunction]() : message;
   this.reset();
 
   return {
@@ -217,7 +216,7 @@ longPolling.prototype.checkDataSet = function (data, callback) {
       // stop, because operation completed
       if (isSuccessful) {
         // correct state and has no errors
-        return callback(self._completeRequest(true, 'Operation completed successfully'));
+        return callback(self._completeRequest(true, OPERATION_IS_COMPLETED));
       } else {
         // last error message
         return callback(self._completeRequest(false, self.responseLastError));
@@ -239,58 +238,59 @@ longPolling.prototype.checkDataSet = function (data, callback) {
   });
 };
 
-longPolling.prototype._isSuccessfulForRemove = function (wsResponse) {
+longPolling.prototype._getDatasetRemovalStatus = function (error, wsResponse) {
 
-  let successfulResponse = _.get(wsResponse.response, 'success');
+  const errorMsg = error ? error.toString() : wsResponse.getError();
+  const isResponseSuccessful = wsResponse.isSuccess();
 
-  if (successfulResponse === true) {
-    cliUi.state("check state, in progress", true);
-    return false;
+  if (!this._isResponseChanged()) {
+    cliUi.state("check state, failed", true);
+    return {isRemovalFinished: true, isRemovalSuccessful: false, message: ERROR_DATASET_REMOVAL_IS_CORRUPTED};
   }
 
-  if (successfulResponse === false) {
+  if (isResponseSuccessful) {
+    cliUi.state("check state, in progress", true);
+    return {isRemovalFinished: false, isRemovalSuccessful: false, message: OPERATION_IS_IN_PROGRESS};
+  }
+
+  if (!isResponseSuccessful && _.includes(errorMsg, ERROR_DATASET_WAS_NOT_FOUND)) {
     cliUi.state("check state, completed", true);
-    return true;
+    return {isRemovalFinished: true, isRemovalSuccessful: true, message: OPERATION_IS_COMPLETED};
   }
 
   cliUi.state("check state, failed", true);
-  return true;
+  return {isRemovalFinished: true, isRemovalSuccessful: false, message: errorMsg};
 };
 
-longPolling.prototype.checkDataSetForRemove = function (data, callback) {
+longPolling.prototype.checkDataSetRemovingStatus = function (data, callback) {
 
   let self = this;
   self.responseCounter++;
 
-   wsRequest.removableStatus(data, function (error, wsResponse) {
+  wsRequest.removableStatus(data, function (error, wsResponse) {
+    const responseData = wsResponse.getData([]);
+    self._addResponse({modifiedObjects: responseData});
 
-    const isSuccessful = self._isSuccessfulForRemove(wsResponse);
+    const {isRemovalFinished, isRemovalSuccessful, message} = self._getDatasetRemovalStatus(error, wsResponse);
 
-    if (!self._shouldContinue() || isSuccessful) {
-
-      // stop, because operation completed
-      if (isSuccessful) {
-        // correct state and has no errors
-        return callback(self._completeRequest(true, 'Operation completed successfully'));
-      } else {
-        // last error message
-        return callback(self._completeRequest(false, self.responseLastError));
-      }
+    if (isRemovalFinished) {
+      return callback(self._completeRequest(isRemovalSuccessful, message, '_getRemovalReportFromLatestRequest'));
     } else {
 
       // setup message lines for report
-      let reportMessage = self._getLatestRequestReportForRemove(wsResponse);
+      let reportMessage = self._getRemovalReportFromLatestRequest();
 
       if (reportMessage) {
         cliUi.state("removal progress: " + reportMessage, true);
       }
 
       // new request
-      setTimeout(function () {
-        self.checkDataSetForRemove(data, callback);
+      setTimeout(() => {
+        self.checkDataSetRemovingStatus(data, callback);
       }, self.requestInterval);
     }
   })
 };
 
+// todo: change to factory
 module.exports = new longPolling();
