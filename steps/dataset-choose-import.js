@@ -16,7 +16,7 @@ util.inherits(step, stepBase);
 let question = {
   'name': 'dataset-choose-import',
   'type': 'list',
-  'message': `List of DataSet Repositories (github.com, ${cliUi.CONST_FONT_BLUE} was loaded from local 'config/repositories.json'${cliUi.CONST_FONT_WHITE})`,
+  'message': `List of DataSet Repositories (github.com, ${cliUi.CONST_FONT_BLUE}was loaded from local 'config/repositories.json'${cliUi.CONST_FONT_WHITE})`,
   'choices': []
 };
 

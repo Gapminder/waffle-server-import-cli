@@ -13,43 +13,85 @@ util.inherits(step, stepBase);
 
 // Question Definition
 
-let question = {
+const question = {
   'name': 'dataset-choose-update',
   'type': 'list',
-  'message': 'List of DataSet Repositories (github.com)',
+  'message': `List of DataSet Repositories (github.com, ${cliUi.CONST_FONT_BLUE}was loaded from Waffle Server${cliUi.CONST_FONT_WHITE})`,
   'choices': []
 };
 
 // Own Process Implementation
 
 const NEXT_STEP_PATH = 'dataset-choose-update-hash';
-const HOLDER_KEY_REPO_LIST = 'repository-list';
+const HOLDER_KEY_DATASET_LIST = 'dataset-list';
+
+const wsRequest = require('./../service/request-ws');
+const formatter = require('./../service/formatter');
 
 step.prototype.preProcess  = function (done) {
 
-  let choices = [];
-  let nextStrategy = {};
-  let repoList = this.holder.load(HOLDER_KEY_REPO_LIST, []);
+  const self = this;
 
-  repoList.forEach(function(item){
-    choices.push({
-      name: item.github,
-      value: item.github
+  wsRequest.getDataSetList({}, function(error, wsResponse) {
+
+    const errorMsg = error ? error.toString() : wsResponse.getError();
+
+    if (errorMsg) {
+      cliUi.stop().logStart().error(errorMsg).logEnd();
+      self.setQuestionChoices([], []);
+      // return done(errorMsg); :: inquirer bug, update after fix
+      return done(null, true);
+    }
+
+    const responseData = wsResponse.getData([]);
+    stepInstance.holder.save(HOLDER_KEY_DATASET_LIST, responseData);
+
+    const nextStrategy = {};
+    let selectedDefault = false;
+
+    const choices = responseData.map((item) => {
+
+      nextStrategy[item.path] = NEXT_STEP_PATH;
+
+      // detect default dataset
+      if(item.isDefault) {
+
+        selectedDefault = {
+          name: item.name,
+          value: item.path
+        };
+
+        item.versions.forEach(function(version){
+          if(version.isDefault) {
+            selectedDefault.name += ` / ${version.commit} / ${formatter.date(version.createdAt)} (default)`;
+          }
+        });
+      }
+
+      return {
+        name: item.name,
+        value: item.path
+      };
     });
-    nextStrategy[item.github] = NEXT_STEP_PATH;
-  });
 
-  this.setQuestionChoices(choices, nextStrategy);
-  done();
+    // setup selected Default DataSet
+    if(!!selectedDefault) {
+      choices.unshift(selectedDefault);
+    }
+
+    self.setQuestionChoices(choices, nextStrategy);
+    cliUi.stop();
+    return done(null, true);
+  });
 };
 
 step.prototype.process = function (inputValue) {
 
-  let done = this.async();
+  const done = this.async();
   cliUi.state("processing selected repo for update");
 
   cliUi.stop();
-  done(null, true);
+  return done(null, true);
 
 };
 
