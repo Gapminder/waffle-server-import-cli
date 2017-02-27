@@ -72,22 +72,34 @@ gitFlow.prototype.registerRepo = function (github, callback) {
   var githubUrlDescriptor = getGithubUrlDescriptor(github);
 
   cliUi.state("git, clone repo");
-  gitw(gitFolder).clone(githubUrlDescriptor.url, gitFolder, ['-b', githubUrlDescriptor.branch], function(error, result){
 
-    cliUi.state("git, download updates");
-    gitw(gitFolder).fetch('origin', githubUrlDescriptor.branch, function(error, result){
+  shell.exec(`ssh -T git@github.com`, {silent: true}, (code, stdout, stderr) => {
+    if (code > 1) {
+      shell.echo(`${cliUi.CONST_FONT_RED}* [code=${code}] ERROR: ${cliUi.CONST_FONT_YELLOW}${stderr}${cliUi.CONST_FONT_BLUE}\n\tPlease, follow the detailed instruction 'https://github.com/Gapminder/waffle-server-import-cli#ssh-key' for continue working with CLI tool.${cliUi.CONST_FONT_WHITE}`);
+      shell.exit(0);
+    }
+
+    gitw(gitFolder).clone(githubUrlDescriptor.url, gitFolder, ['-b', githubUrlDescriptor.branch], function(error, result){
 
       if(error) {
         return callback(error);
       }
 
-      gitw(gitFolder).reset(['--hard', 'origin/' + githubUrlDescriptor.branch], function(error, result){
+      cliUi.state("git, download updates");
+      gitw(gitFolder).fetch('origin', githubUrlDescriptor.branch, function(error, result){
 
         if(error) {
           return callback(error);
         }
 
-        return callback();
+        gitw(gitFolder).reset(['--hard', 'origin/' + githubUrlDescriptor.branch], function(error, result){
+
+          if(error) {
+            return callback(error);
+          }
+
+          return callback();
+        });
       });
     });
   });
