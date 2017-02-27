@@ -7,3 +7,4 @@ repos/*
 coverage/*
 config/repositories.json
 config/waffle-server.json
+yarn.lock
