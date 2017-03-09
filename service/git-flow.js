@@ -86,11 +86,14 @@ gitFlow.prototype.registerRepo = function (github, callback) {
       }
 
       cliUi.state("git, download updates");
+
       gitw(gitFolder).fetch('origin', githubUrlDescriptor.branch, function(error, result){
 
         if(error) {
           return callback(error);
         }
+
+        cliUi.state("git, checkout on last changes");
 
         gitw(gitFolder).reset(['--hard', 'origin/' + githubUrlDescriptor.branch], function(error, result){
 
@@ -110,28 +113,47 @@ gitFlow.prototype.getCommitList = function (github, callback) {
 
   let self = this;
   let gitFolder = this.configDir(github);
+  var githubUrlDescriptor = getGithubUrlDescriptor(github);
 
   this.registerRepo(github, function(){
 
     cliUi.state("git, process log");
-    gitw(gitFolder).log(function(error, result){
 
-      if(error) {
+    gitw(gitFolder).fetch('origin', githubUrlDescriptor.branch, function(error, result) {
+
+      if (error) {
         return callback(error);
       }
 
-      let commits = result.all;
-      let commitsList = commits.map(function(item){
-        return {
-          hash: self.getShortHash(item.hash),
-          message: item.message,
-          date: item.date
-        };
+      cliUi.state("git, download updates");
+
+      gitw(gitFolder).reset(['--hard', 'origin/' + githubUrlDescriptor.branch], function (error, result) {
+
+        if (error) {
+          return callback(error);
+        }
+
+        cliUi.state("git, checkout on last changes");
+
+        gitw(gitFolder).log(function (error, result) {
+
+          if (error) {
+            return callback(error);
+          }
+
+          let commits = result.all;
+          let commitsList = commits.map(function (item) {
+            return {
+              hash: self.getShortHash(item.hash),
+              message: item.message,
+              date: item.date
+            };
+          });
+
+          return callback(false, commitsList);
+        });
       });
-
-      return callback(false, commitsList);
     });
-
   });
 };
 

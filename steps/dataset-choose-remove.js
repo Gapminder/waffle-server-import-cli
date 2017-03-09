@@ -4,6 +4,7 @@ const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
 const stepBase = require('./../model/base-step');
+const longPolling = require('./../service/request-polling');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -27,18 +28,18 @@ const gitFlow = require('./../service/git-flow');
 
 const NEXT_STEP_PATH = 'choose-flow';
 
-step.prototype.preProcess  = function (done) {
+step.prototype.preProcess = function (done) {
 
   const self = this;
   const choices = [];
   const nextStrategy = {};
   const data = {};
 
-  wsRequest.removableDatasetList(data, function(error, wsResponse) {
+  wsRequest.removableDatasetList(data, function (error, wsResponse) {
 
     let errorMsg = error ? error.toString() : wsResponse.getError();
 
-    if(errorMsg) {
+    if (errorMsg) {
       // error
       self.setQuestionChoices(choices, nextStrategy);
       cliUi.stop().error(errorMsg);
@@ -47,11 +48,11 @@ step.prototype.preProcess  = function (done) {
 
     const responseData = wsResponse.getData([]);
 
-    if(!responseData.length) {
+    if (!responseData.length) {
       cliUi.stop().warning("There is no available Datasets for remove");
     }
 
-    responseData.forEach(function(item){
+    responseData.forEach(function (item) {
       choices.push({
         name: item.githubUrl,
         value: item.githubUrl
@@ -70,7 +71,7 @@ step.prototype.process = function (inputValue) {
   cliUi.state("processing selected repo for removing dataset");
 
   // back & exit
-  if(!stepInstance.availableChoice(inputValue)) {
+  if (!stepInstance.availableChoice(inputValue)) {
     cliUi.stop();
     return done(null, true);
   }
@@ -81,21 +82,25 @@ step.prototype.process = function (inputValue) {
     'datasetName': gitFlow.getRepoName(inputValue)
   };
 
-  wsRequest.removeDataset(data, function(error, wsResponse) {
+  wsRequest.removeDataset(data, function (error, wsResponse) {
 
     let errorMsg = error ? error.toString() : wsResponse.getError();
 
-    if(errorMsg) {
+    if (errorMsg) {
       cliUi.stop().logStart().error(errorMsg).logEnd();
       return done(null, true);
     }
 
-    let operationMsg = wsResponse.getMessage();
-    cliUi.stop().logPrint([operationMsg]);
-
-    done(null, true);
+      longPolling.checkDataSetRemovingStatus(data, function (state) {
+        // state.success
+        if (!state.success) {
+          cliUi.stop().logStart().error(state.message).logEnd();
+        } else {
+          cliUi.stop().logPrint([state.message]);
+        }
+        return done(null, true);
+      });
   });
-
 };
 
 // Export Module and keep Context available for process (inquirer ctx)
