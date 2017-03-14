@@ -3,7 +3,7 @@
 const _ = require('lodash');
 require('./../service/env-init');
 
-const gitFlow = require('./../service/git-flow');
+const gitFlow = require('../service/git-flow');
 
 function CliToolApiGetCommitList(githubUrl, onComplete) {
 
