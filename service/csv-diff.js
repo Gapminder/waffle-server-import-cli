@@ -1,8 +1,8 @@
 'use strict';
 
+const _ = require('lodash');
 const fs = require('fs');
-const async = require("async");
-const path = require("path");
+const async = require('async');
 
 const gitFlow = require('./git-flow');
 const cliUi = require('./cli-ui');
@@ -11,75 +11,96 @@ const gitCsvDiff = require('git-csv-diff');
 
 function csvDiff() {};
 
-csvDiff.prototype.process = function (data, callback) {
-  const githubUrl = data.github;
-  const sourceFolderPath = data.resultPath ? data.resultPath : envConst.PATH_REQUESTS;
-  let gitDiffFileStatus = {};
+function createDiffStreams(context, done) {
+  const {sourceFolderPath, github} = context;
 
-  gitFlow.getFileDiffByHashes(data, gitDiffFileStatus, function (error, gitDiffFileList, metaData) {
-
-    if (!!error) {
-      return callback(error);
+  return gitFlow.getFileDiffByHashes(context, (error, filesDiff) => {
+    if (error) {
+      return done(error);
     }
 
-    const resultFileName = gitFlow.getDiffFileNameResult(sourceFolderPath, githubUrl);
-    const resultFileLangName = gitFlow.getDiffFileNameResult(sourceFolderPath, githubUrl, 'lang');
+    const {gitDiffFileStatus, metadata, gitDiffFileList} = filesDiff;
 
-    const streams = {
-      diff: fs.createWriteStream(resultFileName),
-      lang: fs.createWriteStream(resultFileLangName)
+    context.resultFileName = gitFlow.getDiffFileNameResult(sourceFolderPath, github);
+    context.resultFileLangName = gitFlow.getDiffFileNameResult(sourceFolderPath, github, 'lang');
+
+    context.gitDiffFileStatus = gitDiffFileStatus;
+    context.gitDiffFileList = gitDiffFileList;
+    context.metadata = metadata;
+
+    context.streams = {
+      diff: fs.createWriteStream(context.resultFileName),
+      lang: fs.createWriteStream(context.resultFileLangName)
     };
 
-    const datapackages = {
-      old: metaData.datapackageOld,
-      new: metaData.datapackageNew
-    };
+    return done(null, context);
+  });
+}
 
-    async.mapSeries(
-      gitDiffFileList,
-      // iteration
-      function (fileName, doneMapLimit) {
+function processDiffFiles(context, done) {
+  const {gitDiffFileList, metadata, gitDiffFileStatus, streams} = context;
 
-        gitFlow.showFileStateByHash(data, fileName, function (error, dataDiff) {
-
-          const metaData = {
-            fileName: fileName,
-            fileModifier: gitDiffFileStatus[fileName],
-            datapackage: datapackages
-          };
-
-          // external lib
-          gitCsvDiff.processUpdated(metaData, dataDiff, streams, function(){
-            return doneMapLimit(error);
-          });
-
-        });
-
-      },
-      // callback
-      function (error) {
-
-        // close streams
-        streams.diff.end();
-        streams.lang.end();
-
-        if (!!error) {
-          return callback(error);
+  return async.eachSeries(
+    gitDiffFileList,
+    // iteration
+    (fileName, onFileProcessed) => {
+      return gitFlow.showFileStateByHash(context, fileName, function (error, dataDiff) {
+        if (error) {
+          return onFileProcessed(error);
         }
 
-        const resultFiles = {
-          diff: resultFileName,
-          lang: resultFileLangName,
-          fileList: gitDiffFileList
+        const metaData = {
+          fileName: fileName,
+          fileModifier: gitDiffFileStatus[fileName],
+          datapackage: {
+            old: metadata.datapackageOld,
+            new: metadata.datapackageNew
+          }
         };
 
-        cliUi.stop().success("* Diff generation completed!");
-        return callback(false, resultFiles);
-      }
-    );
+        // external lib
+        return gitCsvDiff.processUpdated(metaData, dataDiff, streams, () => onFileProcessed());
+      });
+    }, (error) => {
+      return done(error, context);
+    }
+  );
+}
 
+csvDiff.prototype.process = function (externalContext, done) {
+  const sourceFolderPath = _.get(externalContext, 'resultPath', envConst.PATH_REQUESTS);
+  const context = _.extend({sourceFolderPath}, externalContext);
+
+  async.waterfall([
+    async.constant(context),
+    createDiffStreams,
+    processDiffFiles
+  ], (error, result) => {
+    if (error) {
+      return done(error);
+    }
+
+    // close streams
+    const diff = _.get(result.streams, 'diff');
+    const lang = _.get(result.streams, 'lang');
+
+    if (diff) {
+      diff.end();
+    }
+    if (lang) {
+      lang.end();
+    }
+
+    const resultFiles = {
+      diff: result.resultFileName,
+      lang: result.resultFileLangName,
+      fileList: result.gitDiffFileList
+    };
+
+    cliUi.stop().success('* Diff generation completed!');
+
+    return done(null, resultFiles);
   });
-
 };
 
 // Export Module

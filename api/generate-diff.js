@@ -26,7 +26,7 @@ function cliApiGenerateDiff (options, complete) {
   if (!options.hashFrom || !options.hashTo || !options.github) {
     const message = "Some parameter was missed (Hash From, Hash To or Repo Url)";
     cliUi.error(message);
-    return callback(message);
+    return complete(message);
   }
 
   console.time('time::done');
@@ -36,10 +36,11 @@ function cliApiGenerateDiff (options, complete) {
     console.timeEnd('time::done');
 
     if (!!error) {
+      cliUi.error(error);
       return complete(error);
     }
 
-    return complete(error, result);
+    return complete(null, result);
   });
 }
 
