@@ -14,7 +14,8 @@
     "stop-track-config": "git update-index --assume-unchanged ./config/repositories.json ./config/waffle-server.json",
     "start": "npm run stop-track-config && node index.js",
     "api:import-update": "node cli.import-update.js",
-    "api:set-default": "node cli.set-default.js"
+    "api:set-default": "node cli.set-default.js",
+    "api:diff": "node cli.generate-diff.js"
   },
   "repository": {
     "type": "git",
@@ -39,6 +40,7 @@
     "csvtojson": "0.5.3",
     "ddf-validation": "~1.2.3",
     "git-csv-diff": "1.2.0",
+    "highland": "2.10.2",
     "inquirer": "1.0.2",
     "ip-address": "5.8.2",
     "lodash": "4.11.1",

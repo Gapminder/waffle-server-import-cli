@@ -8,7 +8,7 @@ Formatter.prototype.date = function (dateRaw) {
   let date = (typeof dateRaw == 'string') ? new Date(dateRaw) : dateRaw;
   let dateFormat = [];
 
-  dateFormat.push(date.getFullYear());
+  dateFormat.push(date.getUTCFullYear());
   dateFormat.push("-");
   dateFormat.push(this.leadZero(date.getUTCMonth() + 1));
   dateFormat.push("-");

@@ -3,8 +3,10 @@
 const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
+const hi = require('highland');
 const async = require("async");
 const shell = require("shelljs");
+const JSONStream = require('JSONStream');
 const cliUi = require('./../service/cli-ui');
 const envConst = require('./../model/env-const');
 
@@ -157,79 +159,125 @@ gitFlow.prototype.getCommitList = function (github, callback) {
   });
 };
 
-gitFlow.prototype.getFileDiffByHashes = function (data, gitDiffFileStatus, callback) {
+function getFileNamesDiff(context, done) {
+  cliUi.state("git, get diff, file-names only");
 
-  let github = data.github;
-  let hashFrom = data.hashFrom;
-  let hashTo = data.hashTo;
+  const {gitFolder, hashFrom, hashTo} = context;
 
-  let gitFolder = this.configDir(github);
+  return gitw(gitFolder).diff([hashFrom + '..' + hashTo, "--name-only"], (error, resultGitDiff) => {
+    if (error) {
+      return done(error);
+    }
+
+    context.gitDiffFileList = _.chain(resultGitDiff)
+      .split('\n')
+      .filter(value => !!value && value.indexOf(".csv") != -1)
+      .value();
+
+    return done(null, context);
+  })
+}
+
+function getFileStatusesDiff(context, done) {
+  cliUi.state("git, get diff, file-names with states");
+
+  const {gitFolder, hashFrom, hashTo} = context;
+
+  return gitw(gitFolder).diff([hashFrom + '..' + hashTo, "--name-status"], function(error, resultGitDiff) {
+    if (error) {
+      return done(error);
+    }
+
+    context.gitDiffFileStatus = _.chain(resultGitDiff)
+      .split('\n')
+      .reduce((result, rawFile) => {
+
+        if (!!rawFile && rawFile.indexOf(".csv") != -1) {
+          const fileStat = rawFile.split("\t");
+          result[_.last(fileStat)] = _.first(fileStat);
+        }
+
+        return result;
+      }, {})
+      .value();
+
+    return done(null, context);
+  });
+}
+
+function checkoutHash(hash, context, done) {
+  const {gitFolder} = context;
+
+  gitw(gitFolder).checkout(hash, function(error) {
+    if (error) {
+      return done(error);
+    }
+
+    return done(null, context);
+  });
+}
+
+function readJsonFileAsJsonStream(pathToFile) {
+  const fileWithChangesStream = fs.createReadStream(pathToFile, {encoding: 'utf8'});
+  const jsonStream = fileWithChangesStream.pipe(JSONStream.parse());
+  return hi(jsonStream);
+}
+
+function getDatapackage(propertyName, context, done) {
+  const datapackagePath = context.gitFolder + 'datapackage.json';
+
+  if (fs.existsSync(datapackagePath)) {
+    return readJsonFileAsJsonStream(datapackagePath)
+      .toCallback((error, datapackageContent) => {
+
+        if (error) {
+          return done(error);
+        }
+
+        context.metadata[propertyName] = datapackageContent;
+
+        return done(null, context);
+      });
+  }
+
+  return async.setImmediate(() => done('`datapackage.json` is absent'));
+}
+
+gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
+
+  const self = this;
+  const gitFolder = self.configDir(externalContext.github);
 
   const metadata = {
     datapackageOld: {},
     datapackageNew: {}
   };
 
-  this.registerRepo(github, function(){
+  const context = _.extend({gitFolder, gitDiffFileStatus: [], gitDiffFileList: [], metadata}, externalContext);
 
-    cliUi.state("git, get diff, file-names only");
-    gitw(gitFolder).diff([hashFrom + '..' + hashTo, "--name-only"], function(error, result) {
-
-      if(error) {
-        return callback(error);
+  return async.waterfall([
+    async.constant(context),
+    (context, done) => self.registerRepo(context.github, (error) => {
+      if (error) {
+        console.error(error);
       }
 
-      let resultGitDiff = result;
-      let gitDiffFileList = resultGitDiff.split("\n").filter(function(value){
-        return !!value && value.indexOf(".csv") != -1;
-      });
+      return done(null, context);
+    }),
+    getFileNamesDiff,
+    getFileStatusesDiff,
+    async.apply(checkoutHash, externalContext.hashFrom),
+    async.apply(getDatapackage, 'datapackageOld'),
+    async.apply(checkoutHash, externalContext.hashTo),
+    async.apply(getDatapackage, 'datapackageNew')
+  ], (error, result) => {
+    if (error) {
+      return callback(error);
+    }
 
-      // fix path with folders
-      gitDiffFileList.forEach(function(item, index, arr){
-        //arr[index] = path.parse(item).base;
-      });
+    const {gitDiffFileList, metadata, gitDiffFileStatus} = result;
 
-      cliUi.state("git, get diff, file-names with states");
-      gitw(gitFolder).diff([hashFrom + '..' + hashTo, "--name-status"], function(error, result) {
-
-        result.split("\n").filter(function(value) {
-          return !!value && value.indexOf(".csv") != -1;
-        }).map(function(rawFile) {
-          let fileStat = rawFile.split("\t");
-          gitDiffFileStatus[fileStat[1]] = fileStat[0];
-        });
-
-        gitw(gitFolder).checkout(hashFrom, function(error) {
-
-          if(error) {
-            return callback(error);
-          }
-
-          const pathDatapackageOld = gitFolder + 'datapackage.json';
-          if(fs.existsSync(pathDatapackageOld)) {
-            const contentRaw = metadata.datapackageOld = fs.readFileSync(pathDatapackageOld);
-            metadata.datapackageOld = JSON.parse(contentRaw);
-          }
-
-          gitw(gitFolder).checkout(hashTo, function(error) {
-
-            if(error) {
-              return callback(error);
-            }
-
-            const pathDatapackageNew = gitFolder + 'datapackage.json';
-            if(fs.existsSync(pathDatapackageNew)) {
-              const contentRaw = fs.readFileSync(pathDatapackageNew);
-              metadata.datapackageNew = JSON.parse(contentRaw);
-            }
-
-            callback(null, gitDiffFileList, metadata);
-
-          });
-        });
-      });
-    });
-
+    return callback(null, {gitDiffFileList, metadata, gitDiffFileStatus});
   });
 };
 
@@ -325,7 +373,7 @@ gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github, addition
 
   filePartsResult.push('output.txt');
   return path.resolve(pathFolder, filePartsResult.join("--"));
-}
+};
 
 function getGithubUrlDescriptor(githubUrl) {
   const regexpFolderRes = /:(.+)\/(.+)\.git(#(.+))?/.exec(githubUrl);

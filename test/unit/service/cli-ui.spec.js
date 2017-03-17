@@ -17,7 +17,7 @@ describe('Service: CLI UI', function() {
     const BottomBarStub = this.stub().returns({updateBottomBar: updateBottomBarStub});
     const cliUi = proxyquire('../../../service/cli-ui', {inquirer: {ui: {BottomBar: BottomBarStub}}});
 
-    sinon.assert.calledOnce(BottomBarStub);
+    sinon.assert.calledWithNew(BottomBarStub);
     sinon.assert.calledWithExactly(BottomBarStub);
     sinon.assert.calledOnce(updateBottomBarStub);
     sinon.assert.calledWithExactly(updateBottomBarStub, '');
