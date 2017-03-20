@@ -1,20 +1,24 @@
 'use strict';
 
+const sinon = require('sinon');
+const sinonTest = require("sinon-test");
+sinon.test = sinonTest.configureTest(sinon);
+sinon.testCase = sinonTest.configureTestCase(sinon);
+
 const chai = require('chai');
-const sinon = require("sinon");
 const expect = chai.expect;
 
 const testFile = 'model/base-step.js';
 const testItem = require(`./../../../${testFile}`);
 const inquirer = require('inquirer');
 
-describe(`Unit Test || ${testFile}`, function () {
+describe(`Unit Test: ${testFile}`, function () {
 
   const initData = {
     name: 'some-step'
   };
 
-  describe("API::getName", function () {
+  describe("API: getName", function () {
 
     it("should return correct result", function (done) {
 
@@ -30,7 +34,7 @@ describe(`Unit Test || ${testFile}`, function () {
 
   });
 
-  describe("API::process", function () {
+  describe("API: process", function () {
 
     it("should return correct result", function (done) {
 
@@ -46,7 +50,7 @@ describe(`Unit Test || ${testFile}`, function () {
 
   });
 
-  describe("API::filter", function () {
+  describe("API: filter", function () {
 
     it("should return correct result", function (done) {
 
@@ -63,7 +67,7 @@ describe(`Unit Test || ${testFile}`, function () {
 
   });
 
-  describe("API::availableChoice", function () {
+  describe("API: availableChoice", function () {
 
     it("should return correct result for specific input value - back", function (done) {
 
@@ -106,7 +110,7 @@ describe(`Unit Test || ${testFile}`, function () {
 
   });
 
-  describe("API::preProcess", function () {
+  describe("API: preProcess", function () {
 
     it("should be executed with correct flow", function (done) {
 
@@ -122,7 +126,7 @@ describe(`Unit Test || ${testFile}`, function () {
 
   });
 
-  describe("API::setBack", function () {
+  describe("API: setBack", function () {
 
     it("should change private property", function (done) {
 
@@ -141,7 +145,7 @@ describe(`Unit Test || ${testFile}`, function () {
 
   });
 
-  describe("API::setQuestionChoices", function () {
+  describe("API: setQuestionChoices", function () {
 
     it("should be executed with correct flow", function (done) {
 
@@ -165,7 +169,7 @@ describe(`Unit Test || ${testFile}`, function () {
 
   });
 
-  describe("API::setNextDynamic", function () {
+  describe("API: setNextDynamic", function () {
 
     it("should be executed with correct flow", function (done) {
 
@@ -185,7 +189,7 @@ describe(`Unit Test || ${testFile}`, function () {
 
   });
 
-  describe("API::setNext", function () {
+  describe("API: setNext", function () {
 
     it("should be executed with correct flow", function (done) {
 
@@ -206,7 +210,7 @@ describe(`Unit Test || ${testFile}`, function () {
 
   });
 
-  describe("API::setNextStrategy", function () {
+  describe("API: setNextStrategy", function () {
 
     it("should be executed with correct flow", function (done) {
 
@@ -227,7 +231,7 @@ describe(`Unit Test || ${testFile}`, function () {
 
   });
 
-  describe("API::run", function () {
+  describe("API: run", function () {
 
     it("should be executed with correct flow, handling error", function (done) {
 
@@ -236,7 +240,7 @@ describe(`Unit Test || ${testFile}`, function () {
       sinon.stub(inquirer, "prompt");
 
       const testItemInstance = new testItem(initData);
-      sinon.stub(testItemInstance, "preProcess", function(callback) {
+      sinon.stub(testItemInstance, "preProcess").callsFake(function(callback) {
         callback('error');
       });
 
@@ -258,7 +262,7 @@ describe(`Unit Test || ${testFile}`, function () {
       const holder = {set: sinon.stub()};
       const runner = {};
 
-      sinon.stub(inquirer, "prompt", function(step) {
+      sinon.stub(inquirer, "prompt").callsFake(function(step) {
         return new Promise(function(resolve, reject) {
           resolve({'some-step': 'some-value'});
         });
@@ -285,7 +289,7 @@ describe(`Unit Test || ${testFile}`, function () {
       const holder = {set: sinon.stub()};
       const runner = {};
 
-      sinon.stub(inquirer, "prompt", function(step) {
+      sinon.stub(inquirer, "prompt").callsFake(function(step) {
         return new Promise(function(resolve, reject) {
           resolve({'some-step': 'Back'});
         });
@@ -314,7 +318,7 @@ describe(`Unit Test || ${testFile}`, function () {
       const holder = {set: sinon.stub()};
       const runner = {};
 
-      sinon.stub(inquirer, "prompt", function(step) {
+      sinon.stub(inquirer, "prompt").callsFake(function(step) {
         return new Promise(function(resolve, reject) {
           resolve({'some-step': 'any'});
         });
@@ -343,7 +347,7 @@ describe(`Unit Test || ${testFile}`, function () {
       const holder = {set: sinon.stub()};
       const runner = {};
 
-      sinon.stub(inquirer, "prompt", function(step) {
+      sinon.stub(inquirer, "prompt").callsFake(function(step) {
         return new Promise(function(resolve, reject) {
           resolve({'some-step': 'strategy-key'});
         });

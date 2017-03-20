@@ -3,40 +3,25 @@
 const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
-const hi = require('highland');
-const async = require("async");
-const shell = require("shelljs");
+const async = require('async');
+const shell = require('shelljs');
 const JSONStream = require('JSONStream');
-const cliUi = require('./../service/cli-ui');
 const envConst = require('./../model/env-const');
-
-const ddfValidation = require('ddf-validation');
-const StreamValidator = ddfValidation.StreamValidator;
-
-let sourceFolderPath = envConst.PATH_REPOS;
-
-const simpleGit = require('simple-git');
-const GIT_SILENT = true;
+const utils = require('./git-flow-utils');
 
 function gitFlow() {
 }
-
-function gitw(pathToGit) {
-  return simpleGit(pathToGit).silent(GIT_SILENT);
-}
-
 
 gitFlow.prototype.getShortHash = function (commit) {
   return !!commit ? commit.substring(0, 7) : '';
 };
 
 gitFlow.prototype.configDir = function (github) {
-  return this.getRepoFolder(github) + "/";
+  return this.getRepoFolder(github) + '/';
 };
 
-
 gitFlow.prototype.getRepoName = function (github) {
-  const githubUrlDescriptor = getGithubUrlDescriptor(github);
+  const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
 
   if (!githubUrlDescriptor.account || !githubUrlDescriptor.repo) {
     return '';
@@ -49,199 +34,70 @@ gitFlow.prototype.getRepoName = function (github) {
 };
 
 gitFlow.prototype.getRepoPath = function (github) {
-  const githubUrlDescriptor = getGithubUrlDescriptor(github);
+  const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
 
   if (githubUrlDescriptor.account && githubUrlDescriptor.repo) {
-    return path.join(githubUrlDescriptor.account, githubUrlDescriptor.repo, githubUrlDescriptor.branch)
+    return path.join(githubUrlDescriptor.account, githubUrlDescriptor.repo, githubUrlDescriptor.branch);
   }
 
   return '';
 };
 
 gitFlow.prototype.getRepoFolder = function (github) {
-  let regexpFolderGitFolder = this.getRepoPath(github);
-  let targetFolder = path.join(sourceFolderPath, regexpFolderGitFolder);
-  if(!fs.existsSync(targetFolder)) {
+
+  const regexpFolderGitFolder = this.getRepoPath(github);
+  const targetFolder = path.join(envConst.PATH_REPOS, regexpFolderGitFolder);
+
+  if (!fs.existsSync(targetFolder)) {
+
+    console.log(`Try to create directory '${targetFolder}'`);
+
     shell.mkdir('-p', targetFolder);
+
+    if (shell.error()) {
+      throw new Error(`Something went wrong during creation directory process`);
+    }
   }
+
   return targetFolder;
 };
 
 gitFlow.prototype.registerRepo = function (github, callback) {
 
-  let self = this;
-  let gitFolder = this.configDir(github);
-  var githubUrlDescriptor = getGithubUrlDescriptor(github);
+  const gitFolder = this.configDir(github);
+  const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
+  const context = {github, gitFolder, branch: githubUrlDescriptor.branch, url: githubUrlDescriptor.url};
 
-  cliUi.state("git, clone repo");
-
-  shell.exec(`ssh -T git@github.com`, {silent: true}, (code, stdout, stderr) => {
-    if (code > 1) {
-      shell.echo(`${cliUi.CONST_FONT_RED}* [code=${code}] ERROR: ${cliUi.CONST_FONT_YELLOW}${stderr}${cliUi.CONST_FONT_BLUE}\n\tPlease, follow the detailed instruction 'https://github.com/Gapminder/waffle-server-import-cli#ssh-key' for continue working with CLI tool.${cliUi.CONST_FONT_WHITE}`);
-      shell.exit(0);
-    }
-
-    gitw(gitFolder).clone(githubUrlDescriptor.url, gitFolder, ['-b', githubUrlDescriptor.branch], function(error, result){
-
-      if(error) {
-        return callback(error);
-      }
-
-      cliUi.state("git, download updates");
-
-      gitw(gitFolder).fetch('origin', githubUrlDescriptor.branch, function(error, result){
-
-        if(error) {
-          return callback(error);
-        }
-
-        cliUi.state("git, checkout on last changes");
-
-        gitw(gitFolder).reset(['--hard', 'origin/' + githubUrlDescriptor.branch], function(error, result){
-
-          if(error) {
-            return callback(error);
-          }
-
-          return callback();
-        });
-      });
-    });
-  });
-
+  return utils.updateRepoState(context, callback);
 };
 
-gitFlow.prototype.getCommitList = function (github, callback) {
+gitFlow.prototype.getCommitList = function (github, done) {
 
-  let self = this;
-  let gitFolder = this.configDir(github);
-  var githubUrlDescriptor = getGithubUrlDescriptor(github);
+  const self = this;
+  const gitFolder = this.configDir(github);
+  const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
+  const context = {github, gitFolder, branch: githubUrlDescriptor.branch, url: githubUrlDescriptor.url};
 
-  this.registerRepo(github, function(){
+  return async.waterfall([
+    async.constant(context),
+    utils.updateRepoState,
+    utils.gitLog
+  ], (error, result) => {
 
-    cliUi.state("git, process log");
+    if (error) {
+      return done(error);
+    }
 
-    gitw(gitFolder).fetch('origin', githubUrlDescriptor.branch, function(error, result) {
+    const {detailedCommitsList} = result;
+    const commitsList = _.map(detailedCommitsList, item => ({
+      hash: self.getShortHash(item.hash),
+      message: item.message,
+      date: item.date
+    }));
 
-      if (error) {
-        return callback(error);
-      }
-
-      cliUi.state("git, download updates");
-
-      gitw(gitFolder).reset(['--hard', 'origin/' + githubUrlDescriptor.branch], function (error, result) {
-
-        if (error) {
-          return callback(error);
-        }
-
-        cliUi.state("git, checkout on last changes");
-
-        gitw(gitFolder).log(function (error, result) {
-
-          if (error) {
-            return callback(error);
-          }
-
-          let commits = result.all;
-          let commitsList = commits.map(function (item) {
-            return {
-              hash: self.getShortHash(item.hash),
-              message: item.message,
-              date: item.date
-            };
-          });
-
-          return callback(false, commitsList);
-        });
-      });
-    });
+    return done(null, commitsList);
   });
 };
-
-function getFileNamesDiff(context, done) {
-  cliUi.state("git, get diff, file-names only");
-
-  const {gitFolder, hashFrom, hashTo} = context;
-
-  return gitw(gitFolder).diff([hashFrom + '..' + hashTo, "--name-only"], (error, resultGitDiff) => {
-    if (error) {
-      return done(error);
-    }
-
-    context.gitDiffFileList = _.chain(resultGitDiff)
-      .split('\n')
-      .filter(value => !!value && value.indexOf(".csv") != -1)
-      .value();
-
-    return done(null, context);
-  })
-}
-
-function getFileStatusesDiff(context, done) {
-  cliUi.state("git, get diff, file-names with states");
-
-  const {gitFolder, hashFrom, hashTo} = context;
-
-  return gitw(gitFolder).diff([hashFrom + '..' + hashTo, "--name-status"], function(error, resultGitDiff) {
-    if (error) {
-      return done(error);
-    }
-
-    context.gitDiffFileStatus = _.chain(resultGitDiff)
-      .split('\n')
-      .reduce((result, rawFile) => {
-
-        if (!!rawFile && rawFile.indexOf(".csv") != -1) {
-          const fileStat = rawFile.split("\t");
-          result[_.last(fileStat)] = _.first(fileStat);
-        }
-
-        return result;
-      }, {})
-      .value();
-
-    return done(null, context);
-  });
-}
-
-function checkoutHash(hash, context, done) {
-  const {gitFolder} = context;
-
-  gitw(gitFolder).checkout(hash, function(error) {
-    if (error) {
-      return done(error);
-    }
-
-    return done(null, context);
-  });
-}
-
-function readJsonFileAsJsonStream(pathToFile) {
-  const fileWithChangesStream = fs.createReadStream(pathToFile, {encoding: 'utf8'});
-  const jsonStream = fileWithChangesStream.pipe(JSONStream.parse());
-  return hi(jsonStream);
-}
-
-function getDatapackage(propertyName, context, done) {
-  const datapackagePath = context.gitFolder + 'datapackage.json';
-
-  if (fs.existsSync(datapackagePath)) {
-    return readJsonFileAsJsonStream(datapackagePath)
-      .toCallback((error, datapackageContent) => {
-
-        if (error) {
-          return done(error);
-        }
-
-        context.metadata[propertyName] = datapackageContent;
-
-        return done(null, context);
-      });
-  }
-
-  return async.setImmediate(() => done('`datapackage.json` is absent'));
-}
 
 gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
 
@@ -257,109 +113,62 @@ gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
 
   return async.waterfall([
     async.constant(context),
-    (context, done) => self.registerRepo(context.github, (error) => {
-      if (error) {
-        console.error(error);
-      }
-
-      return done(null, context);
-    }),
-    getFileNamesDiff,
-    getFileStatusesDiff,
-    async.apply(checkoutHash, externalContext.hashFrom),
-    async.apply(getDatapackage, 'datapackageOld'),
-    async.apply(checkoutHash, externalContext.hashTo),
-    async.apply(getDatapackage, 'datapackageNew')
+    utils.updateRepoState,
+    utils.getFileStatusesDiff,
+    async.apply(utils.checkoutHash, externalContext.hashFrom),
+    async.apply(utils.getDatapackage, 'datapackageOld'),
+    async.apply(utils.checkoutHash, externalContext.hashTo),
+    async.apply(utils.getDatapackage, 'datapackageNew')
   ], (error, result) => {
     if (error) {
       return callback(error);
     }
 
-    const {gitDiffFileList, metadata, gitDiffFileStatus} = result;
+    const {metadata, gitDiffFileStatus} = result;
+    const gitDiffFileList = _.keys(gitDiffFileStatus);
 
     return callback(null, {gitDiffFileList, metadata, gitDiffFileStatus});
   });
 };
 
-gitFlow.prototype.showFileStateByHash = function (data, fileName, callback) {
+gitFlow.prototype.showFileStateByHash = function (data, fileName, done) {
 
-  let gitRepo = data.github;
-
-  let self = this;
+  const gitRepo = data.github;
   const gitFolder = this.configDir(gitRepo);
+  const gitHashFrom = data.hashFrom + ':' + fileName;
+  const gitHashTo = data.hashTo + ':' + fileName;
 
-  let gitHashFrom = data.hashFrom + ':' + fileName;
-  let gitHashTo = data.hashTo + ':' + fileName;
-
-  async.waterfall(
-      [
-        function(done) {
-
-          gitw(gitFolder).show([gitHashFrom], function(error, result){
-            result = !!error ? '' : result;
-            return done(null, result);
-          });
-
-        },
-        function(dataFrom, done) {
-
-          gitw(gitFolder).show([gitHashTo], function(error, result){
-            result = !!error ? '' : result;
-            return done(null, {from: dataFrom, to: result});
-          });
-
-        }
-      ],
-      // callback
-      function(error, result) {
-        callback(error, result);
-      }
-  );
-};
-
-gitFlow.prototype.validateDataset = function (data, callback) {
-
-  let self = this;
-
-  let gitRepo = data.github;
-  let gitCommit = data.commit;
-
-  let gitFolder = this.configDir(gitRepo);
-
-  gitw(gitFolder).checkout(gitCommit, function(error, result) {
-
-    if(error) {
-      return callback(error);
+  async.waterfall([
+    async.constant({gitFolder}),
+    async.apply(utils.gitShow, 'from', gitHashFrom),
+    async.apply(utils.gitShow, 'to', gitHashTo)
+  ], (error, result) => {
+    if (error) {
+      return done(error);
     }
 
-    let streamValidator = new StreamValidator(gitFolder, {
-      excludeRules: 'WRONG_DATA_POINT_HEADER',
-      excludeDirs: '.gitingore .git',
-      isCheckHidden: true
-    });
+    const {from, to} = result;
 
-    let issues = [];
-
-    streamValidator.on('issue', function(issue) {
-      issues.push(issue);
-    });
-
-    streamValidator.on('finish', function(err) {
-      if(issues.length) {
-        cliUi.stop().error("* Validation Error!");
-        return callback(issues);
-      }
-      cliUi.stop().success("* Validation completed!");
-      return callback(null);
-    });
-
-    ddfValidation.validate(streamValidator);
+    return done(null, {from, to});
   });
+};
 
+gitFlow.prototype.validateDataset = function (data, done) {
+
+  const gitRepo = data.github;
+  const gitCommit = data.commit;
+
+  const gitFolder = this.configDir(gitRepo);
+
+  return async.waterfall([
+    async.constant({gitFolder}),
+    async.apply(utils.checkoutHash, gitCommit),
+    utils.validateDataset
+  ], done);
 };
 
 gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github, additional) {
-  const filePath = getGithubUrlDescriptor(github);
+  const filePath = utils.getGithubUrlDescriptor(github);
 
   const filePartsResult = [];
   filePartsResult.push('result');
@@ -367,24 +176,14 @@ gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github, addition
   filePartsResult.push(filePath.repo);
   filePartsResult.push(filePath.branch);
 
-  if(additional) {
+  if (additional) {
     filePartsResult.push(additional);
   }
 
   filePartsResult.push('output.txt');
-  return path.resolve(pathFolder, filePartsResult.join("--"));
+  return path.resolve(pathFolder, filePartsResult.join('--'));
 };
 
-function getGithubUrlDescriptor(githubUrl) {
-  const regexpFolderRes = /:(.+)\/(.+)\.git(#(.+))?/.exec(githubUrl);
-
-  return {
-    account: regexpFolderRes[1] || '',
-    repo: regexpFolderRes[2] || '',
-    branch: regexpFolderRes[4] || 'master',
-    url: _.first(_.split(githubUrl, "#"))
-  }
-}
 // Export Module
 
 module.exports = new gitFlow();

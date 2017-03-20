@@ -9,7 +9,7 @@
   "scripts": {
     "test": "npm run spec && npm run e2e",
     "spec": "mocha --reporter mochawesome --reporter-options reportDir=specReports,reportFilename=specReport --timeout 10000 'test/**/*.spec.js'",
-    "spec:coverage": "istanbul --include-all-sources cover _mocha -- -R spec 'test/unit/**/*.spec.js'",
+    "spec:coverage": "rm -rf specReports && istanbul --include-all-sources cover _mocha -- -R spec 'test/unit/**/*.spec.js'",
     "e2e": "mocha --timeout 10000 'test/**/*.e2e.js'",
     "stop-track-config": "git update-index --assume-unchanged ./config/repositories.json ./config/waffle-server.json",
     "start": "npm run stop-track-config && node index.js",
@@ -57,8 +57,9 @@
     "mocha": "3.1.2",
     "mochawesome": "2.0.4",
     "proxyquire": "1.7.11",
-    "sinon": "1.17.7",
+    "sinon": "2.0.0",
     "sinon-chai": "2.8.0",
-    "sinon-chai-in-order": "0.1.0"
+    "sinon-chai-in-order": "0.1.0",
+    "sinon-test": "1.0.1"
   }
 }
