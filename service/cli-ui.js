@@ -1,7 +1,8 @@
 'use strict';
 
-let inquirer = require('inquirer');
-let inquirerUi = new inquirer.ui.BottomBar();
+const _ = require('lodash');
+const inquirer = require('inquirer');
+const inquirerUi = new inquirer.ui.BottomBar();
 
 const moment = require('moment');
 require('moment-duration-format');
@@ -27,6 +28,7 @@ function uiProgress () {
   this.textBase = '* State: ';
   this.textIncrement = '.';
   this.intervalTimeout = 500;
+  this.maxTextLine = 20;
   this.timeStart = false;
 
   this.reset();
@@ -39,6 +41,8 @@ uiProgress.prototype.CONST_FONT_BLUE = CONST_FONT_BLUE;
 uiProgress.prototype.CONST_FONT_WHITE = CONST_FONT_WHITE;
 uiProgress.prototype.CONST_FONT_ERROR = CONST_FONT_ERROR;
 uiProgress.prototype.CONST_FONT_WARN = CONST_FONT_WARN;
+uiProgress.prototype.CONST_SEPARATOR_LINE = SEPARATOR_LINE;
+uiProgress.prototype.CONST_SEPARATOR_UI = SEPARATOR_UI;
 
 uiProgress.prototype.reset = function () {
   this.stop();
@@ -47,30 +51,32 @@ uiProgress.prototype.reset = function () {
   return this;
 };
 
-uiProgress.prototype.resetTime = function (keepTiming) {
-  if(!keepTiming || !this.timeStart) {
+uiProgress.prototype.resetTime = function (resetTiming = true) {
+  if(resetTiming || !this.timeStart) {
     this.timeStart = new Date().getTime();
   }
 };
 
-uiProgress.prototype.state = function (state, keepTiming) {
+uiProgress.prototype.state = function (state = '', keepTiming = true) {
 
   let self = this;
 
   self.reset();
-  self.resetTime(keepTiming);
-  self.textState = state || '';
+  self.resetTime(!keepTiming);
+  self.textState = state;
 
   self.intervalId = setInterval(function(){
 
-    let timeNow = new Date().getTime();
-    let timeDiff = parseInt((timeNow - self.timeStart)/1000, 10);
-    let timeWait = " (" + moment.duration(timeDiff, 'seconds').format("y[Y] M[M] d[D] hh:mm:ss[s]") + ") ";
+    const timeNow = new Date().getTime();
+    const timeDiff = parseInt((timeNow - self.timeStart)/1000, 10);
+    const timeWait = " (" + moment.duration(timeDiff, 'seconds').format("y[Y] M[M] d[D] hh:mm:ss[s]") + ") ";
 
     self.textLine += self.textIncrement;
-    if(self.textLine.length > 20) {
-      self.textLine = self.textIncrement;
+
+    if(self.textLine.length > self.maxTextLine) {
+      self.textLine = ' ' + self.textIncrement;
     }
+
     inquirerUi.updateBottomBar(self.textBase + self.textState + timeWait + self.textLine);
 
   }, self.intervalTimeout);
@@ -81,6 +87,7 @@ uiProgress.prototype.state = function (state, keepTiming) {
 uiProgress.prototype.stop = function () {
   inquirerUi.updateBottomBar("");
   clearInterval(this.intervalId);
+  this.timeStart = false;
   return this;
 };
 
@@ -90,6 +97,7 @@ uiProgress.prototype.logStart = function () {
   console.log("\n" + SEPARATOR_LINE);
   return this;
 };
+
 uiProgress.prototype.logEnd = function () {
   console.log(SEPARATOR_LINE + SEPARATOR_UI);
   return this;
@@ -105,25 +113,22 @@ uiProgress.prototype.logPrint = function (data) {
 };
 
 uiProgress.prototype.error = function () {
-  let args = Array.prototype.slice.call(arguments);
-  args[0] = CONST_FONT_ERROR + args[0];
-  args.push(CONST_FONT_WHITE);
-  console.log.apply(console, args);
+  printMessage(CONST_FONT_ERROR, Array.from(arguments));
   return this;
 };
+
 uiProgress.prototype.success = function () {
-  let args = Array.prototype.slice.call(arguments);
-  args[0] = CONST_FONT_GREEN + args[0];
-  args.push(CONST_FONT_WHITE);
-  console.log.apply(console, args);
+  printMessage(CONST_FONT_GREEN, Array.from(arguments));
   return this;
 };
+
 uiProgress.prototype.warning = function () {
-  let args = Array.prototype.slice.call(arguments);
-  args[0] = CONST_FONT_WARN + args[0];
-  args.push(CONST_FONT_WHITE);
-  console.log.apply(console, args);
+  printMessage(CONST_FONT_WARN, Array.from(arguments));
   return this;
 };
+
+function printMessage(color, args) {
+  console.log(`${color} ${_.isEmpty(args)? '(no message)' : args} ${CONST_FONT_WHITE}`);
+}
 
 module.exports = new uiProgress();

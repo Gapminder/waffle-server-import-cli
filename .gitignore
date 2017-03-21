@@ -4,7 +4,7 @@
 node_modules
 requests/*
 repos/*
-coverage/*
+coverage
 config/repositories.json
 config/waffle-server.json
 yarn.lock
