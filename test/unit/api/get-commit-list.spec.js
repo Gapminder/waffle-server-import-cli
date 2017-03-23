@@ -1,8 +1,17 @@
 'use strict';
 
-var chai = require("chai");
-var sinon = require("sinon");
-var expect = chai.expect;
+const sinon = require('sinon');
+const sinonTest = require("sinon-test");
+sinon.test = sinonTest.configureTest(sinon);
+sinon.testCase = sinonTest.configureTestCase(sinon);
+
+const chai = require('chai');
+const expect = chai.expect;
+
+const sinonChai = require('sinon-chai');
+const sinonChaiInOrder = require('sinon-chai-in-order');
+chai.use(sinonChai);
+chai.use(sinonChaiInOrder.default);
 
 const gitFlow = require('../../../service/git-flow');
 const getCommitListTest = require('../../../index.api.js');

@@ -2,11 +2,17 @@
 
 const async = require('async');
 const path = require('path');
-const chai = require('chai');
+
 const sinon = require('sinon');
+const sinonTest = require("sinon-test");
+sinon.test = sinonTest.configureTest(sinon);
+sinon.testCase = sinonTest.configureTestCase(sinon);
+
+const chai = require('chai');
+const expect = chai.expect;
+
 const sinonChai = require('sinon-chai');
 const sinonChaiInOrder = require('sinon-chai-in-order');
-const expect = chai.expect;
 chai.use(sinonChai);
 chai.use(sinonChaiInOrder.default);
 
@@ -471,7 +477,7 @@ describe('Service: CSV diff', function () {
     showFileStateByHashStub.onFirstCall().callsArgWithAsync(2, expectedError, expectedDataDiff);
     showFileStateByHashStub.callsArgWithAsync(2, null, expectedEmptyDataDiff);
 
-    const processUpdatedStub = this.stub(gitCsvDiff, 'processUpdated', (metaData, dataDiff, streams, callback) => {
+    const processUpdatedStub = this.stub(gitCsvDiff, 'processUpdated').callsFake((metaData, dataDiff, streams, callback) => {
       delete streams.diff;
       delete streams.lang;
 
