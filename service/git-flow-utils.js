@@ -37,6 +37,18 @@ function gitw(pathToGit) {
   return simpleGit(pathToGit).silent(GIT_SILENT);
 }
 
+function updateRepoState(externalContext, done) {
+  return async.waterfall([
+    async.constant(externalContext),
+    checkSshKey,
+    gitCloneIfRepoNotExists,
+    gitReset,
+    gitFetch
+  ], (error) => {
+    return done(error, externalContext);
+  });
+}
+
 function checkSshKey(externalContext, done) {
   cliUi.state('ssh, check ssh-key');
 
@@ -50,25 +62,19 @@ function checkSshKey(externalContext, done) {
   });
 }
 
-function updateRepoState(externalContext, done) {
-  return async.waterfall([
-    async.constant(externalContext),
-    checkSshKey,
-    gitCloneIfRepoNotExists,
-    gitReset,
-    gitFetch
-  ], (error) => {
-    return done(error, externalContext);
-  });
-}
-
 function gitShow(field, gitHash, externalContext, done) {
   const {gitFolder} = externalContext;
+
+  cliUi.state('git, try to get repo notes');
 
   return gitw(gitFolder).show([gitHash], function (error, result) {
     externalContext[field] = !!error ? '' : result;
 
-    return done(null, externalContext);
+    if (_.some(['exists on disk, but not in','does not exist in'], (message) => _.includes(error, message))) {
+      return done(null, externalContext);
+    }
+
+    return done(error, externalContext);
   });
 }
 
@@ -80,7 +86,6 @@ function gitCloneIfRepoNotExists(externalContext, done) {
   return gitw(gitFolder).clone(url, gitFolder, ['-b', branch], (error) => {
     // Specified cloning error shouldn't be throw exception in case repo was already cloned
     if (_.includes(error,  'already exists and is not an empty directory')) {
-      console.warn(error);
       return done(null, externalContext);
     }
 
@@ -115,36 +120,36 @@ function gitLog(externalContext, done) {
   });
 }
 
-function getFileNamesDiff(context, done) {
-  cliUi.state('git, get diff, file-names only');
+function getFileNamesDiff(externalContext, done) {
+  const {gitFolder, hashFrom, hashTo} = externalContext;
 
-  const {gitFolder, hashFrom, hashTo} = context;
+  cliUi.state('git, get diff, file-names only');
 
   return gitw(gitFolder).diff([hashFrom + '..' + hashTo, '--name-only'], (error, resultGitDiff) => {
     if (error) {
       return done(error);
     }
 
-    context.gitDiffFileList = _.chain(resultGitDiff)
+    externalContext.gitDiffFileList = _.chain(resultGitDiff)
       .split('\n')
-      .filter(value => !!value && value.indexOf('.csv') != -1)
+      .filter(value => !!value && value.indexOf('.csv') !== -1)
       .value();
 
-    return done(null, context);
+    return done(null, externalContext);
   });
 }
 
-function getFileStatusesDiff(context, done) {
+function getFileStatusesDiff(externalContext, done) {
   cliUi.state('git, get diff, file-names with states');
 
-  const {gitFolder, hashFrom, hashTo} = context;
+  const {gitFolder, hashFrom, hashTo} = externalContext;
 
   return gitw(gitFolder).diff([hashFrom + '..' + hashTo, '--name-status'], function (error, resultGitDiff) {
     if (error) {
       return done(error);
     }
 
-    context.gitDiffFileStatus = _.chain(resultGitDiff)
+    externalContext.gitDiffFileStatus = _.chain(resultGitDiff)
       .split('\n')
       .reduce((result, rawFile) => {
 
@@ -157,12 +162,14 @@ function getFileStatusesDiff(context, done) {
       }, {})
       .value();
 
-    return done(null, context);
+    return done(null, externalContext);
   });
 }
 
 function checkoutHash(hash, externalContext, done) {
   const {gitFolder} = externalContext;
+
+  cliUi.state('git, try to checkout');
 
   return gitw(gitFolder).checkout(hash, function (error) {
     if (error) {
@@ -212,8 +219,8 @@ function readJsonFileAsJsonStream(pathToFile) {
   return hi(jsonStream);
 }
 
-function getDatapackage(propertyName, context, done) {
-  const datapackagePath = context.gitFolder + 'datapackage.json';
+function getDatapackage(propertyName, externalContext, done) {
+  const datapackagePath = externalContext.gitFolder + 'datapackage.json';
 
   if (fs.existsSync(datapackagePath)) {
     return readJsonFileAsJsonStream(datapackagePath)
@@ -223,9 +230,9 @@ function getDatapackage(propertyName, context, done) {
           return done(error);
         }
 
-        context.metadata[propertyName] = datapackageContent;
+        externalContext.metadata[propertyName] = datapackageContent;
 
-        return done(null, context);
+        return done(null, externalContext);
       });
   }
 

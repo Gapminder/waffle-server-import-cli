@@ -195,7 +195,6 @@ describe('Service: Git flow', function () {
 
     const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
     const existsSyncStub = this.stub(fs, 'existsSync').returns(false);
-    const logStub = this.stub(console, 'log');
     const mkdirStub = this.stub(shell, 'mkdir');
     const errorStub = this.stub(shell, 'error').returns(false);
 
@@ -208,9 +207,6 @@ describe('Service: Git flow', function () {
 
     assert.calledOnce(existsSyncStub);
     assert.calledWithExactly(existsSyncStub, expectedAbsoluteRepoFolder);
-
-    assert.calledOnce(logStub);
-    assert.calledWithExactly(logStub, `Try to create directory '${expectedAbsoluteRepoFolder}'`);
 
     assert.calledOnce(mkdirStub);
     assert.calledWithExactly(mkdirStub, '-p', expectedAbsoluteRepoFolder);
@@ -231,7 +227,6 @@ describe('Service: Git flow', function () {
 
     const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
     const existsSyncStub = this.stub(fs, 'existsSync').returns(false);
-    const logStub = this.stub(console, 'log');
     const mkdirStub = this.stub(shell, 'mkdir');
     const errorStub = this.stub(shell, 'error').returns(true);
 
@@ -245,9 +240,6 @@ describe('Service: Git flow', function () {
 
       assert.calledOnce(existsSyncStub);
       assert.calledWithExactly(existsSyncStub, expectedAbsoluteRepoFolder);
-
-      assert.calledOnce(logStub);
-      assert.calledWithExactly(logStub, `Try to create directory '${expectedAbsoluteRepoFolder}'`);
 
       assert.calledOnce(mkdirStub);
       assert.calledWithExactly(mkdirStub, '-p', expectedAbsoluteRepoFolder);
