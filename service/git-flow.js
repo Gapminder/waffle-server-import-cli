@@ -8,6 +8,7 @@ const shell = require('shelljs');
 const JSONStream = require('JSONStream');
 const envConst = require('./../model/env-const');
 const utils = require('./git-flow-utils');
+const cliUi = require('./../service/cli-ui');
 
 function gitFlow() {
 }
@@ -50,7 +51,7 @@ gitFlow.prototype.getRepoFolder = function (github) {
 
   if (!fs.existsSync(targetFolder)) {
 
-    console.log(`Try to create directory '${targetFolder}'`);
+    cliUi.state(`Try to create directory '${targetFolder}'`);
 
     shell.mkdir('-p', targetFolder);
 
@@ -68,6 +69,8 @@ gitFlow.prototype.registerRepo = function (github, callback) {
   const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
   const context = {github, gitFolder, branch: githubUrlDescriptor.branch, url: githubUrlDescriptor.url};
 
+  cliUi.state("git, register repo");
+
   return utils.updateRepoState(context, callback);
 };
 
@@ -77,6 +80,8 @@ gitFlow.prototype.getCommitList = function (github, done) {
   const gitFolder = this.configDir(github);
   const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
   const context = {github, gitFolder, branch: githubUrlDescriptor.branch, url: githubUrlDescriptor.url};
+
+  cliUi.state("git, get commits list");
 
   return async.waterfall([
     async.constant(context),
@@ -109,7 +114,18 @@ gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
     datapackageNew: {}
   };
 
-  const context = _.extend({gitFolder, gitDiffFileStatus: [], gitDiffFileList: [], metadata}, externalContext);
+  const githubUrlDescriptor = utils.getGithubUrlDescriptor(externalContext.github);
+
+  const context = _.extend({
+    gitFolder,
+    branch: githubUrlDescriptor.branch,
+    url: githubUrlDescriptor.url,
+    gitDiffFileStatus: [],
+    gitDiffFileList: [],
+    metadata
+  }, externalContext);
+
+  cliUi.state("git, get file diff by hashes");
 
   return async.waterfall([
     async.constant(context),

@@ -198,7 +198,6 @@ describe('Git flow utils', function () {
       const expectedError = `fatal: destination path '${url}' already exists and is not an empty directory.`;
 
       const cliUiStub = this.stub(cliUi, 'state');
-      const warnStub = this.stub(console, 'warn');
       const shellStub = this.stub(shell, 'exec').callsArgWithAsync(2, expectedCode, expectedStdout, expectedStderr);
       const simpleGitStub = {
         clone: this.stub().callsArgWithAsync(3, expectedError),
@@ -223,9 +222,6 @@ describe('Git flow utils', function () {
 
         assert.calledOnce(simpleGitStub.clone);
         assert.calledWithExactly(simpleGitStub.clone, url, gitFolder, ['-b', branch], match.func);
-
-        assert.calledOnce(warnStub);
-        assert.calledWithExactly(warnStub, expectedError);
 
         assert.calledOnce(simpleGitStub.fetch);
         assert.calledWithExactly(simpleGitStub.fetch, 'origin', branch, match.func);
@@ -507,14 +503,13 @@ describe('Git flow utils', function () {
       Author: 'Test test Test <test@gmail.com>',
       Date: 'Mon Mar 20 13:37:43 2017 +0200'
     };
-    const expectedError = 'Boo!';
+    const expectedError = 'does not exist in';
     const simpleGitStub = {
       show: this.stub().callsArgWithAsync(1, expectedError, expectedResult),
       silent: this.stub().returnsThis()
     };
 
     const cliUiStub = this.stub(cliUi, 'state');
-    const warnStub = this.stub(console, 'warn');
     const simpleGitWraper = this.stub().returns(simpleGitStub);
     const utils = proxyquire('../../../service/git-flow-utils', {'simple-git': simpleGitWraper});
 
@@ -528,9 +523,6 @@ describe('Git flow utils', function () {
 
       assert.calledOnce(simpleGitStub.show);
       assert.calledWithExactly(simpleGitStub.show, [hash], match.func);
-
-      assert.calledOnce(warnStub);
-      assert.calledWithExactly(warnStub, expectedError);
 
       assert.calledOnce(simpleGitWraper);
       assert.calledWithExactly(simpleGitWraper, gitFolder);

@@ -68,13 +68,13 @@ function gitShow(field, gitHash, externalContext, done) {
   cliUi.state('git, try to get repo notes');
 
   return gitw(gitFolder).show([gitHash], function (error, result) {
-    if (error) {
-      console.warn(error);
-    }
-
     externalContext[field] = !!error ? '' : result;
 
-    return done(null, externalContext);
+    if (_.some(['exists on disk, but not in','does not exist in'], (message) => _.includes(error, message))) {
+      return done(null, externalContext);
+    }
+
+    return done(error, externalContext);
   });
 }
 
@@ -86,7 +86,6 @@ function gitCloneIfRepoNotExists(externalContext, done) {
   return gitw(gitFolder).clone(url, gitFolder, ['-b', branch], (error) => {
     // Specified cloning error shouldn't be throw exception in case repo was already cloned
     if (_.includes(error,  'already exists and is not an empty directory')) {
-      console.warn(error);
       return done(null, externalContext);
     }
 
