@@ -105,7 +105,7 @@ function StepFlow(schemeConfig, holder) {
     let step = self.scheme[stepKey];
     let nextStepStrategy = StepList[stepKey].nextStrategy;
 
-    if(typeof step.separator != 'undefined' && step.separator === true || typeof step.separator == 'undefined') {
+    if(typeof step.separator == 'undefined' || step.separator === true) {
 
       let separator = new inquirer.Separator();
       StepList[stepKey].step.choices.push(separator);
@@ -136,4 +136,4 @@ function StepFlow(schemeConfig, holder) {
 
 module.exports = function (schemeConfig, holder) {
   return new StepFlow(schemeConfig, holder);
-}
+};
