@@ -65,7 +65,7 @@ function checkSshKey(externalContext, done) {
 function gitShow(field, gitHash, externalContext, done) {
   const {gitFolder} = externalContext;
 
-  cliUi.state('git, try to get repo notes');
+  cliUi.state('git, get repo notes');
 
   return gitw(gitFolder).show([gitHash], function (error, result) {
     externalContext[field] = !!error ? '' : result;
@@ -81,7 +81,7 @@ function gitShow(field, gitHash, externalContext, done) {
 function gitCloneIfRepoNotExists(externalContext, done) {
   const {gitFolder, url, branch} = externalContext;
 
-  cliUi.state('git, try to clone repo');
+  cliUi.state('git, clone repo');
 
   return gitw(gitFolder).clone(url, gitFolder, ['-b', branch], (error) => {
     // Specified cloning error shouldn't be throw exception in case repo was already cloned
@@ -112,7 +112,7 @@ function gitReset(externalContext, done) {
 function gitLog(externalContext, done) {
   const {gitFolder} = externalContext;
 
-  cliUi.state('git, commits log');
+  cliUi.state('git, get commits log');
 
   return gitw(gitFolder).log((error, result) => {
     externalContext.detailedCommitsList = _.get(result, 'all', null);
@@ -123,7 +123,7 @@ function gitLog(externalContext, done) {
 function getFileNamesDiff(externalContext, done) {
   const {gitFolder, hashFrom, hashTo} = externalContext;
 
-  cliUi.state('git, get diff, file-names only');
+  cliUi.state('git, get diff file names only');
 
   return gitw(gitFolder).diff([hashFrom + '..' + hashTo, '--name-only'], (error, resultGitDiff) => {
     if (error) {
@@ -140,7 +140,7 @@ function getFileNamesDiff(externalContext, done) {
 }
 
 function getFileStatusesDiff(externalContext, done) {
-  cliUi.state('git, get diff, file-names with states');
+  cliUi.state('git, get diff file names with states');
 
   const {gitFolder, hashFrom, hashTo} = externalContext;
 
@@ -169,7 +169,7 @@ function getFileStatusesDiff(externalContext, done) {
 function checkoutHash(hash, externalContext, done) {
   const {gitFolder} = externalContext;
 
-  cliUi.state('git, try to checkout');
+  cliUi.state(`git, checkout to '${hash}'`);
 
   return gitw(gitFolder).checkout(hash, function (error) {
     if (error) {
@@ -182,6 +182,8 @@ function checkoutHash(hash, externalContext, done) {
 
 function validateDataset(externalContext, done) {
   const {gitFolder} = externalContext;
+
+  cliUi.state('validator, check dataset validity');
 
   const streamValidator = new StreamValidator(gitFolder, {
     excludeRules: 'WRONG_DATA_POINT_HEADER',
@@ -220,6 +222,8 @@ function readJsonFileAsJsonStream(pathToFile) {
 }
 
 function getDatapackage(propertyName, externalContext, done) {
+  cliUi.state(`stream, read file 'datapackage.json'`);
+
   const datapackagePath = externalContext.gitFolder + 'datapackage.json';
 
   if (fs.existsSync(datapackagePath)) {

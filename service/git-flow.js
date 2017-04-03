@@ -140,6 +140,8 @@ gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
       return callback(error);
     }
 
+    cliUi.state('git, finished get file diff by hashes');
+
     const {metadata, gitDiffFileStatus} = result;
     const gitDiffFileList = _.keys(gitDiffFileStatus);
 
