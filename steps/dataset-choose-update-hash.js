@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
@@ -124,25 +125,10 @@ step.prototype.process = function (inputValue) {
   gitFlow.validateDataset(data, function (error) {
 
     if (error) {
+      const formattedErrors = _.map(error, (item) => `TYPE: ${item.type}; FILE: ${item.path}; DATA: ${item.data};`);
 
-      error.forEach(function (index, item, array) {
-        let fileName = item.path;
+      cliUi.stop().logStart().error("ValidationError").logEnd().logPrint(formattedErrors);
 
-        let message = [];
-        message.push("TYPE: ");
-        message.push(item.type);
-        message.push("; ");
-        message.push("FILE: ");
-        message.push(fileName);
-        message.push("; ");
-        message.push("DATA: ");
-        message.push();
-        message.push();
-
-        array[index] = message.join("");
-      });
-
-      cliUi.stop().logStart().error("ValidationError").logEnd().logPrint(error);
       // return done(errorMsg); :: inquirer bug, update after fix
       return done(null, true);
     }
@@ -155,9 +141,21 @@ step.prototype.process = function (inputValue) {
 
     cliUi.state("processing Update Dataset, generate diff");
     csvDiff.process(diffOptions, function (error, result) {
+      if (error) {
+        cliUi.stop().logStart().error(error).logEnd();
+
+        // return done(errorMsg); :: inquirer bug, update after fix
+        return done(null, true);
+      }
 
       cliUi.state("processing Update Dataset, send request");
       wsRequest.updateDataset(diffOptions, function (error, wsResponse) {
+        if (error) {
+          cliUi.stop().logStart().error(error).logEnd();
+
+          // return done(errorMsg); :: inquirer bug, update after fix
+          return done(null, true);
+        }
 
         const gitRepoPath = gitFlow.getRepoFolder(data.github);
 
