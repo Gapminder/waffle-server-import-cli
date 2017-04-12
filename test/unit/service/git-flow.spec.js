@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const path = require('path');
 const fs = require('fs');
 const shell = require('shelljs');
 const proxyquire = require('proxyquire');
@@ -43,7 +44,7 @@ describe('Service: Git flow', function () {
   it('should get absolute path to the repository', sinon.test(function () {
     const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
     const gitFlow = require('../../../service/git-flow');
-    const expectedRepoFolder = '/home/user/Project/waffle-server-import-cli/VS-work/ddf--ws-testing';
+    const expectedRepoFolder = path.resolve('./repos/VS-work/ddf--ws-testing');
     const getRepoFolderStub = this.stub(gitFlow, 'getRepoFolder').returns(expectedRepoFolder);
 
     const repoFolder = gitFlow.configDir(giturl);
@@ -166,9 +167,9 @@ describe('Service: Git flow', function () {
     const gitFlow = require('../../../service/git-flow');
 
     const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const expectedAbsoluteRepoFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}`;
+    const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
 
-    this.stub(envConst, 'PATH_REPOS', `/home/user/Project/waffle-server-import-cli/repos/`);
+    this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
 
     const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
     const existsSyncStub = this.stub(fs, 'existsSync').returns(true);
@@ -189,9 +190,9 @@ describe('Service: Git flow', function () {
     const gitFlow = require('../../../service/git-flow');
 
     const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const expectedAbsoluteRepoFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}`;
+    const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
 
-    this.stub(envConst, 'PATH_REPOS', `/home/user/Project/waffle-server-import-cli/repos/`);
+    this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
 
     const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
     const existsSyncStub = this.stub(fs, 'existsSync').returns(false);
@@ -221,9 +222,9 @@ describe('Service: Git flow', function () {
 
     const expectedError = new Error(`Something went wrong during creation directory process`);
     const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const expectedAbsoluteRepoFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}`;
+    const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
 
-    this.stub(envConst, 'PATH_REPOS', `/home/user/Project/waffle-server-import-cli/repos/`);
+    this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
 
     const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
     const existsSyncStub = this.stub(fs, 'existsSync').returns(false);
@@ -258,7 +259,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
 
       const expectedContext = {
         branch: branchName,
@@ -300,7 +301,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const expectedError = 'Boo!';
 
       const expectedContext = {
@@ -345,7 +346,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const expectedDate = Date.now();
       const detailedCommitsList = [
         {
@@ -414,7 +415,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const expectedError = 'Boo!';
 
       const expectedContext = {
@@ -460,7 +461,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const expectedError = 'Boo!';
 
       const expectedContext = {
@@ -511,7 +512,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
 
       const gitDiffFileList = [
         'ddf--concepts.csv',
@@ -597,7 +598,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const expectedError = 'Boo!';
 
       const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
@@ -654,7 +655,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const expectedResult = {from: 'from', to: 'to'};
 
       const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
@@ -698,7 +699,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const expectedError = 'Boo!';
 
       const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
@@ -741,7 +742,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
 
       const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
       const checkoutHashStub = this.stub(utils, 'checkoutHash').callsArgWithAsync(2, null, {});
@@ -777,7 +778,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const expectedError = 'Boo!';
 
       const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
@@ -814,7 +815,7 @@ describe('Service: Git flow', function () {
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const expectedIssues = [{name: 'issue'}];
 
       const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
@@ -853,7 +854,7 @@ describe('Service: Git flow', function () {
       const repo = 'ddf--ws-testing';
       const url = `git@github.com:${account}/${repo}.git`;
       const github = `${url}#${branch}`;
-      const sourceFolderPath = `/home/user/Project/waffle-server-import-cli/result/`;
+      const sourceFolderPath = path.resolve(`./result`) + '/';
       const repoDescriptor = {branch, url, repo, account};
 
       const getGithubUrlDescriptorStub = this.stub(utils, 'getGithubUrlDescriptor').returns(repoDescriptor);
@@ -877,7 +878,7 @@ describe('Service: Git flow', function () {
       const repo = 'ddf--ws-testing';
       const url = `git@github.com:${account}/${repo}.git`;
       const github = `${url}#${branch}`;
-      const sourceFolderPath = `/home/user/Project/waffle-server-import-cli/result/`;
+      const sourceFolderPath = path.resolve(`./result`) + '/';
       const repoDescriptor = {branch, url, repo, account};
 
       const getGithubUrlDescriptorStub = this.stub(utils, 'getGithubUrlDescriptor').returns(repoDescriptor);
