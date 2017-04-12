@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const path = require('path');
 const hi = require('highland');
 const fs = require('fs');
 const shell = require('shelljs');
@@ -34,7 +35,7 @@ describe('Git flow utils', function () {
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const externalContext = {github, gitFolder, branch, url};
       const expectedCode = 0;
       const expectedStdout = null;
@@ -92,7 +93,7 @@ describe('Git flow utils', function () {
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const expectedCode = 2;
       const expectedStdout = null;
       const expectedStderr = 'Some text';
@@ -136,7 +137,7 @@ describe('Git flow utils', function () {
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const externalContext = {github, gitFolder, branch, url};
 
       const expectedCode = 1;
@@ -189,7 +190,7 @@ describe('Git flow utils', function () {
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const externalContext = {github, gitFolder, branch, url};
 
       const expectedCode = 1;
@@ -248,7 +249,7 @@ describe('Git flow utils', function () {
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const externalContext = {github, gitFolder, branch, url};
 
       const expectedCode = 1;
@@ -303,7 +304,7 @@ describe('Git flow utils', function () {
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const externalContext = {github, gitFolder, branch, url};
 
       const expectedCode = 0;
@@ -359,7 +360,7 @@ describe('Git flow utils', function () {
     const url = 'git@github.com:VS-work/ddf--ws-testing.git';
     const github = `${url}#${branch}`;
     const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+    const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
     const externalContext = {github, gitFolder, branch, url};
     const expectedDate = Date.now();
     const detailedCommitsList = [
@@ -408,7 +409,7 @@ describe('Git flow utils', function () {
     const url = 'git@github.com:VS-work/ddf--ws-testing.git';
     const github = `${url}#${branch}`;
     const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+    const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
     const externalContext = {github, gitFolder, branch, url};
     const expectedError = 'Boo!';
 
@@ -447,7 +448,7 @@ describe('Git flow utils', function () {
     const url = 'git@github.com:VS-work/ddf--ws-testing.git';
     const github = `${url}#${branch}`;
     const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+    const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
     const externalContext = {github, gitFolder, branch, url};
     const field = 'from';
     const hash = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
@@ -494,7 +495,7 @@ describe('Git flow utils', function () {
     const url = 'git@github.com:VS-work/ddf--ws-testing.git';
     const github = `${url}#${branch}`;
     const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+    const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
     const externalContext = {github, gitFolder, branch, url};
     const field = 'to';
     const hash = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
@@ -540,7 +541,7 @@ describe('Git flow utils', function () {
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const hashFrom = '66a50bb25be90d69a94a3904611363ee20a87848';
       const hashTo = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
       const externalContext = {hashFrom, gitFolder, hashTo};
@@ -580,7 +581,7 @@ describe('Git flow utils', function () {
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const hashFrom = '66a50bb25be90d69a94a3904611363ee20a87848';
       const hashTo = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
       const externalContext = {hashFrom, gitFolder, hashTo};
@@ -635,7 +636,7 @@ lang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const hashFrom = '66a50bb25be90d69a94a3904611363ee20a87848';
       const hashTo = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
       const externalContext = {hashFrom, gitFolder, hashTo};
@@ -687,7 +688,7 @@ lang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const hashFrom = '66a50bb25be90d69a94a3904611363ee20a87848';
       const hashTo = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
       const externalContext = {hashFrom, gitFolder, hashTo};
@@ -727,7 +728,7 @@ lang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const hashFrom = '66a50bb25be90d69a94a3904611363ee20a87848';
       const hashTo = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
       const externalContext = {hashFrom, gitFolder, hashTo};
@@ -782,7 +783,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const hashFrom = '66a50bb25be90d69a94a3904611363ee20a87848';
       const hashTo = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
       const externalContext = {hashFrom, gitFolder, hashTo};
@@ -830,7 +831,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
 
   it('should checkout to certain hash without error', sinon.test(function (done) {
     const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+    const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
     const externalContext = {gitFolder};
     const hash = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
 
@@ -866,7 +867,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
 
   it('should return error when it happens during git checkout command', sinon.test(function (done) {
     const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+    const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
     const externalContext = {gitFolder};
     const hash = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
     const expectedError = 'Boo!';
@@ -904,7 +905,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
   describe('#validateDataset', function() {
     it('should validate dataset without error', sinon.test(function (done) {
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const issue = {description: 'Error'};
 
       const successStub = this.stub(cliUi, 'success');
@@ -953,7 +954,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
 
     it('should validate dataset with one issue', sinon.test(function (done) {
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const issue = {description: 'Error'};
 
       const errorStub = this.stub(cliUi, 'error');
@@ -1003,7 +1004,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
 
     it('should validate dataset with error from validator, without issue', sinon.test(function (done) {
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const expectedError = 'Boo!';
 
       const errorStub = this.stub(cliUi, 'error');
@@ -1053,7 +1054,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
 
   it('should create an json stream for getting data from json file', sinon.test(function () {
     // *** Arrange
-    const pathToFile = `/home/user/Project/waffle-server-import-cli/repos/test/datapackage.json`;
+    const pathToFile = path.resolve('./repos/test') + '/datapackage.json';
 
     const fsStub = this.stub(fs, 'createReadStream').returns(hi());
     const JSONStreamStub = this.stub(JSONStream, 'parse').returns(hi());
@@ -1072,7 +1073,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
   describe('#getDatapackage', function() {
     it('should get all data from datapackage file', sinon.test(function (done) {
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const externalContext = {gitFolder, metadata: {}};
       const propertyName = 'old';
       const datapackage = require('./fixtures/datapackage.json');
@@ -1102,7 +1103,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
 
     it('should get error if file doesn\'t exist', sinon.test(function (done) {
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const externalContext = {gitFolder, metadata: {}};
       const propertyName = 'old';
       const datapackage = require('./fixtures/datapackage.json');
@@ -1129,7 +1130,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
 
     it('should get error if it happens during reading stream', sinon.test(function (done) {
       const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const gitFolder = `/home/user/Project/waffle-server-import-cli/repos/${expectedRelativeRepoFolder}/`;
+      const gitFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
       const externalContext = {gitFolder, metadata: {}};
       const propertyName = 'old';
       const datapackage = require('./fixtures/datapackage.json');

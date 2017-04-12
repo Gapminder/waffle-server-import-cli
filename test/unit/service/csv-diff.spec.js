@@ -53,9 +53,9 @@ describe('Service: CSV diff', function () {
     };
 
     const expectedResultFiles = {
-      diff: path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--output.txt'),
+      diff: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'),
       fileList: expectedGitDiffFileList,
-      lang: path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--lang--output.txt')
+      lang: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt')
     };
 
     const expectedDataDiff = {
@@ -87,7 +87,7 @@ describe('Service: CSV diff', function () {
     // *** Fixtures for Assert ***
     // *** *** *** *** *** *** ***
 
-    const expectedSourceFolderPath = path.resolve('', 'requests') + '/';
+    const expectedSourceFolderPath = path.resolve('./requests') + '/';
 
     const expectedStreams = {
       diff: sinon.match.object,
@@ -99,8 +99,8 @@ describe('Service: CSV diff', function () {
       hashFrom,
       hashTo,
       github,
-      resultFileName: path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--output.txt'),
-      resultFileLangName: path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'),
+      resultFileName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'),
+      resultFileLangName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'),
       gitDiffFileStatus: expectedGitDiffFileStatus,
       gitDiffFileList: expectedGitDiffFileList,
       metadata: expectedMetadata,
@@ -127,8 +127,8 @@ describe('Service: CSV diff', function () {
 
     const getDiffFileNameResultStub = this.stub(gitFlow, 'getDiffFileNameResult');
     getDiffFileNameResultStub
-      .onFirstCall().returns(path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--output.txt'))
-      .onSecondCall().returns(path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'));
+      .onFirstCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'))
+      .onSecondCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'));
     getDiffFileNameResultStub.threw('Should be never called');
 
     const showFileStateByHashStub = this.stub(gitFlow, 'showFileStateByHash');
@@ -204,7 +204,7 @@ describe('Service: CSV diff', function () {
     // *** Fixtures for Assert ***
     // *** *** *** *** *** *** ***
 
-    const expectedSourceFolderPath = '/home/vs/Projects/ws-vizabi/waffle-server-import-cli/requests/';
+    const expectedSourceFolderPath = path.resolve('./requests') + '/';
 
     const expectedContext = {
       sourceFolderPath: expectedSourceFolderPath,
@@ -296,7 +296,7 @@ describe('Service: CSV diff', function () {
     // *** Fixtures for Assert ***
     // *** *** *** *** *** *** ***
 
-    const expectedSourceFolderPath = path.resolve('', 'requests') + '/';
+    const expectedSourceFolderPath = path.resolve('./requests') + '/';
 
     const expectedStreams = {
       'diff': sinon.match.object,
@@ -308,8 +308,8 @@ describe('Service: CSV diff', function () {
       hashFrom,
       hashTo,
       github,
-      resultFileName: path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--output.txt'),
-      resultFileLangName: path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'),
+      resultFileName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'),
+      resultFileLangName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'),
       gitDiffFileStatus: expectedGitDiffFileStatus,
       gitDiffFileList: expectedGitDiffFileList,
       metadata: expectedMetadata,
@@ -322,8 +322,8 @@ describe('Service: CSV diff', function () {
 
     const getDiffFileNameResultStub = this.stub(gitFlow, 'getDiffFileNameResult');
     getDiffFileNameResultStub
-      .onFirstCall().returns(path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--output.txt'))
-      .onSecondCall().returns(path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'));
+      .onFirstCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'))
+      .onSecondCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'));
     getDiffFileNameResultStub.threw('Should be never called');
 
     const showFileStateByHashStub = this.stub(gitFlow, 'showFileStateByHash');
@@ -395,9 +395,9 @@ describe('Service: CSV diff', function () {
     };
 
     const expectedResultFiles = {
-      diff: path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--output.txt'),
+      diff: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'),
       fileList: expectedGitDiffFileList,
-      lang: path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--lang--output.txt')
+      lang: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt')
     };
 
     const expectedDataDiff = {
@@ -429,7 +429,7 @@ describe('Service: CSV diff', function () {
     // *** Fixtures for Assert ***
     // *** *** *** *** *** *** ***
 
-    const expectedSourceFolderPath = path.resolve('', 'requests') + '/';
+    const expectedSourceFolderPath = path.resolve('./requests') + '/';
 
     const expectedStreams = {
       diff: sinon.match.object,
@@ -441,8 +441,8 @@ describe('Service: CSV diff', function () {
       hashFrom,
       hashTo,
       github,
-      resultFileName: path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--output.txt'),
-      resultFileLangName: path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'),
+      resultFileName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'),
+      resultFileLangName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'),
       gitDiffFileStatus: expectedGitDiffFileStatus,
       gitDiffFileList: expectedGitDiffFileList,
       metadata: expectedMetadata,
@@ -469,8 +469,8 @@ describe('Service: CSV diff', function () {
 
     const getDiffFileNameResultStub = this.stub(gitFlow, 'getDiffFileNameResult');
     getDiffFileNameResultStub
-      .onFirstCall().returns(path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--output.txt'))
-      .onSecondCall().returns(path.resolve('', 'requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'));
+      .onFirstCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'))
+      .onSecondCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'));
     getDiffFileNameResultStub.threw('Should be never called');
 
     const showFileStateByHashStub = this.stub(gitFlow, 'showFileStateByHash');
