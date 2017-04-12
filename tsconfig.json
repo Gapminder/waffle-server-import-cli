@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "noImplicitReturns": true,
+    "noImplicitAny": false,
+    "preserveConstEnums": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "allowJs": true,
+    "types": [
+      "lodash",
+      "node-fetch",
+      "sinon",
+      "async",
+      "node",
+      "chai",
+      "mocha",
+      "proxyquire",
+      "rx",
+      "inquirer"
+    ]
+  },
+  "include": [
+    "steps.v2/**/*"
+  ]
+}

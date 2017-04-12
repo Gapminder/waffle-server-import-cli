@@ -8,3 +8,5 @@ coverage
 config/repositories.json
 config/waffle-server.json
 yarn.lock
+steps.v2/**/*.js
+steps.v2/**/*.js.map

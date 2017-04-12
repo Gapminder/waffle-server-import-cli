@@ -4,7 +4,7 @@ const request = require('superagent');
 const JSONStream = require('JSONStream');
 const wsResponse = require('./../model/ws-response');
 const holder = require('./../model/value-holder');
-const packageJson = require('../package.json');
+const _ = require('lodash');
 
 const Address4 = require('ip-address').Address4;
 const Address6 = require('ip-address').Address6;
@@ -370,9 +370,9 @@ wsRequest.prototype.updateDataset = function (data, callback) {
 
 /* Internal */
 
-wsRequest.prototype.configureSource = function (path) {
-  let wsSource = holder.get(HOLDER_KEY_WS_SOURCE, '');
-  wsSource = this._configureSource(wsSource);
+wsRequest.prototype.configureSource = function (path, options) {
+  let wsSource = this._configureSource(options.wsSource || holder.get(HOLDER_KEY_WS_SOURCE, ''));
+
   return wsSource + path;
 };
 
@@ -401,11 +401,11 @@ wsRequest.prototype._configureSource = function (wsSource) {
   return wsSource.replace(wsSourceFixed, 'import-' + wsSourceFixed);
 }
 
-wsRequest.prototype.addToken = function (path) {
+wsRequest.prototype.addToken = function (path, options) {
 
-  let tokenData = holder.load(HOLDER_KEY_TOKEN, false);
+  let tokenData = options || holder.load(HOLDER_KEY_TOKEN, false);
 
-  if(!tokenData) {
+  if(!_.get(tokenData, 'token', false)) {
     return path;
   }
 
@@ -423,20 +423,20 @@ wsRequest.prototype.addToken = function (path) {
 
 */
 
-wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
+wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, options, callback) {
 
   let requestInstance;
 
   // validate value between get|post
   rType = rType != REQUEST_TYPE_GET ? REQUEST_TYPE_POST : rType;
 
-  ROUTE_WS = this.addToken(ROUTE_WS);
-  ROUTE_WS = this.configureSource(ROUTE_WS);
+  ROUTE_WS = this.addToken(ROUTE_WS, options);
+  ROUTE_WS = this.configureSource(ROUTE_WS, options);
 
   if(rType == REQUEST_TYPE_GET) {
-    requestInstance = request.get(ROUTE_WS).query(data);
+    requestInstance = request.get(ROUTE_WS).query(options);
   } else {
-    requestInstance = request.post(ROUTE_WS).type('form').send(data);
+    requestInstance = request.post(ROUTE_WS).type('form').send(options);
   }
 
   requestInstance.timeout(REQUEST_TIMEOUT)
@@ -467,12 +467,12 @@ wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
 
  */
 
-wsRequest.prototype.sendStream = function (ROUTE_WS, data, callback) {
+wsRequest.prototype.sendStream = function (ROUTE_WS, options, callback) {
 
   let objectStream = JSONStream.stringify();
 
-  ROUTE_WS = this.addToken(ROUTE_WS);
-  ROUTE_WS = this.configureSource(ROUTE_WS);
+  ROUTE_WS = this.addToken(ROUTE_WS, options);
+  ROUTE_WS = this.configureSource(ROUTE_WS, options);
 
   let requestInstance = request
     .post(ROUTE_WS)
@@ -484,16 +484,16 @@ wsRequest.prototype.sendStream = function (ROUTE_WS, data, callback) {
 
   objectStream.pipe(requestInstance);
 
-  for(let fileName in data.diff.changes) {
+  for(let fileName in options.diff.changes) {
 
     //let sliced = data.diff.slice(j, 100000);
 
     let changes = {};
-    changes[fileName] = data.diff.changes[fileName];
+    changes[fileName] = options.diff.changes[fileName];
 
     objectStream.write({
-      commit: data.commit,
-      github: data.github,
+      commit: options.commit,
+      github: options.github,
       diff: {
         changes: changes
       }
