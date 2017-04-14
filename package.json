@@ -7,10 +7,9 @@
     "ws-cli": "index_cli.js"
   },
   "scripts": {
-    "test": "npm run spec && npm run e2e",
+    "test": "npm run spec",
     "spec": "mocha --reporter mochawesome --reporter-options reportDir=specReports,reportFilename=specReport --timeout 10000 'test/**/*.spec.js'",
     "spec:coverage": "rm -rf specReports && istanbul --include-all-sources cover _mocha -- -R spec 'test/unit/**/*.spec.js'",
-    "e2e": "mocha --timeout 10000 'test/**/*.e2e.js'",
     "stop-track-config": "git update-index --assume-unchanged ./config/repositories.json ./config/waffle-server.json",
     "start": "npm run stop-track-config && node index.js",
     "api:import-update": "node cli.import-update.js",
