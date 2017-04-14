@@ -4,6 +4,7 @@ const request = require('superagent');
 const JSONStream = require('JSONStream');
 const wsResponse = require('./../model/ws-response');
 const holder = require('./../model/value-holder');
+const packageJson = require('../package.json');
 
 const Address4 = require('ip-address').Address4;
 const Address6 = require('ip-address').Address6;
@@ -439,6 +440,7 @@ wsRequest.prototype.sendRequest = function (rType, ROUTE_WS, data, callback) {
   }
 
   requestInstance.timeout(REQUEST_TIMEOUT)
+    .set('X-Gapminder-WSCLI-Version', packageJson.version)
     .end(function(error, response){
 
       /*
