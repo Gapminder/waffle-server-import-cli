@@ -80,7 +80,7 @@ describe('Git flow utils', function () {
         assert.callCount(cliUiStub, 4);
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
-          .subsequently.calledWithExactly('git, try to clone repo')
+          .subsequently.calledWithExactly('git, clone repo')
           .subsequently.calledWithExactly('git, reset changes')
           .subsequently.calledWithExactly('git, fetch updates');
 
@@ -179,7 +179,7 @@ describe('Git flow utils', function () {
         assert.calledTwice(cliUiStub);
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
-          .subsequently.calledWithExactly('git, try to clone repo');
+          .subsequently.calledWithExactly('git, clone repo');
 
         return done();
       });
@@ -236,7 +236,7 @@ describe('Git flow utils', function () {
         assert.callCount(cliUiStub, 4);
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
-          .subsequently.calledWithExactly('git, try to clone repo')
+          .subsequently.calledWithExactly('git, clone repo')
           .subsequently.calledWithExactly('git, reset changes')
           .subsequently.calledWithExactly('git, fetch updates');
 
@@ -292,7 +292,7 @@ describe('Git flow utils', function () {
         assert.callCount(cliUiStub, 3);
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
-          .subsequently.calledWithExactly('git, try to clone repo')
+          .subsequently.calledWithExactly('git, clone repo')
           .subsequently.calledWithExactly('git, reset changes');
 
         return done();
@@ -346,7 +346,7 @@ describe('Git flow utils', function () {
         assert.callCount(cliUiStub, 4);
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
-          .subsequently.calledWithExactly('git, try to clone repo')
+          .subsequently.calledWithExactly('git, clone repo')
           .subsequently.calledWithExactly('git, reset changes')
           .subsequently.calledWithExactly('git, fetch updates');
 
@@ -398,7 +398,7 @@ describe('Git flow utils', function () {
       assert.calledWithExactly(simpleGitWraper, gitFolder);
 
       assert.calledOnce(cliUiStub);
-      assert.calledWithExactly(cliUiStub, 'git, commits log');
+      assert.calledWithExactly(cliUiStub, 'git, get commits log');
 
       return done();
     });
@@ -437,7 +437,7 @@ describe('Git flow utils', function () {
       assert.calledWithExactly(simpleGitWraper, gitFolder);
 
       assert.calledOnce(cliUiStub);
-      assert.calledWithExactly(cliUiStub, 'git, commits log');
+      assert.calledWithExactly(cliUiStub, 'git, get commits log');
 
       return done();
     });
@@ -484,7 +484,7 @@ describe('Git flow utils', function () {
       assert.calledWithExactly(simpleGitWraper, gitFolder);
 
       assert.calledOnce(cliUiStub);
-      assert.calledWithExactly(cliUiStub, 'git, try to get repo notes');
+      assert.calledWithExactly(cliUiStub, 'git, get repo notes');
 
       return done();
     });
@@ -529,7 +529,7 @@ describe('Git flow utils', function () {
       assert.calledWithExactly(simpleGitWraper, gitFolder);
 
       assert.calledOnce(cliUiStub);
-      assert.calledWithExactly(cliUiStub, 'git, try to get repo notes');
+      assert.calledWithExactly(cliUiStub, 'git, get repo notes');
 
       return done();
     });
@@ -570,7 +570,7 @@ describe('Git flow utils', function () {
         assert.calledWithExactly(simpleGitWraper, gitFolder);
 
         assert.calledOnce(cliUiStub);
-        assert.calledWithExactly(cliUiStub, 'git, get diff, file-names only');
+        assert.calledWithExactly(cliUiStub, `git, get diff file names only`);
 
         return done();
       });
@@ -625,7 +625,7 @@ lang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
         assert.calledWithExactly(simpleGitWraper, gitFolder);
 
         assert.calledOnce(cliUiStub);
-        assert.calledWithExactly(cliUiStub, 'git, get diff, file-names only');
+        assert.calledWithExactly(cliUiStub, 'git, get diff file names only');
 
         return done();
       });
@@ -675,7 +675,7 @@ lang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
         assert.calledWithExactly(simpleGitWraper, gitFolder);
 
         assert.calledOnce(cliUiStub);
-        assert.calledWithExactly(cliUiStub, 'git, get diff, file-names only');
+        assert.calledWithExactly(cliUiStub, 'git, get diff file names only');
 
         return done();
       });
@@ -717,7 +717,7 @@ lang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
         assert.calledWithExactly(simpleGitWraper, gitFolder);
 
         assert.calledOnce(cliUiStub);
-        assert.calledWithExactly(cliUiStub, 'git, get diff, file-names with states');
+        assert.calledWithExactly(cliUiStub, 'git, get diff file names with states');
 
         return done();
       });
@@ -772,7 +772,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
         assert.calledWithExactly(simpleGitWraper, gitFolder);
 
         assert.calledOnce(cliUiStub);
-        assert.calledWithExactly(cliUiStub, 'git, get diff, file-names with states');
+        assert.calledWithExactly(cliUiStub, 'git, get diff file names with states');
 
         return done();
       });
@@ -822,7 +822,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
         assert.calledWithExactly(simpleGitWraper, gitFolder);
 
         assert.calledOnce(cliUiStub);
-        assert.calledWithExactly(cliUiStub, 'git, get diff, file-names with states');
+        assert.calledWithExactly(cliUiStub, 'git, get diff file names with states');
 
         return done();
       });
@@ -859,7 +859,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
       assert.calledWithExactly(simpleGitWraper, gitFolder);
 
       assert.calledOnce(cliUiStub);
-      assert.calledWithExactly(cliUiStub, 'git, try to checkout');
+      assert.calledWithExactly(cliUiStub, `git, checkout to '${hash}'`);
 
       return done();
     });
@@ -896,7 +896,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
       assert.calledWithExactly(simpleGitWraper, gitFolder);
 
       assert.calledOnce(cliUiStub);
-      assert.calledWithExactly(cliUiStub, 'git, try to checkout');
+      assert.calledWithExactly(cliUiStub, `git, checkout to '${hash}'`);
 
       return done();
     });
@@ -935,7 +935,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
         assert.calledOnce(streamValidatorStub.validate);
         assert.calledOnce(streamValidatorStub.emit);
         assert.calledTwice(streamValidatorStub.on);
-        assert.calledOnce(stopStub);
+        assert.calledTwice(stopStub);
         assert.calledWithExactly(stopStub);
         assert.calledOnce(successStub);
         assert.calledWithExactly(successStub, '* Validation completed!');
@@ -985,7 +985,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
         assert.calledOnce(streamValidatorStub.validate);
         assert.calledTwice(streamValidatorStub.emit);
         assert.calledTwice(streamValidatorStub.on);
-        assert.calledOnce(stopStub);
+        assert.calledTwice(stopStub);
         assert.calledWithExactly(stopStub);
         assert.calledOnce(errorStub);
         assert.calledWithExactly(errorStub, '* Validation Error!');
@@ -1034,7 +1034,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
         assert.calledOnce(streamValidatorStub.validate);
         assert.calledOnce(streamValidatorStub.emit);
         assert.calledTwice(streamValidatorStub.on);
-        assert.calledOnce(stopStub);
+        assert.calledTwice(stopStub);
         assert.calledWithExactly(stopStub);
         assert.calledOnce(errorStub);
         assert.calledWithExactly(errorStub, `* Validation Error: ${expectedError}`);
