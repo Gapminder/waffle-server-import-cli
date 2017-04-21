@@ -192,7 +192,7 @@ describe('Service: CLI UI', function() {
       clock.tick(2000);
       cliUi.resetTime(false);
 
-      expect(cliUi.timeStart).to.be.equal(4000);
+      expect(cliUi.timeStart).to.be.equal(6000);
 
       clock.tick(2000);
       cliUi.resetTime();
@@ -228,11 +228,11 @@ describe('Service: CLI UI', function() {
 
       expect(updateBottomBarStub).inOrder.to.have.been.calledWith('')
         .subsequently.calledWith('')
-        .subsequently.calledWith('* State:  (0s)  .')
-        .subsequently.calledWith('* State:  (1s)  ..')
-        .subsequently.calledWith('* State:  (1s)  ...')
-        .subsequently.calledWith('* State:  (2s)  ....')
-        .subsequently.calledWith('* State:  (2s)  .');
+        .subsequently.calledWith('* State:  | Time elapsed: a few seconds  .')
+        .subsequently.calledWith('* State:  | Time elapsed: a few seconds  ..')
+        .subsequently.calledWith('* State:  | Time elapsed: a few seconds  ...')
+        .subsequently.calledWith('* State:  | Time elapsed: a few seconds  ....')
+        .subsequently.calledWith('* State:  | Time elapsed: a few seconds  .');
 
       // Assert
       clock.restore();

@@ -70,7 +70,7 @@ describe('Service: Request polling', function () {
     this.clock.restore();
   }));
 
-  describe('#checkDataSet', function () {
+  xdescribe('#checkDataSet', function () {
     it('should return Dataset state when error happen during request to WS', sinon.test(function (done) {
       const expectedMessage = 'Server is not reached';
       const expectedError = new Error(expectedMessage);
@@ -374,7 +374,7 @@ describe('Service: Request polling', function () {
 
   });
 
-  describe('#checkDataSetRemovingStatus', function () {
+  xdescribe('#checkDataSetRemovingStatus', function () {
     it('should return Dataset state when error happen during request to WS', sinon.test(function (done) {
       const expectedMessage = 'Server is not reached';
       const expectedError = new Error(expectedMessage);
