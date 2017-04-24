@@ -202,6 +202,17 @@ gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github, addition
   return path.resolve(pathFolder, filePartsResult.join('--'));
 };
 
-// Export Module
+gitFlow.prototype.reposClean = function (pathRepos, onReposCleaned) {
+  if (fs.existsSync(pathRepos)) {
+    cliUi.state(`Try to clean directory '${pathRepos}'`);
 
+    shell.rm('-rf', pathRepos + '/*');
+
+    return onReposCleaned(shell.error());
+  }
+
+  return onReposCleaned(`Directory '${pathRepos}' is not exist!`);
+};
+
+// Export Module
 module.exports = new gitFlow();

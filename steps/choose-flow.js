@@ -46,6 +46,10 @@ let question = {
       name: 'Remove Dataset',
       value: 'dataset-choose-remove'
     },
+    {
+      name: 'Clean Repos (CLI + WS)',
+      value: 'dataset-choose-clean-repos'
+    },
     //separator,
     {
       name: 'Check State',
@@ -74,6 +78,7 @@ let question = {
 
 const wsRequest = require('./../service/request-ws');
 const formatter = require('./../service/formatter');
+const stepsUtils = require('./steps-utils');
 
 step.prototype.process = function (inputValue) {
 
@@ -96,52 +101,19 @@ step.prototype.process = function (inputValue) {
 
   if (inputValue == 'results-overview') {
 
-    wsRequest.getPrestoredQueries({}, function(error, wsResponse) {
-
-      let errorMsg = error ? error.toString() : wsResponse.getError();
-
-      if(errorMsg) {
-        cliUi.stop().logStart().error(errorMsg).logEnd();
-        // return done(errorMsg); :: inquirer bug, update after fix
-        return done(null, true);
-      }
-
-      let logRows = [];
-      let responseData = wsResponse.getData([]);
-
-      responseData.forEach(function(item, index) {
-        logRows.push("\n");
-        logRows.push("> " + item.datasetName);
-        logRows.push("  - version : " + item.version);
-        logRows.push("  - date    : " + formatter.date(item.createdAt));
-        //logRows.push("  - url     : " + item.url);
-      });
-      logRows.push("\n");
-
-      cliUi.stop().logPrint(logRows);
-      done(null, true);
-    });
+    return stepsUtils.getPrestoredQueries(done);
 
   } else if (inputValue == 'cache-clean') {
 
-    wsRequest.cacheClean({}, function(error, wsResponse) {
+    return stepsUtils.cacheClean(done);
 
-      let errorMsg = error ? error.toString() : wsResponse.getError();
+  } else if (inputValue === 'dataset-choose-clean-repos') {
 
-      if(errorMsg) {
-        cliUi.stop().logStart().error(errorMsg).logEnd();
-        // return done(errorMsg); :: inquirer bug, update after fix
-        return done(null, true);
-      }
-
-      cliUi.stop().logStart().success("* Cache invalidated successfully!").logEnd();
-      done(null, true);
-    });
-
-  } else {
-      cliUi.stop();
-      done(null, true);
+    return stepsUtils.reposClean(done);
   }
+
+  cliUi.stop();
+  return done(null, true);
 };
 
 // Export Module and keep Context available for process (inquirer ctx)
