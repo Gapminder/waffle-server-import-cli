@@ -6,7 +6,6 @@ const wsRequest = require('./request-ws');
 const cliUi = require('./../service/cli-ui');
 const moment = require('moment');
 const _ = require('lodash');
-require('moment-duration-format');
 
 const ERROR_DATASET_WAS_NOT_FOUND = `Dataset was not found for the given name`;
 const ERROR_DATASET_REMOVAL_IS_CORRUPTED = `Dataset removal is corrupted. Try to start removal again.`;
@@ -134,7 +133,6 @@ longPolling.prototype._getLatestRequestReport = function () {
   const dataDatapoints = _.get(this.responseLastState, 'datapoints', 0);
   const dataTranslations = _.get(this.responseLastState, 'translations', 0);
 
-  const TIME_LOG_FORMAT = 'y[y] M[m] d[d] hh:mm:ss[s]';
   const totalItemsDone = dataEntities + dataConcepts + dataDatapoints + dataTranslations;
   const TotalTime = totalItemsDone ? Math.round(this.numberOfRows * (timeDiff / totalItemsDone)) : 0;
 
@@ -142,7 +140,7 @@ longPolling.prototype._getLatestRequestReport = function () {
   logMessage.push(dataConcepts ? 'Concepts: ' + dataConcepts + ';' : '');
   logMessage.push(dataDatapoints ? 'DataPoints: ' + dataDatapoints + ';' : '');
   logMessage.push(dataTranslations ? 'Translations: ' + dataTranslations + ';' : '');
-  logMessage.push(TotalTime ? 'Total approximate time: ' + moment.duration(TotalTime, 'seconds').format(TIME_LOG_FORMAT, {trim: 'left'}) + ';' : '');
+  logMessage.push(TotalTime ? `| Time estimated: ${moment.duration(TotalTime, 'seconds').humanize()}` : '');
 
   return logMessage.filter(function (value) {
     return !!value;
@@ -155,15 +153,21 @@ longPolling.prototype._getRemovalReportFromLatestRequest = function () {
     return '';
   }
 
-  let removedConcepts = _.get(this.responseLastState, 'concepts', 0);
-  let removedEntities = _.get(this.responseLastState, 'entities', 0);
-  let removedDatapoints = _.get(this.responseLastState, 'datapoints', 0);
+  const removedConcepts = _.get(this.responseLastState, 'concepts', 0);
+  const removedEntities = _.get(this.responseLastState, 'entities', 0);
+  const removedDatapoints = _.get(this.responseLastState, 'datapoints', 0);
 
-  return `${toStringRemovedDocs(removedConcepts, 'Concepts')}${toStringRemovedDocs(removedEntities, 'Entities')}${toStringRemovedDocs(removedDatapoints, 'DataPoints')}`;
+  const result = [
+    toStringRemovedDocs(removedConcepts, 'Concepts'),
+    toStringRemovedDocs(removedEntities, 'Entities'),
+    toStringRemovedDocs(removedDatapoints, 'DataPoints')
+  ];
+
+  return result.join(' ');
 };
 
 function toStringRemovedDocs(numDocuments, type) {
-  return numDocuments ? `${type}: ${numDocuments}; ` : '';
+  return numDocuments ? `${type}: ${numDocuments};` : '';
 }
 
 longPolling.prototype.setTimeStart = function (numberOfRows) {
@@ -200,7 +204,7 @@ longPolling.prototype._completeRequest = function (state, message, reportFunctio
 
 function getDatasetState(self, data, callback) {
 
-  return wsRequest.getDatasetState(data, function (error, wsResponse) {
+  return setTimeout(() => wsRequest.getDatasetState(data, function (error, wsResponse) {
     self.responseCounter++;
 
     const errorMsg = error ? error.toString() : wsResponse.getError();
@@ -226,7 +230,7 @@ function getDatasetState(self, data, callback) {
     }
 
     return callback();
-  });
+  }), self.requestInterval);
 }
 
 longPolling.prototype._checkDatasetStateResult = function () {
@@ -307,7 +311,7 @@ longPolling.prototype._checkDatasetRemovableStatus = function () {
 };
 
 function getDatasetRemovableStatus(self, data, callback) {
-  wsRequest.removableStatus(data, function (error, wsResponse) {
+  return setTimeout(() => wsRequest.removableStatus(data, function (error, wsResponse) {
     self.responseCounter++;
 
     const responseData = _.isEmpty(wsResponse) ? {} : wsResponse.getData([]);
@@ -315,7 +319,7 @@ function getDatasetRemovableStatus(self, data, callback) {
     self.processStatus =  self._getDatasetRemovalStatus(error, wsResponse);
 
     return callback(null, self.processStatus);
-  });
+  }), self.requestInterval);
 }
 
 longPolling.prototype.checkDataSetRemovingStatus = function (data, callback) {

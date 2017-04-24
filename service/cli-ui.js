@@ -5,7 +5,6 @@ const inquirer = require('inquirer');
 const inquirerUi = new inquirer.ui.BottomBar();
 
 const moment = require('moment');
-require('moment-duration-format');
 
 const SEPARATOR_LINE = '-------------------------------------------------------------------------';
 const SEPARATOR_UI = '\n\n\n\n\n\n\n\n\n\n';
@@ -51,8 +50,8 @@ uiProgress.prototype.reset = function () {
   return this;
 };
 
-uiProgress.prototype.resetTime = function (resetTiming = true) {
-  if (resetTiming || !this.timeStart) {
+uiProgress.prototype.resetTime = function (keepTiming) {
+  if (!keepTiming || !this.timeStart) {
     this.timeStart = new Date().getTime();
   }
 };
@@ -62,7 +61,7 @@ uiProgress.prototype.state = function (state = '', keepTiming = true) {
   let self = this;
 
   self.reset();
-  self.resetTime(!keepTiming);
+  self.resetTime(keepTiming);
 
   self.textState = state;
 
@@ -70,7 +69,7 @@ uiProgress.prototype.state = function (state = '', keepTiming = true) {
 
     const timeNow = new Date().getTime();
     const timeDiff = parseInt((timeNow - self.timeStart) / 1000, 10);
-    const timeWait = ' (' + moment.duration(timeDiff, 'seconds').format('y[Y] M[M] d[D] hh:mm:ss[s]') + ') ';
+    const timeWait = ` | Time elapsed: ${moment.duration(timeDiff, 'seconds').humanize()} `;
 
     self.textLine += self.textIncrement;
 
@@ -88,7 +87,6 @@ uiProgress.prototype.state = function (state = '', keepTiming = true) {
 uiProgress.prototype.stop = function () {
   inquirerUi.updateBottomBar('');
   clearInterval(this.intervalId);
-  this.timeStart = false;
   return this;
 };
 
