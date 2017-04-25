@@ -43,6 +43,7 @@
       "dataset-choose-check-state": "dataset-choose-check-state",
       "dataset-choose-rollback": "dataset-choose-rollback",
       "dataset-choose-remove": "dataset-choose-remove",
+      "dataset-choose-clean-repos": "choose-flow",
       "dataset-choose-default": "dataset-choose-default",
       "generate-access-token": "generate-access-token",
       "reconnect-import-update": "reconnect-import-update",

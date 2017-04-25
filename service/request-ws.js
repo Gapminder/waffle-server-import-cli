@@ -26,6 +26,7 @@ const ROUTE_WS_DATASET_DEFAULT  = '/api/ddf/cli/datasets/default';
 const ROUTE_WS_ACCESS_TOKEN     = '/api/ddf/cli/datasets/accessToken';
 const ROUTE_WS_PRIVATE_LIST     = '/api/ddf/cli/datasets/private';
 const ROUTE_WS_CACHE_CLEAN      = '/api/ddf/cli/cache/clean';
+const ROUTE_WS_REPOS_CLEAN      = '/api/ddf/cli/repos/clean';
 const ROUTE_WS_RUNNING_DATASETS = '/api/ddf/cli/datasets/inProgress';
 
 //const REQUEST_TIMEOUT = 2 * 60 * 60 * 1000;
@@ -104,6 +105,18 @@ wsRequest.prototype.cacheClean = function (data, callback) {
   this.sendRequest(REQUEST_TYPE_POST, ROUTE_WS_CACHE_CLEAN, data, callback);
 };
 
+/*
+
+ Request to WS :: Clean repos folder
+
+ POST: /api/ddf/cli/repos/clean
+
+ RESPONSE, data: not provided
+
+ */
+wsRequest.prototype.reposClean = function (data, callback) {
+  this.sendRequest(REQUEST_TYPE_POST, ROUTE_WS_REPOS_CLEAN, data, callback);
+};
 /*
 
   Request to WS :: Get List of Datasets

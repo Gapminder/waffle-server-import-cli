@@ -23,218 +23,187 @@ chai.use(sinonChaiInOrder.default);
 
 const envConst = require('../../../model/env-const');
 const utils = require('../../../service/git-flow-utils');
+const cliUi = require('../../../service/cli-ui');
 
 describe('Service: Git flow', function () {
-  it('should get short hash, when given hash is valid', sinon.test(function () {
-    const gitFlow = require('../../../service/git-flow');
-    const hash = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
-    const actualShortenedHash = gitFlow.getShortHash(hash);
+  describe('simple functionc', () => {
+    it('should get short hash, when given hash is valid', sinon.test(function () {
+      const gitFlow = require('../../../service/git-flow');
+      const hash = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
+      const actualShortenedHash = gitFlow.getShortHash(hash);
 
-    expect(actualShortenedHash).to.be.equal('5166a22');
-  }));
+      expect(actualShortenedHash).to.be.equal('5166a22');
+    }));
 
-  it('should get empty value, when given hash is invalid', sinon.test(function () {
-    const gitFlow = require('../../../service/git-flow');
+    it('should get empty value, when given hash is invalid', sinon.test(function () {
+      const gitFlow = require('../../../service/git-flow');
 
-    const actualShortenedHash = gitFlow.getShortHash();
+      const actualShortenedHash = gitFlow.getShortHash();
 
-    expect(actualShortenedHash).to.be.equal('');
-  }));
+      expect(actualShortenedHash).to.be.equal('');
+    }));
 
-  it('should get absolute path to the repository', sinon.test(function () {
-    const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
-    const gitFlow = require('../../../service/git-flow');
-    const expectedRepoFolder = path.resolve('./repos/VS-work/ddf--ws-testing');
-    const getRepoFolderStub = this.stub(gitFlow, 'getRepoFolder').returns(expectedRepoFolder);
+    it('should get absolute path to the repository', sinon.test(function () {
+      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
+      const gitFlow = require('../../../service/git-flow');
+      const expectedRepoFolder = path.resolve('./repos/VS-work/ddf--ws-testing');
+      const getRepoFolderStub = this.stub(gitFlow, 'getRepoFolder').returns(expectedRepoFolder);
 
-    const repoFolder = gitFlow.configDir(giturl);
+      const repoFolder = gitFlow.configDir(giturl);
 
-    expect(repoFolder).to.be.equal(expectedRepoFolder + '/');
-
-    assert.calledOnce(getRepoFolderStub);
-    assert.calledWithExactly(getRepoFolderStub, giturl);
-  }));
-
-  it('should get error, when it happens while getting repo folder', sinon.test(function () {
-    const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
-    const gitFlow = require('../../../service/git-flow');
-    const expectedError = new Error('Unexpected error');
-    const getRepoFolderStub = this.stub(gitFlow, 'getRepoFolder').throws(expectedError);
-
-    try {
-      gitFlow.configDir(giturl);
-    } catch (error) {
-      expect(error).to.be.deep.equal(expectedError);
+      expect(repoFolder).to.be.equal(expectedRepoFolder + '/');
 
       assert.calledOnce(getRepoFolderStub);
       assert.calledWithExactly(getRepoFolderStub, giturl);
-      assert.threw(getRepoFolderStub, error);
-    }
-  }));
+    }));
 
-  it('should get empty repo name, when account is absent in giturl', () => {
-    const giturl = 'git@github.com:/ddf--ws-testing.git';
-    const gitFlow = require('../../../service/git-flow');
+    it('should get error, when it happens while getting repo folder', sinon.test(function () {
+      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
+      const gitFlow = require('../../../service/git-flow');
+      const expectedError = new Error('Unexpected error');
+      const getRepoFolderStub = this.stub(gitFlow, 'getRepoFolder').throws(expectedError);
 
-    const repoName = gitFlow.getRepoName(giturl);
+      try {
+        gitFlow.configDir(giturl);
+      } catch (error) {
+        expect(error).to.be.deep.equal(expectedError);
 
-    expect(repoName).to.be.equal('');
-  });
+        assert.calledOnce(getRepoFolderStub);
+        assert.calledWithExactly(getRepoFolderStub, giturl);
+        assert.threw(getRepoFolderStub, error);
+      }
+    }));
 
-  it('should get empty repo name, when repo name is absent in giturl', () => {
-    const giturl = 'git@github.com:VS-work/';
-    const gitFlow = require('../../../service/git-flow');
+    it('should get empty repo name, when account is absent in giturl', () => {
+      const giturl = 'git@github.com:/ddf--ws-testing.git';
+      const gitFlow = require('../../../service/git-flow');
 
-    const repoName = gitFlow.getRepoName(giturl);
+      const repoName = gitFlow.getRepoName(giturl);
 
-    expect(repoName).to.be.equal('');
-  });
+      expect(repoName).to.be.equal('');
+    });
 
-  it('should get repo name without branch name, when branch was not set in giturl', () => {
-    const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
-    const gitFlow = require('../../../service/git-flow');
+    it('should get empty repo name, when repo name is absent in giturl', () => {
+      const giturl = 'git@github.com:VS-work/';
+      const gitFlow = require('../../../service/git-flow');
 
-    const repoName = gitFlow.getRepoName(giturl);
+      const repoName = gitFlow.getRepoName(giturl);
 
-    expect(repoName).to.be.equal('VS-work/ddf--ws-testing');
-  });
+      expect(repoName).to.be.equal('');
+    });
 
-  it('should get repo name without branch name, when branch master was set in giturl', () => {
-    const giturl = 'git@github.com:VS-work/ddf--ws-testing.git#master';
-    const gitFlow = require('../../../service/git-flow');
+    it('should get repo name without branch name, when branch was not set in giturl', () => {
+      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
+      const gitFlow = require('../../../service/git-flow');
 
-    const repoName = gitFlow.getRepoName(giturl);
+      const repoName = gitFlow.getRepoName(giturl);
 
-    expect(repoName).to.be.equal('VS-work/ddf--ws-testing');
-  });
+      expect(repoName).to.be.equal('VS-work/ddf--ws-testing');
+    });
 
-  it('should get repo name with branch name, when branch was set in giturl', () => {
-    const giturl = 'git@github.com:VS-work/ddf--ws-testing.git#branch';
-    const gitFlow = require('../../../service/git-flow');
+    it('should get repo name without branch name, when branch master was set in giturl', () => {
+      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git#master';
+      const gitFlow = require('../../../service/git-flow');
 
-    const repoName = gitFlow.getRepoName(giturl);
+      const repoName = gitFlow.getRepoName(giturl);
 
-    expect(repoName).to.be.equal('VS-work/ddf--ws-testing#branch');
-  });
+      expect(repoName).to.be.equal('VS-work/ddf--ws-testing');
+    });
 
-  it('should get empty repo path, when account wasn\'t specified in giturl', () => {
-    const giturl = 'git@github.com:/ddf--ws-testing.git';
-    const gitFlow = require('../../../service/git-flow');
+    it('should get repo name with branch name, when branch was set in giturl', () => {
+      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git#branch';
+      const gitFlow = require('../../../service/git-flow');
 
-    const repoName = gitFlow.getRepoPath(giturl);
+      const repoName = gitFlow.getRepoName(giturl);
 
-    expect(repoName).to.be.equal('');
-  });
+      expect(repoName).to.be.equal('VS-work/ddf--ws-testing#branch');
+    });
 
-  it('should get empty repo path, when repo wasn\'t specified in giturl', () => {
-    const giturl = 'git@github.com:VS-work/';
-    const gitFlow = require('../../../service/git-flow');
+    it('should get empty repo path, when account wasn\'t specified in giturl', () => {
+      const giturl = 'git@github.com:/ddf--ws-testing.git';
+      const gitFlow = require('../../../service/git-flow');
 
-    const repoName = gitFlow.getRepoPath(giturl);
+      const repoName = gitFlow.getRepoPath(giturl);
 
-    expect(repoName).to.be.equal('');
-  });
+      expect(repoName).to.be.equal('');
+    });
 
-  it('should get full repo path, when account and repo were specified in giturl', () => {
-    const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
-    const gitFlow = require('../../../service/git-flow');
+    it('should get empty repo path, when repo wasn\'t specified in giturl', () => {
+      const giturl = 'git@github.com:VS-work/';
+      const gitFlow = require('../../../service/git-flow');
 
-    const repoName = gitFlow.getRepoPath(giturl);
+      const repoName = gitFlow.getRepoPath(giturl);
 
-    expect(repoName).to.be.equal('VS-work/ddf--ws-testing/master');
-  });
+      expect(repoName).to.be.equal('');
+    });
 
-  it('should get full repo path, when account, repo and master branch were specified in giturl', () => {
-    const giturl = 'git@github.com:VS-work/ddf--ws-testing.git#master';
-    const gitFlow = require('../../../service/git-flow');
+    it('should get full repo path, when account and repo were specified in giturl', () => {
+      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
+      const gitFlow = require('../../../service/git-flow');
 
-    const repoName = gitFlow.getRepoPath(giturl);
+      const repoName = gitFlow.getRepoPath(giturl);
 
-    expect(repoName).to.be.equal('VS-work/ddf--ws-testing/master');
-  });
+      expect(repoName).to.be.equal('VS-work/ddf--ws-testing/master');
+    });
 
-  it('should get full repo path, when account, repo and some branch were specified in giturl', () => {
-    const giturl = 'git@github.com:VS-work/ddf--ws-testing.git#branch';
-    const gitFlow = require('../../../service/git-flow');
+    it('should get full repo path, when account, repo and master branch were specified in giturl', () => {
+      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git#master';
+      const gitFlow = require('../../../service/git-flow');
 
-    const repoName = gitFlow.getRepoPath(giturl);
+      const repoName = gitFlow.getRepoPath(giturl);
 
-    expect(repoName).to.be.equal('VS-work/ddf--ws-testing/branch');
-  });
+      expect(repoName).to.be.equal('VS-work/ddf--ws-testing/master');
+    });
 
-  it('should get absolute path to the repository, if it was already created', sinon.test(function () {
-    const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
-    const gitFlow = require('../../../service/git-flow');
+    it('should get full repo path, when account, repo and some branch were specified in giturl', () => {
+      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git#branch';
+      const gitFlow = require('../../../service/git-flow');
 
-    const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
+      const repoName = gitFlow.getRepoPath(giturl);
 
-    this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
+      expect(repoName).to.be.equal('VS-work/ddf--ws-testing/branch');
+    });
 
-    const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
-    const existsSyncStub = this.stub(fs, 'existsSync').returns(true);
+    it('should get absolute path to the repository, if it was already created', sinon.test(function () {
+      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
+      const gitFlow = require('../../../service/git-flow');
 
-    const repoFolder = gitFlow.getRepoFolder(giturl);
+      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
+      const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
 
-    expect(repoFolder).to.be.equal(expectedAbsoluteRepoFolder);
+      this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
 
-    assert.calledOnce(getRepoPathStub);
-    assert.calledWithExactly(getRepoPathStub, giturl);
+      const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
+      const existsSyncStub = this.stub(fs, 'existsSync').returns(true);
 
-    assert.calledOnce(existsSyncStub);
-    assert.calledWithExactly(existsSyncStub, expectedAbsoluteRepoFolder);
-  }));
+      const repoFolder = gitFlow.getRepoFolder(giturl);
 
-  it('should create new directory and get back absolute path to the repository, if it was created successfully', sinon.test(function () {
-    const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
-    const gitFlow = require('../../../service/git-flow');
+      expect(repoFolder).to.be.equal(expectedAbsoluteRepoFolder);
 
-    const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
+      assert.calledOnce(getRepoPathStub);
+      assert.calledWithExactly(getRepoPathStub, giturl);
 
-    this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
+      assert.calledOnce(existsSyncStub);
+      assert.calledWithExactly(existsSyncStub, expectedAbsoluteRepoFolder);
+    }));
 
-    const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
-    const existsSyncStub = this.stub(fs, 'existsSync').returns(false);
-    const mkdirStub = this.stub(shell, 'mkdir');
-    const errorStub = this.stub(shell, 'error').returns(false);
+    it('should create new directory and get back absolute path to the repository, if it was created successfully', sinon.test(function () {
+      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
+      const gitFlow = require('../../../service/git-flow');
 
-    const repoFolder = gitFlow.getRepoFolder(giturl);
+      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
+      const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
 
-    expect(repoFolder).to.be.equal(expectedAbsoluteRepoFolder);
+      this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
 
-    assert.calledOnce(getRepoPathStub);
-    assert.calledWithExactly(getRepoPathStub, giturl);
+      const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
+      const existsSyncStub = this.stub(fs, 'existsSync').returns(false);
+      const mkdirStub = this.stub(shell, 'mkdir');
+      const errorStub = this.stub(shell, 'error').returns(false);
 
-    assert.calledOnce(existsSyncStub);
-    assert.calledWithExactly(existsSyncStub, expectedAbsoluteRepoFolder);
+      const repoFolder = gitFlow.getRepoFolder(giturl);
 
-    assert.calledOnce(mkdirStub);
-    assert.calledWithExactly(mkdirStub, '-p', expectedAbsoluteRepoFolder);
-
-    assert.calledOnce(errorStub);
-    assert.calledWithExactly(errorStub);
-  }));
-
-  it('should get error, when it happens while creating repo folder', sinon.test(function () {
-    const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
-    const gitFlow = require('../../../service/git-flow');
-
-    const expectedError = new Error(`Something went wrong during creation directory process`);
-    const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-    const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
-
-    this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
-
-    const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
-    const existsSyncStub = this.stub(fs, 'existsSync').returns(false);
-    const mkdirStub = this.stub(shell, 'mkdir');
-    const errorStub = this.stub(shell, 'error').returns(true);
-
-    try {
-      gitFlow.getRepoFolder(giturl);
-    } catch (error) {
-      expect(error).to.be.deep.equal(expectedError);
+      expect(repoFolder).to.be.equal(expectedAbsoluteRepoFolder);
 
       assert.calledOnce(getRepoPathStub);
       assert.calledWithExactly(getRepoPathStub, giturl);
@@ -247,8 +216,42 @@ describe('Service: Git flow', function () {
 
       assert.calledOnce(errorStub);
       assert.calledWithExactly(errorStub);
-    }
-  }));
+    }));
+
+    it('should get error, when it happens while creating repo folder', sinon.test(function () {
+      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
+      const gitFlow = require('../../../service/git-flow');
+
+      const expectedError = new Error(`Something went wrong during creation directory process`);
+      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
+      const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
+
+      this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
+
+      const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
+      const existsSyncStub = this.stub(fs, 'existsSync').returns(false);
+      const mkdirStub = this.stub(shell, 'mkdir');
+      const errorStub = this.stub(shell, 'error').returns(true);
+
+      try {
+        gitFlow.getRepoFolder(giturl);
+      } catch (error) {
+        expect(error).to.be.deep.equal(expectedError);
+
+        assert.calledOnce(getRepoPathStub);
+        assert.calledWithExactly(getRepoPathStub, giturl);
+
+        assert.calledOnce(existsSyncStub);
+        assert.calledWithExactly(existsSyncStub, expectedAbsoluteRepoFolder);
+
+        assert.calledOnce(mkdirStub);
+        assert.calledWithExactly(mkdirStub, '-p', expectedAbsoluteRepoFolder);
+
+        assert.calledOnce(errorStub);
+        assert.calledWithExactly(errorStub);
+      }
+    }));
+  });
 
   describe('#registerRepo', function () {
     it('should register repo without errors', sinon.test(function (done) {
@@ -893,4 +896,80 @@ describe('Service: Git flow', function () {
       assert.calledWithExactly(getGithubUrlDescriptorStub, github);
     }));
   });
+
+  describe('#reposClean', () => {
+
+    it('should remove all repositories in folder repos', sinon.test(function () {
+      const gitFlow = require('../../../service/git-flow');
+      const pathToRepos = '/test';
+      const fsStub = this.stub(fs, 'existsSync').returns(true);
+      const cliUiStub = this.stub(cliUi, 'state');
+      const shellRmStub = this.stub(shell, 'rm');
+      const shellErrorStub = this.stub(shell, 'error').returns(null);
+
+      return gitFlow.reposClean(pathToRepos, (error) => {
+        expect(error).to.not.exist;
+
+        assert.calledOnce(fsStub);
+        assert.alwaysCalledWithExactly(fsStub, pathToRepos);
+
+        assert.calledOnce(cliUiStub);
+        assert.alwaysCalledWithExactly(cliUiStub, match(pathToRepos));
+
+        assert.calledOnce(shellRmStub);
+        assert.alwaysCalledWithExactly(shellRmStub, match.string, match(pathToRepos));
+
+        assert.calledOnce(shellErrorStub);
+        assert.alwaysCalledWithExactly(shellErrorStub);
+      })
+    }));
+
+    it('should return error if path to repos isn\'t exists', sinon.test(function () {
+      const gitFlow = require('../../../service/git-flow');
+      const pathToRepos = '/test';
+      const fsStub = this.stub(fs, 'existsSync').returns(false);
+      const cliUiStub = this.stub(cliUi, 'state');
+      const shellRmStub = this.stub(shell, 'rm');
+      const shellErrorStub = this.stub(shell, 'error').returns(null);
+
+      return gitFlow.reposClean(pathToRepos, (error) => {
+        expect(error).to.be.equal(`Directory '${pathToRepos}' is not exist!`);
+
+        assert.calledOnce(fsStub);
+        assert.alwaysCalledWithExactly(fsStub, pathToRepos);
+
+        assert.notCalled(cliUiStub);
+        assert.notCalled(shellRmStub);
+        assert.notCalled(shellErrorStub);
+      })
+    }));
+
+    it('should return error if it happens during cleaning repos folder', sinon.test(function () {
+      const gitFlow = require('../../../service/git-flow');
+      const pathToRepos = '/test';
+      const fsStub = this.stub(fs, 'existsSync').returns(true);
+      const cliUiStub = this.stub(cliUi, 'state');
+      const shellRmStub = this.stub(shell, 'rm');
+
+      const expectedError = 'Boo!';
+      const shellErrorStub = this.stub(shell, 'error').returns(expectedError);
+
+      return gitFlow.reposClean(pathToRepos, (error) => {
+        expect(error).to.be.equal(expectedError);
+
+        assert.calledOnce(fsStub);
+        assert.alwaysCalledWithExactly(fsStub, pathToRepos);
+
+        assert.calledOnce(cliUiStub);
+        assert.alwaysCalledWithExactly(cliUiStub, match(pathToRepos));
+
+        assert.calledOnce(shellRmStub);
+        assert.alwaysCalledWithExactly(shellRmStub, match.string, match(pathToRepos));
+
+        assert.calledOnce(shellErrorStub);
+        assert.alwaysCalledWithExactly(shellErrorStub);
+      })
+    }));
+
+  })
 });
