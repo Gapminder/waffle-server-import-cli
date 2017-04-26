@@ -42,8 +42,8 @@ function updateRepoState(externalContext, done) {
     async.constant(externalContext),
     checkSshKey,
     gitCloneIfRepoNotExists,
-    gitReset,
-    gitFetch
+    gitFetch,
+    gitReset
   ], (error) => {
     return done(error, externalContext);
   });
