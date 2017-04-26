@@ -81,8 +81,8 @@ describe('Git flow utils', function () {
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
           .subsequently.calledWithExactly('git, clone repo')
-          .subsequently.calledWithExactly('git, reset changes')
-          .subsequently.calledWithExactly('git, fetch updates');
+          .subsequently.calledWithExactly('git, fetch updates')
+          .subsequently.calledWithExactly('git, reset changes');
 
         return done();
       });
@@ -237,8 +237,8 @@ describe('Git flow utils', function () {
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
           .subsequently.calledWithExactly('git, clone repo')
-          .subsequently.calledWithExactly('git, reset changes')
-          .subsequently.calledWithExactly('git, fetch updates');
+          .subsequently.calledWithExactly('git, fetch updates')
+          .subsequently.calledWithExactly('git, reset changes');
 
         return done();
       });
@@ -275,24 +275,26 @@ describe('Git flow utils', function () {
         assert.calledOnce(shellStub);
         assert.calledWithExactly(shellStub, `ssh -T git@github.com`, {silent: true}, match.func);
 
-        assert.calledTwice(simpleGitStub.silent);
+        assert.calledThrice(simpleGitStub.silent);
         assert.calledWithExactly(simpleGitStub.silent, true);
 
         assert.calledOnce(simpleGitStub.clone);
         assert.calledWithExactly(simpleGitStub.clone, url, gitFolder, ['-b', branch], match.func);
 
+        assert.calledOnce(simpleGitStub.fetch);
+        assert.calledWithExactly(simpleGitStub.fetch, 'origin', branch, match.func);
+
         assert.calledOnce(simpleGitStub.reset);
         assert.calledWithExactly(simpleGitStub.reset, ['--hard', 'origin/' + branch], match.func);
 
-        assert.notCalled(simpleGitStub.fetch);
-
-        assert.calledTwice(simpleGitWraper);
+        assert.calledThrice(simpleGitWraper);
         assert.calledWithExactly(simpleGitWraper, gitFolder);
 
-        assert.callCount(cliUiStub, 3);
+        assert.callCount(cliUiStub, 4);
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
           .subsequently.calledWithExactly('git, clone repo')
+          .subsequently.calledWithExactly('git, fetch updates')
           .subsequently.calledWithExactly('git, reset changes');
 
         return done();
@@ -331,23 +333,21 @@ describe('Git flow utils', function () {
         assert.calledOnce(shellStub);
         assert.calledWithExactly(shellStub, `ssh -T git@github.com`, {silent: true}, match.func);
 
-        assert.calledThrice(simpleGitStub.silent);
+        assert.calledTwice(simpleGitStub.silent);
         assert.calledWithExactly(simpleGitStub.silent, true);
 
         assert.calledOnce(simpleGitStub.clone);
         assert.calledWithExactly(simpleGitStub.clone, url, gitFolder, ['-b', branch], match.func);
 
-        assert.calledOnce(simpleGitStub.reset);
-        assert.calledWithExactly(simpleGitStub.reset, ['--hard', 'origin/' + branch], match.func);
-
         assert.calledOnce(simpleGitStub.fetch);
         assert.calledWithExactly(simpleGitStub.fetch, 'origin', branch, match.func);
 
-        assert.callCount(cliUiStub, 4);
+        assert.notCalled(simpleGitStub.reset);
+
+        assert.callCount(cliUiStub, 3);
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
           .subsequently.calledWithExactly('git, clone repo')
-          .subsequently.calledWithExactly('git, reset changes')
           .subsequently.calledWithExactly('git, fetch updates');
 
         return done();
