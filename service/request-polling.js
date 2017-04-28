@@ -102,6 +102,7 @@ longPolling.prototype._isResponseChanged = function () {
     return currentResponseHash == firstResponseHash;
   });
 
+  cliUi.resetTime(false);
   return !responseWasNotChanged;
 };
 
