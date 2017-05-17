@@ -144,7 +144,7 @@ function getFileStatusesDiff(externalContext, done) {
 
   const {gitFolder, hashFrom, hashTo} = externalContext;
 
-  return gitw(gitFolder).diff([hashFrom + '..' + hashTo, '--name-status'], function (error, resultGitDiff) {
+  return gitw(gitFolder).diff([hashFrom + '..' + hashTo, '--name-status', '--no-renames'], function (error, resultGitDiff) {
     if (error) {
       return done(error);
     }

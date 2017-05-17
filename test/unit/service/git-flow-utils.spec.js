@@ -711,7 +711,7 @@ lang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
         assert.calledWithExactly(simpleGitStub.silent, true);
 
         assert.calledOnce(simpleGitStub.diff);
-        assert.calledWithExactly(simpleGitStub.diff, [hashFrom + '..' + hashTo, '--name-status'], match.func);
+        assert.calledWithExactly(simpleGitStub.diff, [hashFrom + '..' + hashTo, '--name-status', '--no-renames'], match.func);
 
         assert.calledOnce(simpleGitWraper);
         assert.calledWithExactly(simpleGitWraper, gitFolder);
@@ -766,7 +766,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
         assert.calledWithExactly(simpleGitStub.silent, true);
 
         assert.calledOnce(simpleGitStub.diff);
-        assert.calledWithExactly(simpleGitStub.diff, [hashFrom + '..' + hashTo, '--name-status'], match.func);
+        assert.calledWithExactly(simpleGitStub.diff, [hashFrom + '..' + hashTo, '--name-status', '--no-renames'], match.func);
 
         assert.calledOnce(simpleGitWraper);
         assert.calledWithExactly(simpleGitWraper, gitFolder);
@@ -816,7 +816,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
         assert.calledWithExactly(simpleGitStub.silent, true);
 
         assert.calledOnce(simpleGitStub.diff);
-        assert.calledWithExactly(simpleGitStub.diff, [hashFrom + '..' + hashTo, '--name-status'], match.func);
+        assert.calledWithExactly(simpleGitStub.diff, [hashFrom + '..' + hashTo, '--name-status', '--no-renames'], match.func);
 
         assert.calledOnce(simpleGitWraper);
         assert.calledWithExactly(simpleGitWraper, gitFolder);
