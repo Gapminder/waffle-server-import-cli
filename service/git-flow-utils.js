@@ -187,14 +187,14 @@ function validateDataset(externalContext, done) {
 
   const streamValidator = new StreamValidator(gitFolder, {
     excludeRules: 'WRONG_DATA_POINT_HEADER',
-    excludeDirs: '.gitingore .git',
+    excludeDirs: '.gitingore, .git',
     isCheckHidden: true
   });
 
   const issues = [];
 
   streamValidator.on('issue', function (issue) {
-    issues.push(issue);
+    issues.push(JSON.stringify(issue, null, 2));
   });
 
   streamValidator.on('finish', function (error) {

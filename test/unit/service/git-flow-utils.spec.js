@@ -980,7 +980,7 @@ A\tlang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv
       });
 
       return utils.validateDataset({gitFolder}, (error) => {
-        expect(error).to.be.deep.equal([issue]);
+        expect(error).to.be.deep.equal([JSON.stringify(issue, null, 2)]);
 
         assert.calledOnce(streamValidatorStub.validate);
         assert.calledTwice(streamValidatorStub.emit);
