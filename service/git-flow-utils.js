@@ -188,7 +188,8 @@ function validateDataset(externalContext, done) {
   const streamValidator = new StreamValidator(gitFolder, {
     excludeRules: 'WRONG_DATA_POINT_HEADER',
     excludeDirs: '.gitingore, .git',
-    isCheckHidden: true
+    isCheckHidden: true,
+    isMultithread: true
   });
 
   const issues = [];
