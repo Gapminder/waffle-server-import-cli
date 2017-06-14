@@ -8,6 +8,8 @@ const wsRequest = require('./../service/request-ws');
 const cliUi = require('./../service/cli-ui');
 const gitFlow = require('./../service/git-flow');
 const formatter = require('./../service/formatter');
+const repoService = require('waffle-server-repo-service').default;
+repoService.logger = require('../config/logger');
 
 /**
  *

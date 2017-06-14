@@ -61,9 +61,7 @@ function cacheClean(done) {
 
 function reposClean(done) {
   return async.series([
-    (done) => gitFlow.reposClean(envConst.PATH_REPOS, (error) => {
-      return async.setImmediate(() => done(error));
-    }),
+    async.apply(gitFlow.reposClean, envConst.PATH_REPOS),
     (done) => wsRequest.reposClean({}, (error, wsResponse) => {
       return done(error ? error.toString() : wsResponse.getError());
     })

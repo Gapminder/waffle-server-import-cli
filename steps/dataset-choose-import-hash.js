@@ -1,9 +1,11 @@
 'use strict';
 
 const util = require('util');
+const envConst = require('./../model/env-const');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
 const stepBase = require('./../model/base-step');
+const repoService = require('waffle-server-repo-service').default;
 
 function step() {
   stepBase.apply(this, arguments);
@@ -25,7 +27,6 @@ let question = {
 const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
 const longPolling = require('./../service/request-polling');
-const shell = require('shelljs');
 
 const NEXT_STEP_PATH = 'choose-flow';
 const HOLDER_KEY_DATASET_IMPORT = 'dataset-choose-import';
@@ -51,6 +52,7 @@ step.prototype.preProcess = function (done) {
           value: item.hash
         };
       });
+
       self.setQuestionChoices(choices, nextStrategy);
 
       cliUi.stop();
@@ -96,36 +98,42 @@ step.prototype.process = function (inputValue) {
 
     cliUi.state("processing Import Dataset, send request");
 
-    wsRequest.importDataset(data, function (error, wsResponse) {
+    wsRequest.importDataset(data, function (importError, wsResponse) {
+      if (importError && envConst.IS_DEVELOPMENT_ENV) {
+        cliUi.warning(importError);
+      }
 
-      let gitRepoPath = gitFlow.getRepoFolder(data.github);
-      let commandLinesOfCode = `wc -l ${gitRepoPath}/*.csv | grep "total$"`;
-
-      shell.exec(commandLinesOfCode, {silent: true}, function (err, stdout) {
-        let numberOfRows = parseInt(stdout);
-
-        let errorMsg = error ? error.toString() : wsResponse.getError();
-
-        if (errorMsg) {
-          cliUi.stop().logStart().error(errorMsg).logEnd();
-          // return done(errorMsg); :: inquirer bug, update after fix
-          return done(null, true);
+      gitFlow.getRepoFolder(data.github, (repoError, pathToRepo) => {
+        if (repoError && envConst.IS_NOT_PRODUCTION_ENV) {
+          cliUi.warning(repoError);
         }
 
-        let dataState = {
-          'datasetName': gitFlow.getRepoName(data.github)
-        };
+        const prettifyResult = (stdout) => parseInt(stdout);
 
-        longPolling.setTimeStart(numberOfRows);
-        longPolling.checkDataSet(dataState, function (state) {
+        repoService.getAmountLines({pathToRepo, silent: true, prettifyResult}, (error, numberOfRows) => {
+          let errorMsg = error ? error.toString() : wsResponse.getError();
 
-          // state.success
-          if (!state.success) {
-            cliUi.stop().logStart().error(state.message).logEnd();
-          } else {
-            cliUi.stop().logPrint([state.message]);
+          if (errorMsg) {
+            cliUi.stop().logStart().error(errorMsg).logEnd();
+            // return done(errorMsg); :: inquirer bug, update after fix
+            return done(null, true);
           }
-          return done(null, true);
+
+          let dataState = {
+            'datasetName': gitFlow.getRepoName(data.github)
+          };
+
+          longPolling.setTimeStart(numberOfRows);
+          longPolling.checkDataSet(dataState, function (state) {
+
+            // state.success
+            if (!state.success) {
+              cliUi.stop().logStart().error(state.message).logEnd();
+            } else {
+              cliUi.stop().logPrint([state.message]);
+            }
+            return done(null, true);
+          });
         });
       });
     });
