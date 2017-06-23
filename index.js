@@ -6,8 +6,8 @@ const envConst = require('./model/env-const');
 
 const holder = require('./model/value-holder');
 
-const repoService = require('waffle-server-repo-service').default;
-repoService.logger = require('./config/logger');
+const {reposService} = require('waffle-server-repo-service');
+reposService.logger = require('./config/logger');
 
 // include static repositories
 let repoListReserved = require(envConst.PATH_FILE_REPOS);

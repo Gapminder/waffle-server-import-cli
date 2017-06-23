@@ -1,8 +1,5 @@
 'use strict';
 
-const repoService = require('waffle-server-repo-service').default;
-repoService.logger = require('./config/logger');
-
 const cliApiImportUpdate = require('./api/import-update');
 const cliApiSetDefault = require('./api/set-default');
 const cliApiGetCommitList = require('./api/get-commit-list');

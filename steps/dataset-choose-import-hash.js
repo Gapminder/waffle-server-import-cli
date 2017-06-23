@@ -5,7 +5,8 @@ const envConst = require('./../model/env-const');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
 const stepBase = require('./../model/base-step');
-const repoService = require('waffle-server-repo-service').default;
+const {reposService} = require('waffle-server-repo-service');
+const logger = require('../config/logger');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -99,18 +100,22 @@ step.prototype.process = function (inputValue) {
     cliUi.state("processing Import Dataset, send request");
 
     wsRequest.importDataset(data, function (importError, wsResponse) {
-      if (importError && envConst.IS_DEVELOPMENT_ENV) {
-        cliUi.warning(importError);
+      if (importError) {
+        logger.warn(importError);
       }
 
       gitFlow.getRepoFolder(data.github, (repoError, pathToRepo) => {
-        if (repoError && envConst.IS_NOT_PRODUCTION_ENV) {
-          cliUi.warning(repoError);
+        if (repoError) {
+          logger.warn(repoError);
         }
 
         const prettifyResult = (stdout) => parseInt(stdout);
 
-        repoService.getAmountLines({pathToRepo, silent: true, prettifyResult}, (error, numberOfRows) => {
+        reposService.getLinesAmount({pathToRepo, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
+          if (linesAmountError) {
+            logger.warn(linesAmountError);
+          }
+
           let errorMsg = error ? error.toString() : wsResponse.getError();
 
           if (errorMsg) {

@@ -23,7 +23,7 @@ chai.use(sinonChaiInOrder.default);
 const envConst = require('../../../model/env-const');
 const utils = require('../../../service/git-flow-utils');
 const cliUi = require('../../../service/cli-ui');
-const repoService = require('waffle-server-repo-service').default;
+const {reposService} = require('waffle-server-repo-service');
 
 describe('Service: Git flow', function () {
   describe('simple functionc', () => {
@@ -179,7 +179,7 @@ describe('Service: Git flow', function () {
       this.stub(envConst, 'PATH_REPOS', absolutePathToRepos);
 
       const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(relativePathToRepo);
-      const makeDirForceStub = this.stub(repoService, 'makeDirForce').callsArgWithAsync(1);
+      const makeDirForceStub = this.stub(reposService, 'makeDirForce').callsArgWithAsync(1);
 
       gitFlow.getRepoFolder(giturl, (error, configDir) => {
         expect(configDir).to.eql(expectedConfigDir);
@@ -207,7 +207,7 @@ describe('Service: Git flow', function () {
       this.stub(envConst, 'PATH_REPOS', absolutePathToRepos);
 
       const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(relativePathToRepo);
-      const makeDirForceStub = this.stub(repoService, 'makeDirForce').callsArgWithAsync(1, expectedError);
+      const makeDirForceStub = this.stub(reposService, 'makeDirForce').callsArgWithAsync(1, expectedError);
 
       gitFlow.getRepoFolder(giturl, (error) => {
         expect(error).to.be.deep.equal(expectedError);
@@ -911,7 +911,7 @@ describe('Service: Git flow', function () {
       const gitFlow = require('../../../service/git-flow');
       const pathToRepo = '/test';
       const cliUiStub = this.stub(cliUi, 'state');
-      const removeDirForceStub = this.stub(repoService, 'removeDirForce').callsArgWithAsync(1);
+      const removeDirForceStub = this.stub(reposService, 'removeDirForce').callsArgWithAsync(1);
 
       return gitFlow.reposClean(pathToRepo, (error) => {
         expect(error).to.not.exist;
@@ -929,7 +929,7 @@ describe('Service: Git flow', function () {
       const pathToRepos = '/test';
       const expectedError = `Directory '${pathToRepos}' is not exist!`;
       const cliUiStub = this.stub(cliUi, 'state');
-      const removeDirForceStub = this.stub(repoService, 'removeDirForce').callsArgWithAsync(1, expectedError);
+      const removeDirForceStub = this.stub(reposService, 'removeDirForce').callsArgWithAsync(1, expectedError);
 
       return gitFlow.reposClean(pathToRepos, (error) => {
         expect(error).to.be.equal(expectedError);
@@ -947,7 +947,7 @@ describe('Service: Git flow', function () {
       const cliUiStub = this.stub(cliUi, 'state');
 
       const expectedError = 'Boo!';
-      const removeDirForceStub = this.stub(repoService, 'removeDirForce').callsArgWithAsync(1, expectedError);
+      const removeDirForceStub = this.stub(reposService, 'removeDirForce').callsArgWithAsync(1, expectedError);
 
       return gitFlow.reposClean(pathToRepos, (error) => {
         expect(error).to.be.equal(expectedError);

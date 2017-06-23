@@ -4,7 +4,8 @@ const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
 const stepBase = require('./../model/base-step');
-const repoService = require('waffle-server-repo-service').default;
+const {reposService} = require('waffle-server-repo-service');
+const logger = require('../config/logger');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -80,15 +81,15 @@ step.prototype.process = function (github) {
   }
 
   gitFlow.getRepoFolder(github, (repoError, pathToRepo) => {
-    if (repoError && envConst.IS_NOT_PRODUCTION_ENV) {
-      cliUi.warning(repoError);
+    if (repoError) {
+      logger.warn(repoError);
     }
 
     const prettifyResult = (stdout) => parseInt(stdout);
 
-    repoService.getAmountLines({pathToRepo, silent: true, prettifyResult}, (amountLinesError, numberOfRows) => {
-      if (amountLinesError && envConst.IS_NOT_PRODUCTION_ENV) {
-        cliUi.warning(amountLinesError);
+    reposService.getLinesAmount({pathToRepo, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
+      if (linesAmountError) {
+        logger.warn(linesAmountError);
       }
 
       let dataState = {

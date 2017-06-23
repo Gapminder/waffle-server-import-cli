@@ -8,7 +8,7 @@ const async = require('async');
 const JSONStream = require('JSONStream');
 const cliUi = require('./../service/cli-ui');
 const utils = require('./git-flow-utils');
-const repoService = require('waffle-server-repo-service').default;
+const {reposService} = require('waffle-server-repo-service');
 const envConst = require('./../model/env-const');
 const logger = require('../config/logger');
 
@@ -45,7 +45,7 @@ function updateRepoState(externalContext, done) {
 function checkSshKey(externalContext, done) {
   cliUi.state('ssh, check ssh-key');
 
-  repoService.checkSshKey({silent: true}, (error) => {
+  reposService.checkSshKey({silent: true}, (error) => {
     if (error) {
       const [code, message, proposal] = error.split('\n');
       const prettifiedError = `${cliUi.CONST_FONT_RED}* [code=${code}] ERROR: ${cliUi.CONST_FONT_YELLOW}${message}${cliUi.CONST_FONT_BLUE}\n\t${proposal}${cliUi.CONST_FONT_WHITE}`;
@@ -65,7 +65,7 @@ function gitShow(field, commit, externalContext, done) {
     logger.error({source: 'import-cli', message: 'undefined', field, commit, pathToRepo, relativeFilePath, externalContext});
   }
 
-  return repoService.show({commit, relativeFilePath, pathToRepo}, function (error, result) {
+  return reposService.show({commit, relativeFilePath, pathToRepo}, function (error, result) {
     externalContext[field] = !!error ? '' : result;
     logger.info({source: 'import-cli', field, commit, relativeFilePath, pathToRepo, result});
 
@@ -82,7 +82,7 @@ function gitCloneIfRepoNotExists(externalContext, done) {
 
   cliUi.state('git, clone repo');
 
-  return repoService.silentClone({absolutePathToRepos, relativePathToRepo, githubUrl, branch}, (error) => done(error, externalContext));
+  return reposService.silentClone({absolutePathToRepos, relativePathToRepo, githubUrl, branch}, (error) => done(error, externalContext));
 }
 
 function gitFetch(externalContext, done) {
@@ -90,7 +90,7 @@ function gitFetch(externalContext, done) {
 
   cliUi.state('git, fetch updates');
 
-  return repoService.fetch({pathToRepo, branch}, (error) => done(error, externalContext));
+  return reposService.fetch({pathToRepo, branch}, (error) => done(error, externalContext));
 }
 
 function gitReset(externalContext, done) {
@@ -98,7 +98,7 @@ function gitReset(externalContext, done) {
 
   cliUi.state('git, reset changes');
 
-  return repoService.reset({pathToRepo, branch}, (error) => done(error, externalContext));
+  return reposService.reset({pathToRepo, branch}, (error) => done(error, externalContext));
 }
 
 function gitLog(externalContext, done) {
@@ -111,7 +111,7 @@ function gitLog(externalContext, done) {
     return {hash, date, fullDate, message};
   });
 
-  return repoService.log({pathToRepo, branch, prettifyResult}, (error, result) => {
+  return reposService.log({pathToRepo, branch, prettifyResult}, (error, result) => {
 
     externalContext.detailedCommitsList = result;
 
@@ -133,7 +133,7 @@ function getFileStatusesDiff(externalContext, done) {
     }, {})
     .value();
 
-  return repoService.diff({pathToRepo, commitFrom, commitTo, prettifyResult}, (error, gitDiffFileStatus = {}) => {
+  return reposService.diff({pathToRepo, commitFrom, commitTo, prettifyResult}, (error, gitDiffFileStatus = {}) => {
     externalContext.gitDiffFileStatus = gitDiffFileStatus;
 
     return done(error, externalContext);
@@ -145,7 +145,7 @@ function checkoutHash(commit, externalContext, done) {
 
   cliUi.state(`git, checkout to '${commit}'`);
 
-  return repoService.checkoutToCommit({pathToRepo, commit}, (error) => done(error, externalContext));
+  return reposService.checkoutToCommit({pathToRepo, commit}, (error) => done(error, externalContext));
 
 }
 

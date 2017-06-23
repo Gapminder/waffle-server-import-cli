@@ -11,6 +11,8 @@ const gitFlow = require('./../service/git-flow');
 const envConst = require('./../model/env-const');
 const wsRequest = require('./../service/request-ws');
 const longPolling = require('./../service/request-polling');
+const logger = require('../config/logger');
+const {reposService} = require('waffle-server-repo-service');
 
 /**
  *
@@ -141,25 +143,25 @@ function repoImport(callback) {
 
     cliUi.state("processing Import Dataset, send request");
     wsRequest.importDataset(data, function (importError, wsResponse) {
-      if (importError && envConst.IS_DEVELOPMENT_ENV) {
-        cliUi.warning(importError);
+      if (importError) {
+        logger.warn(importError);
       }
 
       gitFlow.getRepoFolder(data.github, (repoError, pathToRepo) => {
-        if (repoError && envConst.IS_NOT_PRODUCTION_ENV) {
-          cliUi.warning(repoError);
+        if (repoError) {
+          logger.warn(repoError);
         }
 
         const prettifyResult = (stdout) => parseInt(stdout);
 
-        cliUi.state(`Try to get amount lines`);
+        cliUi.state(`Try to get lines amount`);
 
-        repoService.getAmountLines({pathToRepo, silent: true, prettifyResult}, (amountLinesError, numberOfRows) => {
-          if (amountLinesError && envConst.IS_DEVELOPMENT_ENV) {
-            cliUi.warning(amountLinesError);
+        reposService.getLinesAmount({pathToRepo, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
+          if (linesAmountError) {
+            logger.warn(linesAmountError);
           }
 
-          cliUi.state(`Amount lines: ${numberOfRows}`);
+          cliUi.state(`Lines amount: ${numberOfRows}`);
 
           let errorMsg = error ? error.toString() : wsResponse.getError();
 
@@ -178,8 +180,7 @@ function repoImport(callback) {
             // state.success
             if (!state.success) {
               cliUi.stop().logStart().error(state.message).logEnd();
-            } else {
-              //cliUi.stop().logPrint([state.message]);
+              return callback(state.message);
             }
 
             cliUi.stop().success("Repo Import: OK (based on #" + importCommitHash + ")");
@@ -256,21 +257,21 @@ function incrementalUpdate(item, callback) {
       cliUi.state("processing Update Dataset, send request");
 
       wsRequest.updateDataset(diffOptions, function (updateError, wsResponse) {
-        if (updateError && envConst.IS_NOT_PRODUCTION_ENV) {
-          cliUi.warning(updateError);
+        if (updateError) {
+          logger.warn(updateError);
         }
 
         gitFlow.getRepoFolder(data.github, (repoError, pathToRepo) => {
-          if (repoError && envConst.IS_NOT_PRODUCTION_ENV) {
-            cliUi.warning(repoError);
+          if (repoError) {
+            logger.warn(repoError);
           }
 
           const pathsToFiles = _.map(result.fileList, fileName => pathToRepo + '/' + fileName).join(" ");
           const prettifyResult = (stdout) => parseInt(stdout);
 
-          repoService.getAmountLines({pathToRepo, files: pathsToFiles, silent: true, prettifyResult}, (amountLinesError, numberOfRows) => {
-            if (amountLinesError && envConst.IS_NOT_PRODUCTION_ENV) {
-              cliUi.warning(amountLinesError);
+          reposService.getLinesAmount({pathToRepo, files: pathsToFiles, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
+            if (linesAmountError) {
+              logger.warn(linesAmountError);
             }
 
             const errorMsg = updateError ? updateError.toString() : wsResponse.getError();

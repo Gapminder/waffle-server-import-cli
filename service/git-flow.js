@@ -8,7 +8,7 @@ const JSONStream = require('JSONStream');
 const envConst = require('./../model/env-const');
 const utils = require('./git-flow-utils');
 const cliUi = require('./../service/cli-ui');
-const repoService = require('waffle-server-repo-service').default;
+const {reposService} = require('waffle-server-repo-service');
 
 function gitFlow() {
 }
@@ -49,7 +49,7 @@ gitFlow.prototype.getRepoFolder = function (github, callback) {
   const relativePathToRepo = this.getRepoPath(github);
   const pathToDir = path.resolve(absolutePathToRepos, relativePathToRepo);
 
-  repoService.makeDirForce({pathToDir}, (error) => {
+  reposService.makeDirForce({pathToDir}, (error) => {
     if (error) {
       return callback(error);
     }
@@ -245,7 +245,7 @@ gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github, addition
 };
 
 gitFlow.prototype.reposClean = function (pathToCleaning, onReposCleaned) {
-  repoService.removeDirForce(pathToCleaning, (error) => {
+  reposService.removeDirForce(pathToCleaning, (error) => {
     if (error) {
       return onReposCleaned(error);
     }

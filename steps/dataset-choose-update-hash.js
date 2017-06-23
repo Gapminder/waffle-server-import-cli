@@ -6,7 +6,8 @@ const envConst = require('./../model/env-const');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
 const stepBase = require('./../model/base-step');
-const repoService = require('waffle-server-repo-service').default;
+const {reposService} = require('waffle-server-repo-service');
+const logger = require('../config/logger');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -153,21 +154,21 @@ step.prototype.process = function (inputValue) {
 
       cliUi.state("processing Update Dataset, send request");
       wsRequest.updateDataset(diffOptions, function (updateError, wsResponse) {
-        if (updateError && envConst.IS_DEVELOPMENT_ENV) {
-          cliUi.warning(updateError);
+        if (updateError) {
+          logger.warn(updateError);
         }
 
         gitFlow.getRepoFolder(data.github, (repoError, pathToRepo) => {
-          if (repoError && envConst.IS_NOT_PRODUCTION_ENV) {
-            cliUi.warning(repoError);
+          if (repoError) {
+            logger.warn(repoError);
           }
 
           const prettifyResult = (stdout) => parseInt(stdout);
           const pathsToFiles = _.map(repoDiffDescriptor.fileList, (fileName) => pathToRepo + '/' + fileName).join(" ");
 
-          repoService.getAmountLines({pathToRepo, files: pathsToFiles, silent: true, prettifyResult}, (amountLinesError, numberOfRows) => {
-            if (amountLinesError && envConst.IS_NOT_PRODUCTION_ENV) {
-              cliUi.warning(amountLinesError);
+          reposService.getLinesAmount({pathToRepo, files: pathsToFiles, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
+            if (linesAmountError) {
+              logger.warn(linesAmountError);
             }
 
             const errorMsg = updateError ? updateError.toString() : wsResponse.getError();

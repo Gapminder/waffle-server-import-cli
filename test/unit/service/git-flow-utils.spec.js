@@ -7,7 +7,7 @@ const fs = require('fs');
 const ddfValidation = require('ddf-validation');
 const JSONStream = require('JSONStream');
 const proxyquire = require('proxyquire');
-const repoService = require('waffle-server-repo-service').default;
+const {reposService} = require('waffle-server-repo-service');
 
 const sinon = require('sinon');
 const assert = sinon.assert;
@@ -40,10 +40,10 @@ describe('Git flow utils', function () {
       const externalContext = {github, absolutePathToRepos, relativePathToRepo, pathToRepo, branch, url};
 
       const cliUiStub = this.stub(cliUi, 'state');
-      const checkSshKeyStub = this.stub(repoService, 'checkSshKey').callsArgWithAsync(1);
-      const silentCloneStub = this.stub(repoService, 'silentClone').callsArgWithAsync(1);
-      const fetchStub = this.stub(repoService, 'fetch').callsArgWithAsync(1);
-      const resetStub = this.stub(repoService, 'reset').callsArgWithAsync(1);
+      const checkSshKeyStub = this.stub(reposService, 'checkSshKey').callsArgWithAsync(1);
+      const silentCloneStub = this.stub(reposService, 'silentClone').callsArgWithAsync(1);
+      const fetchStub = this.stub(reposService, 'fetch').callsArgWithAsync(1);
+      const resetStub = this.stub(reposService, 'reset').callsArgWithAsync(1);
 
       // *** Act
       return utils.updateRepoState(externalContext, (error, result) => {
@@ -90,10 +90,10 @@ describe('Git flow utils', function () {
       const externalContext = {github, pathToRepo, branch, url};
 
       const cliUiStub = this.stub(cliUi, 'state');
-      const checkSshKeyStub = this.stub(repoService, 'checkSshKey').callsArgWithAsync(1, actualError);
-      const silentCloneStub = this.stub(repoService, 'silentClone').callsArgWithAsync(1);
-      const fetchStub = this.stub(repoService, 'fetch').callsArgWithAsync(1);
-      const resetStub = this.stub(repoService, 'reset').callsArgWithAsync(1);
+      const checkSshKeyStub = this.stub(reposService, 'checkSshKey').callsArgWithAsync(1, actualError);
+      const silentCloneStub = this.stub(reposService, 'silentClone').callsArgWithAsync(1);
+      const fetchStub = this.stub(reposService, 'fetch').callsArgWithAsync(1);
+      const resetStub = this.stub(reposService, 'reset').callsArgWithAsync(1);
 
       return utils.updateRepoState(externalContext, (error, result) => {
         expect(error).to.be.equal(expectedError);
@@ -125,10 +125,10 @@ describe('Git flow utils', function () {
       const expectedError = 'Boo!';
 
       const cliUiStub = this.stub(cliUi, 'state');
-      const checkSshKeyStub = this.stub(repoService, 'checkSshKey').callsArgWithAsync(1);
-      const silentCloneStub = this.stub(repoService, 'silentClone').callsArgWithAsync(1, expectedError);
-      const fetchStub = this.stub(repoService, 'fetch').callsArgWithAsync(1);
-      const resetStub = this.stub(repoService, 'reset').callsArgWithAsync(1);
+      const checkSshKeyStub = this.stub(reposService, 'checkSshKey').callsArgWithAsync(1);
+      const silentCloneStub = this.stub(reposService, 'silentClone').callsArgWithAsync(1, expectedError);
+      const fetchStub = this.stub(reposService, 'fetch').callsArgWithAsync(1);
+      const resetStub = this.stub(reposService, 'reset').callsArgWithAsync(1);
 
       return utils.updateRepoState(externalContext, (error, result) => {
         expect(error).to.be.equal(expectedError);
@@ -164,10 +164,10 @@ describe('Git flow utils', function () {
       const expectedError = 'Boo!';
 
       const cliUiStub = this.stub(cliUi, 'state');
-      const checkSshKeyStub = this.stub(repoService, 'checkSshKey').callsArgWithAsync(1);
-      const silentCloneStub = this.stub(repoService, 'silentClone').callsArgWithAsync(1);
-      const fetchStub = this.stub(repoService, 'fetch').callsArgWithAsync(1, expectedError);
-      const resetStub = this.stub(repoService, 'reset').callsArgWithAsync(1);
+      const checkSshKeyStub = this.stub(reposService, 'checkSshKey').callsArgWithAsync(1);
+      const silentCloneStub = this.stub(reposService, 'silentClone').callsArgWithAsync(1);
+      const fetchStub = this.stub(reposService, 'fetch').callsArgWithAsync(1, expectedError);
+      const resetStub = this.stub(reposService, 'reset').callsArgWithAsync(1);
 
       return utils.updateRepoState(externalContext, (error) => {
         expect(error).to.be.equal(expectedError);
@@ -205,10 +205,10 @@ describe('Git flow utils', function () {
       const expectedError = 'Boo!';
 
       const cliUiStub = this.stub(cliUi, 'state');
-      const checkSshKeyStub = this.stub(repoService, 'checkSshKey').callsArgWithAsync(1);
-      const silentCloneStub = this.stub(repoService, 'silentClone').callsArgWithAsync(1);
-      const fetchStub = this.stub(repoService, 'fetch').callsArgWithAsync(1);
-      const resetStub = this.stub(repoService, 'reset').callsArgWithAsync(1, expectedError);
+      const checkSshKeyStub = this.stub(reposService, 'checkSshKey').callsArgWithAsync(1);
+      const silentCloneStub = this.stub(reposService, 'silentClone').callsArgWithAsync(1);
+      const fetchStub = this.stub(reposService, 'fetch').callsArgWithAsync(1);
+      const resetStub = this.stub(reposService, 'reset').callsArgWithAsync(1, expectedError);
 
       return utils.updateRepoState(externalContext, (error) => {
         expect(error).to.be.equal(expectedError);
@@ -258,7 +258,7 @@ describe('Git flow utils', function () {
         date: expectedDate
       }
     ];
-    const logStub = this.stub(repoService, 'log').callsArgWithAsync(1, null, detailedCommitsList);
+    const logStub = this.stub(reposService, 'log').callsArgWithAsync(1, null, detailedCommitsList);
 
     const cliUiStub = this.stub(cliUi, 'state');
     const utils = require('../../../service/git-flow-utils');
@@ -288,7 +288,7 @@ describe('Git flow utils', function () {
     const externalContext = {github, pathToRepo, branch, url};
     const expectedError = 'Boo!';
 
-    const logStub = this.stub(repoService, 'log').callsArgWithAsync(1, expectedError, null);
+    const logStub = this.stub(reposService, 'log').callsArgWithAsync(1, expectedError, null);
 
     const cliUiStub = this.stub(cliUi, 'state');
 
@@ -322,7 +322,7 @@ describe('Git flow utils', function () {
       Author: 'Test test Test <test@gmail.com>',
       Date: 'Mon Mar 20 13:37:43 2017 +0200'
     };
-    const showStub = this.stub(repoService, 'show').callsArgWithAsync(1, null, expectedResult);
+    const showStub = this.stub(reposService, 'show').callsArgWithAsync(1, null, expectedResult);
 
     const cliUiStub = this.stub(cliUi, 'state');
     const warnStub = this.stub(console, 'warn');
@@ -360,7 +360,7 @@ describe('Git flow utils', function () {
       Date: 'Mon Mar 20 13:37:43 2017 +0200'
     };
     const expectedError = 'does not exist in';
-    const showStub = this.stub(repoService, 'show').callsArgWithAsync(1, expectedError, expectedResult);
+    const showStub = this.stub(reposService, 'show').callsArgWithAsync(1, expectedError, expectedResult);
 
     const cliUiStub = this.stub(cliUi, 'state');
 
@@ -391,7 +391,7 @@ describe('Git flow utils', function () {
       const commitTo = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
       const externalContext = {hashFrom: commitFrom, pathToRepo, hashTo: commitTo};
       const expectedResult = {};
-      const diffStub = this.stub(repoService, 'diff').callsArgWithAsync(1, null, expectedResult);
+      const diffStub = this.stub(reposService, 'diff').callsArgWithAsync(1, null, expectedResult);
 
       const cliUiStub = this.stub(cliUi, 'state');
 
@@ -428,7 +428,7 @@ describe('Git flow utils', function () {
         'lang/nl-nl/ddf--concepts.csv': 'A',
         'lang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv': 'A',
       };
-      const diffStub = this.stub(repoService, 'diff').callsArgWithAsync(1, null, expectedResult);
+      const diffStub = this.stub(reposService, 'diff').callsArgWithAsync(1, null, expectedResult);
 
       const cliUiStub = this.stub(cliUi, 'state');
 
@@ -473,7 +473,7 @@ describe('Git flow utils', function () {
         'lang/nl-nl/ddf--datapoints--company_scale--by--company--anno.csv': 'A',
       };
       const expectedError = 'Boo!';
-      const diffStub = this.stub(repoService, 'diff').callsArgWithAsync(1, expectedError, expectedResult);
+      const diffStub = this.stub(reposService, 'diff').callsArgWithAsync(1, expectedError, expectedResult);
 
       const cliUiStub = this.stub(cliUi, 'state');
 
@@ -506,7 +506,7 @@ describe('Git flow utils', function () {
     const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
     const externalContext = {pathToRepo};
     const hash = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
-    const checkoutToCommitStub = this.stub(repoService, 'checkoutToCommit').callsArgWithAsync(1);
+    const checkoutToCommitStub = this.stub(reposService, 'checkoutToCommit').callsArgWithAsync(1);
 
     const cliUiStub = this.stub(cliUi, 'state');
 
@@ -533,7 +533,7 @@ describe('Git flow utils', function () {
     const hash = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
     const expectedError = 'Boo!';
 
-    const checkoutToCommitStub = this.stub(repoService, 'checkoutToCommit').callsArgWithAsync(1, expectedError);
+    const checkoutToCommitStub = this.stub(reposService, 'checkoutToCommit').callsArgWithAsync(1, expectedError);
 
     const cliUiStub = this.stub(cliUi, 'state');
 
