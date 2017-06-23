@@ -1,9 +1,9 @@
 'use strict';
 
+require('./../service/env-init');
+
 const cliUi = require('./../service/cli-ui');
 const csvDiff = require('./../service/csv-diff');
-const repoService = require('waffle-server-repo-service').default;
-repoService.logger = require('../config/logger');
 
 /**
  *

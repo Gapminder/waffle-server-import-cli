@@ -4,15 +4,13 @@ const _ = require('lodash');
 const async = require('async');
 require('./../service/env-init');
 
-const envConst = require('./../model/env-const');
-const holder = require('./../model/value-holder');
-const wsRequest = require('./../service/request-ws');
 const cliUi = require('./../service/cli-ui');
-const gitFlow = require('./../service/git-flow');
-const longPolling = require('./../service/request-polling');
+const holder = require('./../model/value-holder');
 const csvDiff = require('./../service/csv-diff');
-const repoService = require('waffle-server-repo-service').default;
-repoService.logger = require('../config/logger');
+const gitFlow = require('./../service/git-flow');
+const envConst = require('./../model/env-const');
+const wsRequest = require('./../service/request-ws');
+const longPolling = require('./../service/request-polling');
 
 /**
  *
