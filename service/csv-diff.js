@@ -8,6 +8,7 @@ const gitFlow = require('./git-flow');
 const cliUi = require('./cli-ui');
 const envConst = require('./../model/env-const');
 const gitCsvDiff = require('git-csv-diff');
+const logger = require('../config/logger');
 
 function csvDiff() {};
 
@@ -40,10 +41,12 @@ function createDiffStreams(context, done) {
 function processDiffFiles(context, done) {
   const {gitDiffFileList, metadata, gitDiffFileStatus, streams} = context;
 
-  return async.eachSeries(
-    gitDiffFileList,
+  logger.info({source: 'import-cli', message: 'gitDiffFileList', gitDiffFileStatus, context});
+
+  return async.eachOfSeries(
+    gitDiffFileStatus,
     // iteration
-    (fileName, onFileProcessed) => {
+    (state, fileName, onFileProcessed) => {
       return gitFlow.showFileStateByHash(context, fileName, function (error, dataDiff) {
         if (error) {
           return onFileProcessed(error);

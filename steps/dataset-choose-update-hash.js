@@ -2,9 +2,12 @@
 
 const _ = require('lodash');
 const util = require('util');
+const envConst = require('./../model/env-const');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
 const stepBase = require('./../model/base-step');
+const {reposService} = require('waffle-server-repo-service');
+const logger = require('../config/logger');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -141,7 +144,7 @@ step.prototype.process = function (inputValue) {
     };
 
     cliUi.state("processing Update Dataset, generate diff");
-    csvDiff.process(diffOptions, function (error, result) {
+    csvDiff.process(diffOptions, function (error, repoDiffDescriptor) {
       if (error) {
         cliUi.stop().logStart().error(error).logEnd();
 
@@ -150,53 +153,51 @@ step.prototype.process = function (inputValue) {
       }
 
       cliUi.state("processing Update Dataset, send request");
-      wsRequest.updateDataset(diffOptions, function (error, wsResponse) {
-        if (error) {
-          cliUi.stop().logStart().error(error).logEnd();
-
-          // return done(errorMsg); :: inquirer bug, update after fix
-          return done(null, true);
+      wsRequest.updateDataset(diffOptions, function (updateError, wsResponse) {
+        if (updateError) {
+          logger.warn(updateError);
         }
 
-        const gitRepoPath = gitFlow.getRepoFolder(data.github);
-
-        const pathsToFiles = result.fileList.map((fileName) => {
-          return gitRepoPath + '/' + fileName;
-        }).join(" ");
-
-        const getGrep = pathsToFiles.length > 1 ? ` | grep "total$"` : "";
-
-        const commandLinesOfCode = pathsToFiles.length<1 ? `wc -l ""` : `wc -l ${pathsToFiles}${getGrep}`;
-
-        shell.exec(commandLinesOfCode, {silent: true}, function (err, stdout) {
-          const numberOfRows = parseInt(stdout);
-
-          const errorMsg = error ? error.toString() : wsResponse.getError();
-
-          if (errorMsg) {
-            cliUi.stop().logStart().error(errorMsg).logEnd();
-            // return done(errorMsg); :: inquirer bug, update after fix
-            return done(null, true);
+        gitFlow.getRepoFolder(data.github, (repoError, pathToRepo) => {
+          if (repoError) {
+            logger.warn(repoError);
           }
 
-          let operationMsg = wsResponse.getMessage();
+          const prettifyResult = (stdout) => parseInt(stdout);
+          const pathsToFiles = _.map(repoDiffDescriptor.fileList, (fileName) => pathToRepo + '/' + fileName).join(" ");
 
-          let dataState = {
-            'datasetName': gitFlow.getRepoName(datasetData.github)
-          };
-
-          longPolling.setTimeStart(numberOfRows);
-          longPolling.checkDataSet(dataState, function (state) {
-
-            // state.success
-            if (!state.success) {
-              cliUi.stop().logStart().error(state.message).logEnd();
-            } else {
-              cliUi.stop().logPrint([state.message]);
+          reposService.getLinesAmount({pathToRepo, files: pathsToFiles, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
+            if (linesAmountError) {
+              logger.warn(linesAmountError);
             }
-            return done(null, true);
-          });
 
+            const errorMsg = updateError ? updateError.toString() : wsResponse.getError();
+
+            if (errorMsg) {
+              cliUi.stop().logStart().error(errorMsg).logEnd();
+              // return done(errorMsg); :: inquirer bug, update after fix
+              return done(null, true);
+            }
+
+            let operationMsg = wsResponse.getMessage();
+
+            let dataState = {
+              'datasetName': gitFlow.getRepoName(datasetData.github)
+            };
+
+            longPolling.setTimeStart(numberOfRows);
+            longPolling.checkDataSet(dataState, function (state) {
+
+              // state.success
+              if (!state.success) {
+                cliUi.stop().logStart().error(state.message).logEnd();
+              } else {
+                cliUi.stop().logPrint([state.message]);
+              }
+              return done(null, true);
+            });
+
+          });
         });
 
       });

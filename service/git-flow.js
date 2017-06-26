@@ -4,11 +4,11 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const async = require('async');
-const shell = require('shelljs');
 const JSONStream = require('JSONStream');
 const envConst = require('./../model/env-const');
 const utils = require('./git-flow-utils');
 const cliUi = require('./../service/cli-ui');
+const {reposService} = require('waffle-server-repo-service');
 
 function gitFlow() {
 }
@@ -17,8 +17,8 @@ gitFlow.prototype.getShortHash = function (commit) {
   return !!commit ? commit.substring(0, 7) : '';
 };
 
-gitFlow.prototype.configDir = function (github) {
-  return this.getRepoFolder(github) + '/';
+gitFlow.prototype.configDir = function (github, callback) {
+  return this.getRepoFolder(github, callback);
 };
 
 gitFlow.prototype.getRepoName = function (github) {
@@ -44,47 +44,61 @@ gitFlow.prototype.getRepoPath = function (github) {
   return '';
 };
 
-gitFlow.prototype.getRepoFolder = function (github) {
+gitFlow.prototype.getRepoFolder = function (github, callback) {
+  const absolutePathToRepos = envConst.PATH_REPOS;
+  const relativePathToRepo = this.getRepoPath(github);
+  const pathToDir = path.resolve(absolutePathToRepos, relativePathToRepo);
 
-  const regexpFolderGitFolder = this.getRepoPath(github);
-  const targetFolder = path.join(envConst.PATH_REPOS, regexpFolderGitFolder);
-
-  if (!fs.existsSync(targetFolder)) {
-
-    cliUi.state(`Try to create directory '${targetFolder}'`);
-
-    shell.mkdir('-p', targetFolder);
-
-    if (shell.error()) {
-      throw new Error(`Something went wrong during creation directory process`);
+  reposService.makeDirForce({pathToDir}, (error) => {
+    if (error) {
+      return callback(error);
     }
-  }
 
-  return targetFolder;
+    cliUi.state(`Directory '${pathToDir}' is created`);
+
+    return callback(null, {pathToRepo: pathToDir + '/', relativePathToRepo, absolutePathToRepos});
+  });
 };
 
 gitFlow.prototype.registerRepo = function (github, callback) {
 
-  const gitFolder = this.configDir(github);
-  const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
-  const context = {github, gitFolder, branch: githubUrlDescriptor.branch, url: githubUrlDescriptor.url};
+  return this.configDir(github, (error, {pathToRepo, relativePathToRepo, absolutePathToRepos}) => {
+    if (error) {
+      return callback(error);
+    }
 
-  cliUi.state("git, register repo");
+    const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
+    const context = {github, pathToRepo, relativePathToRepo, absolutePathToRepos, branch: githubUrlDescriptor.branch, url: githubUrlDescriptor.url};
 
-  return utils.updateRepoState(context, callback);
+    cliUi.state("git, register repo");
+
+    return utils.updateRepoState(context, callback)
+  });
 };
 
 gitFlow.prototype.getCommitList = function (github, done) {
 
   const self = this;
-  const gitFolder = this.configDir(github);
   const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
-  const context = {github, gitFolder, branch: githubUrlDescriptor.branch, url: githubUrlDescriptor.url};
+  const context = {github, branch: githubUrlDescriptor.branch, url: githubUrlDescriptor.url};
 
   cliUi.state("git, get commits list");
 
   return async.waterfall([
     async.constant(context),
+    (externalContext, done) => {
+      self.configDir(externalContext.github, (error, {pathToRepo, relativePathToRepo, absolutePathToRepos}) => {
+        if (error) {
+          return done(error);
+        }
+
+        externalContext.pathToRepo = pathToRepo;
+        externalContext.relativePathToRepo = relativePathToRepo;
+        externalContext.absolutePathToRepos = absolutePathToRepos;
+
+        return done(null, externalContext);
+      });
+    },
     utils.updateRepoState,
     utils.gitLog
   ], (error, result) => {
@@ -94,20 +108,14 @@ gitFlow.prototype.getCommitList = function (github, done) {
     }
 
     const {detailedCommitsList} = result;
-    const commitsList = _.map(detailedCommitsList, item => ({
-      hash: self.getShortHash(item.hash),
-      message: item.message,
-      date: item.date
-    }));
 
-    return done(null, commitsList);
+    return done(null, detailedCommitsList);
   });
 };
 
 gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
 
   const self = this;
-  const gitFolder = self.configDir(externalContext.github);
 
   const metadata = {
     datapackageOld: {},
@@ -117,7 +125,6 @@ gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
   const githubUrlDescriptor = utils.getGithubUrlDescriptor(externalContext.github);
 
   const context = _.extend({
-    gitFolder,
     branch: githubUrlDescriptor.branch,
     url: githubUrlDescriptor.url,
     gitDiffFileStatus: [],
@@ -129,6 +136,19 @@ gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
 
   return async.waterfall([
     async.constant(context),
+    (externalContext, done) => {
+      self.configDir(externalContext.github, (error, {pathToRepo, relativePathToRepo, absolutePathToRepos}) => {
+        if (error) {
+          return done(error);
+        }
+
+        externalContext.pathToRepo = pathToRepo;
+        externalContext.relativePathToRepo = relativePathToRepo;
+        externalContext.absolutePathToRepos = absolutePathToRepos;
+
+        return done(null, externalContext);
+      });
+    },
     utils.updateRepoState,
     utils.getFileStatusesDiff,
     async.apply(utils.checkoutHash, externalContext.hashFrom),
@@ -151,15 +171,26 @@ gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
 
 gitFlow.prototype.showFileStateByHash = function (data, fileName, done) {
 
-  const gitRepo = data.github;
-  const gitFolder = this.configDir(gitRepo);
-  const gitHashFrom = data.hashFrom + ':' + fileName;
-  const gitHashTo = data.hashTo + ':' + fileName;
+  const self = this;
+  const context = _.extend({relativeFilePath: fileName}, data);
 
   async.waterfall([
-    async.constant({gitFolder}),
-    async.apply(utils.gitShow, 'from', gitHashFrom),
-    async.apply(utils.gitShow, 'to', gitHashTo)
+    async.constant(context),
+    (externalContext, done) => {
+      self.configDir(externalContext.github, (error, {pathToRepo, relativePathToRepo, absolutePathToRepos}) => {
+        if (error) {
+          return done(error);
+        }
+
+        externalContext.pathToRepo = pathToRepo;
+        externalContext.relativePathToRepo = relativePathToRepo;
+        externalContext.absolutePathToRepos = absolutePathToRepos;
+
+        return done(null, externalContext);
+      });
+    },
+    async.apply(utils.gitShow, 'from', data.hashFrom),
+    async.apply(utils.gitShow, 'to', data.hashTo)
   ], (error, result) => {
     if (error) {
       return done(error);
@@ -173,13 +204,24 @@ gitFlow.prototype.showFileStateByHash = function (data, fileName, done) {
 
 gitFlow.prototype.validateDataset = function (data, done) {
 
-  const gitRepo = data.github;
+  const self = this;
   const gitCommit = data.commit;
 
-  const gitFolder = this.configDir(gitRepo);
-
   return async.waterfall([
-    async.constant({gitFolder}),
+    async.constant(data),
+    (externalContext, done) => {
+      self.configDir(externalContext.github, (error, {pathToRepo, relativePathToRepo, absolutePathToRepos}) => {
+        if (error) {
+          return done(error);
+        }
+
+        externalContext.pathToRepo = pathToRepo;
+        externalContext.relativePathToRepo = relativePathToRepo;
+        externalContext.absolutePathToRepos = absolutePathToRepos;
+
+        return done(null, externalContext);
+      });
+    },
     async.apply(utils.checkoutHash, gitCommit),
     utils.validateDataset
   ], done);
@@ -202,16 +244,16 @@ gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github, addition
   return path.resolve(pathFolder, filePartsResult.join('--'));
 };
 
-gitFlow.prototype.reposClean = function (pathRepos, onReposCleaned) {
-  if (fs.existsSync(pathRepos)) {
-    cliUi.state(`Try to clean directory '${pathRepos}'`);
+gitFlow.prototype.reposClean = function (pathToCleaning, onReposCleaned) {
+  reposService.removeDirForce(pathToCleaning, (error) => {
+    if (error) {
+      return onReposCleaned(error);
+    }
 
-    shell.rm('-rf', pathRepos + '/*');
+    cliUi.state(`Directory '${pathToCleaning}' was cleaned successfully`);
 
-    return onReposCleaned(shell.error());
-  }
-
-  return onReposCleaned(`Directory '${pathRepos}' is not exist!`);
+    return onReposCleaned();
+  });
 };
 
 // Export Module

@@ -1,15 +1,18 @@
 'use strict';
 
+const _ = require('lodash');
 const async = require('async');
 require('./../service/env-init');
 
-const holder = require('./../model/value-holder');
-const wsRequest = require('./../service/request-ws');
 const cliUi = require('./../service/cli-ui');
-const gitFlow = require('./../service/git-flow');
-const longPolling = require('./../service/request-polling');
+const holder = require('./../model/value-holder');
 const csvDiff = require('./../service/csv-diff');
-const shell = require('shelljs');
+const gitFlow = require('./../service/git-flow');
+const envConst = require('./../model/env-const');
+const wsRequest = require('./../service/request-ws');
+const longPolling = require('./../service/request-polling');
+const logger = require('../config/logger');
+const {reposService} = require('waffle-server-repo-service');
 
 /**
  *
@@ -139,38 +142,51 @@ function repoImport(callback) {
     }
 
     cliUi.state("processing Import Dataset, send request");
-    wsRequest.importDataset(data, function (error, wsResponse) {
+    wsRequest.importDataset(data, function (importError, wsResponse) {
+      if (importError) {
+        logger.warn(importError);
+      }
 
-      let gitRepoPath = gitFlow.getRepoFolder(data.github);
-      let commandLinesOfCode = `wc -l ${gitRepoPath}/*.csv | grep "total$"`;
-
-      shell.exec(commandLinesOfCode, {silent: true}, function (err, stdout) {
-        let numberOfRows = parseInt(stdout);
-
-        let errorMsg = error ? error.toString() : wsResponse.getError();
-
-        if (errorMsg) {
-          cliUi.stop();
-          return callback(errorMsg);
+      gitFlow.getRepoFolder(data.github, (repoError, pathToRepo) => {
+        if (repoError) {
+          logger.warn(repoError);
         }
 
-        let dataState = {
-          'datasetName': gitFlow.getRepoName(data.github)
-        };
+        const prettifyResult = (stdout) => parseInt(stdout);
 
-        longPolling.setTimeStart(numberOfRows);
-        longPolling.checkDataSet(dataState, function (state) {
+        cliUi.state(`Try to get lines amount`);
 
-          // state.success
-          if (!state.success) {
-            cliUi.stop().logStart().error(state.message).logEnd();
-          } else {
-            //cliUi.stop().logPrint([state.message]);
+        reposService.getLinesAmount({pathToRepo, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
+          if (linesAmountError) {
+            logger.warn(linesAmountError);
           }
 
-          cliUi.stop().success("Repo Import: OK (based on #" + importCommitHash + ")");
-          return callback();
-        });
+          cliUi.state(`Lines amount: ${numberOfRows}`);
+
+          let errorMsg = error ? error.toString() : wsResponse.getError();
+
+          if (errorMsg) {
+            cliUi.stop();
+            return callback(errorMsg);
+          }
+
+          let dataState = {
+            'datasetName': gitFlow.getRepoName(data.github)
+          };
+
+          longPolling.setTimeStart(numberOfRows);
+          longPolling.checkDataSet(dataState, function (state) {
+
+            // state.success
+            if (!state.success) {
+              cliUi.stop().logStart().error(state.message).logEnd();
+              return callback(state.message);
+            }
+
+            cliUi.stop().success("Repo Import: OK (based on #" + importCommitHash + ")");
+            return callback();
+          });
+        })
       });
     });
   });
@@ -235,50 +251,56 @@ function incrementalUpdate(item, callback) {
     };
 
     cliUi.state("processing Update Dataset, generate diff");
+
     csvDiff.process(diffOptions, function (error, result) {
 
       cliUi.state("processing Update Dataset, send request");
-      wsRequest.updateDataset(diffOptions, function (error, wsResponse) {
 
+      wsRequest.updateDataset(diffOptions, function (updateError, wsResponse) {
+        if (updateError) {
+          logger.warn(updateError);
+        }
 
-        const gitRepoPath = gitFlow.getRepoFolder(data.github);
-
-        const pathsToFiles = result.fileList.map((fileName) => {
-          return gitRepoPath + '/' + fileName;
-        }).join(" ");
-
-        const getGrep = pathsToFiles.length > 1 ? ` | grep "total$"` : "";
-
-        const commandLinesOfCode = pathsToFiles.length<1 ? `wc -l ""` : `wc -l ${pathsToFiles}${getGrep}`;
-        shell.exec(commandLinesOfCode, {silent: true}, function (err, stdout) {
-          const numberOfRows = parseInt(stdout);
-
-          const errorMsg = error ? error.toString() : wsResponse.getError();
-
-          if (errorMsg) {
-            cliUi.stop();
-            return callback(errorMsg);
+        gitFlow.getRepoFolder(data.github, (repoError, pathToRepo) => {
+          if (repoError) {
+            logger.warn(repoError);
           }
 
-          let operationMsg = wsResponse.getMessage();
+          const pathsToFiles = _.map(result.fileList, fileName => pathToRepo + '/' + fileName).join(" ");
+          const prettifyResult = (stdout) => parseInt(stdout);
 
-          let dataState = {
-            'datasetName': gitFlow.getRepoName(cliOptions.repo)
-          };
-
-          longPolling.setTimeStart(numberOfRows);
-          longPolling.checkDataSet(dataState, function (state) {
-
-            // state.success
-            if (!state.success) {
-              cliUi.stop().logStart().error(state.message).logEnd();
-            } else {
-              //cliUi.stop().logPrint([state.message]);
+          reposService.getLinesAmount({pathToRepo, files: pathsToFiles, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
+            if (linesAmountError) {
+              logger.warn(linesAmountError);
             }
 
-            cliUi.stop().success("Repo Updated: OK (from: #" + commitFrom + "; to: #" + commitTo + ")");
-            holder.save('repo-update-commit-prev', item.hash);
-            return callback();
+            const errorMsg = updateError ? updateError.toString() : wsResponse.getError();
+
+            if (errorMsg) {
+              cliUi.stop();
+              return callback(errorMsg);
+            }
+
+            let operationMsg = wsResponse.getMessage();
+
+            let dataState = {
+              'datasetName': gitFlow.getRepoName(cliOptions.repo)
+            };
+
+            longPolling.setTimeStart(numberOfRows);
+            longPolling.checkDataSet(dataState, function (state) {
+
+              // state.success
+              if (!state.success) {
+                cliUi.stop().logStart().error(state.message).logEnd();
+              } else {
+                //cliUi.stop().logPrint([state.message]);
+              }
+
+              cliUi.stop().success("Repo Updated: OK (from: #" + commitFrom + "; to: #" + commitTo + ")");
+              holder.save('repo-update-commit-prev', item.hash);
+              return callback();
+            });
           });
         });
       });

@@ -3,6 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 const envConst = require('./../model/env-const');
+const {reposService} = require('waffle-server-repo-service');
+reposService.logger = require('../config/logger');
 
 let envInit = function () {
 

@@ -1,5 +1,7 @@
 'use strict';
 
+require('./../service/env-init');
+
 const cliUi = require('./../service/cli-ui');
 const csvDiff = require('./../service/csv-diff');
 

@@ -3,11 +3,11 @@
 const async = require('async');
 require('./../service/env-init');
 
-const holder = require('./../model/value-holder');
-const wsRequest = require('./../service/request-ws');
 const cliUi = require('./../service/cli-ui');
+const holder = require('./../model/value-holder');
 const gitFlow = require('./../service/git-flow');
 const formatter = require('./../service/formatter');
+const wsRequest = require('./../service/request-ws');
 
 /**
  *

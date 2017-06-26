@@ -3,7 +3,6 @@
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
-const shell = require('shelljs');
 const proxyquire = require('proxyquire');
 
 const sinon = require('sinon');
@@ -24,6 +23,7 @@ chai.use(sinonChaiInOrder.default);
 const envConst = require('../../../model/env-const');
 const utils = require('../../../service/git-flow-utils');
 const cliUi = require('../../../service/cli-ui');
+const {reposService} = require('waffle-server-repo-service');
 
 describe('Service: Git flow', function () {
   describe('simple functionc', () => {
@@ -43,35 +43,39 @@ describe('Service: Git flow', function () {
       expect(actualShortenedHash).to.be.equal('');
     }));
 
-    it('should get absolute path to the repository', sinon.test(function () {
+    it('should get absolute path to the repository', sinon.test(function (done) {
       const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const gitFlow = require('../../../service/git-flow');
-      const expectedRepoFolder = path.resolve('./repos/VS-work/ddf--ws-testing');
-      const getRepoFolderStub = this.stub(gitFlow, 'getRepoFolder').returns(expectedRepoFolder);
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(relativePathToRepo);
+      const expectedConfigDir = {pathToRepo: pathToRepo + '/', absolutePathToRepos, relativePathToRepo};
+      const getRepoFolderStub = this.stub(gitFlow, 'getRepoFolder').callsArgWithAsync(1, null, expectedConfigDir);
 
-      const repoFolder = gitFlow.configDir(giturl);
+      gitFlow.configDir(giturl, (error, configDir) => {
+        expect(configDir).to.equal(expectedConfigDir);
 
-      expect(repoFolder).to.be.equal(expectedRepoFolder + '/');
+        assert.calledOnce(getRepoFolderStub);
+        assert.calledWithExactly(getRepoFolderStub, giturl, match.func);
 
-      assert.calledOnce(getRepoFolderStub);
-      assert.calledWithExactly(getRepoFolderStub, giturl);
+        return done();
+      });
     }));
 
-    it('should get error, when it happens while getting repo folder', sinon.test(function () {
+    it('should get error, when it happens while getting repo folder', sinon.test(function (done) {
       const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const gitFlow = require('../../../service/git-flow');
       const expectedError = new Error('Unexpected error');
-      const getRepoFolderStub = this.stub(gitFlow, 'getRepoFolder').throws(expectedError);
+      const getRepoFolderStub = this.stub(gitFlow, 'getRepoFolder').callsArgWithAsync(1, expectedError);
 
-      try {
-        gitFlow.configDir(giturl);
-      } catch (error) {
+      gitFlow.configDir(giturl, (error) => {
         expect(error).to.be.deep.equal(expectedError);
 
         assert.calledOnce(getRepoFolderStub);
-        assert.calledWithExactly(getRepoFolderStub, giturl);
-        assert.threw(getRepoFolderStub, error);
-      }
+        assert.calledWithExactly(getRepoFolderStub, giturl, match.func);
+
+        return done();
+      })
     }));
 
     it('should get empty repo name, when account is absent in giturl', () => {
@@ -164,92 +168,58 @@ describe('Service: Git flow', function () {
       expect(repoName).to.be.equal('VS-work/ddf--ws-testing/branch');
     });
 
-    it('should get absolute path to the repository, if it was already created', sinon.test(function () {
+    it('should get absolute path to the repository, if it was already created', sinon.test(function (done) {
       const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const gitFlow = require('../../../service/git-flow');
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(relativePathToRepo);
+      const expectedConfigDir = {pathToRepo: pathToRepo + '/', absolutePathToRepos, relativePathToRepo};
 
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
+      this.stub(envConst, 'PATH_REPOS', absolutePathToRepos);
 
-      this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
+      const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(relativePathToRepo);
+      const makeDirForceStub = this.stub(reposService, 'makeDirForce').callsArgWithAsync(1);
 
-      const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
-      const existsSyncStub = this.stub(fs, 'existsSync').returns(true);
+      gitFlow.getRepoFolder(giturl, (error, configDir) => {
+        expect(configDir).to.eql(expectedConfigDir);
 
-      const repoFolder = gitFlow.getRepoFolder(giturl);
+        assert.calledOnce(getRepoPathStub);
+        assert.calledWithExactly(getRepoPathStub, giturl);
 
-      expect(repoFolder).to.be.equal(expectedAbsoluteRepoFolder);
+        assert.calledOnce(makeDirForceStub);
+        assert.calledWithExactly(makeDirForceStub, {pathToDir: pathToRepo}, match.func);
 
-      assert.calledOnce(getRepoPathStub);
-      assert.calledWithExactly(getRepoPathStub, giturl);
-
-      assert.calledOnce(existsSyncStub);
-      assert.calledWithExactly(existsSyncStub, expectedAbsoluteRepoFolder);
+        return done();
+      });
     }));
 
-    it('should create new directory and get back absolute path to the repository, if it was created successfully', sinon.test(function () {
+     it('should get error, when it happens while creating repo folder', sinon.test(function (done) {
       const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const gitFlow = require('../../../service/git-flow');
 
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
+      const expectedError = `Something went wrong during creation directory process`;
+       const absolutePathToRepos = process.cwd();
+       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+       const pathToRepo = path.resolve(relativePathToRepo);
+       const expectedConfigDir = {pathToRepo: pathToRepo + '/', absolutePathToRepos, relativePathToRepo};
 
-      this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
+      this.stub(envConst, 'PATH_REPOS', absolutePathToRepos);
 
-      const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
-      const existsSyncStub = this.stub(fs, 'existsSync').returns(false);
-      const mkdirStub = this.stub(shell, 'mkdir');
-      const errorStub = this.stub(shell, 'error').returns(false);
+      const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(relativePathToRepo);
+      const makeDirForceStub = this.stub(reposService, 'makeDirForce').callsArgWithAsync(1, expectedError);
 
-      const repoFolder = gitFlow.getRepoFolder(giturl);
-
-      expect(repoFolder).to.be.equal(expectedAbsoluteRepoFolder);
-
-      assert.calledOnce(getRepoPathStub);
-      assert.calledWithExactly(getRepoPathStub, giturl);
-
-      assert.calledOnce(existsSyncStub);
-      assert.calledWithExactly(existsSyncStub, expectedAbsoluteRepoFolder);
-
-      assert.calledOnce(mkdirStub);
-      assert.calledWithExactly(mkdirStub, '-p', expectedAbsoluteRepoFolder);
-
-      assert.calledOnce(errorStub);
-      assert.calledWithExactly(errorStub);
-    }));
-
-    it('should get error, when it happens while creating repo folder', sinon.test(function () {
-      const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
-      const gitFlow = require('../../../service/git-flow');
-
-      const expectedError = new Error(`Something went wrong during creation directory process`);
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedAbsoluteRepoFolder = path.resolve(`./repos/${expectedRelativeRepoFolder}`);
-
-      this.stub(envConst, 'PATH_REPOS', path.resolve(`./repos`) + '/');
-
-      const getRepoPathStub = this.stub(gitFlow, 'getRepoPath').returns(expectedRelativeRepoFolder);
-      const existsSyncStub = this.stub(fs, 'existsSync').returns(false);
-      const mkdirStub = this.stub(shell, 'mkdir');
-      const errorStub = this.stub(shell, 'error').returns(true);
-
-      try {
-        gitFlow.getRepoFolder(giturl);
-      } catch (error) {
+      gitFlow.getRepoFolder(giturl, (error) => {
         expect(error).to.be.deep.equal(expectedError);
 
         assert.calledOnce(getRepoPathStub);
         assert.calledWithExactly(getRepoPathStub, giturl);
 
-        assert.calledOnce(existsSyncStub);
-        assert.calledWithExactly(existsSyncStub, expectedAbsoluteRepoFolder);
+        assert.calledOnce(makeDirForceStub);
+        assert.calledWithExactly(makeDirForceStub, {pathToDir: pathToRepo}, match.func);
 
-        assert.calledOnce(mkdirStub);
-        assert.calledWithExactly(mkdirStub, '-p', expectedAbsoluteRepoFolder);
-
-        assert.calledOnce(errorStub);
-        assert.calledWithExactly(errorStub);
-      }
+        return done();
+      });
     }));
   });
 
@@ -261,17 +231,20 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
-
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
       const expectedContext = {
         branch: branchName,
         url: repoUrl,
-        gitFolder: expectedConfigDir,
-        github: githubUrl
+        pathToRepo,
+        github: githubUrl,
+        relativePathToRepo,
+        absolutePathToRepos
       };
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const getGithubUrlDescriptorStub = this.stub(utils, 'getGithubUrlDescriptor').returns(expectedContext);
       const updateRepoStateStub = this.stub(utils, 'updateRepoState').callsArgWithAsync(1);
 
@@ -282,7 +255,7 @@ describe('Service: Git flow', function () {
         expect(result).to.not.exist;
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
         assert.calledOnce(getGithubUrlDescriptorStub);
         assert.calledWithExactly(getGithubUrlDescriptorStub, githubUrl);
@@ -303,18 +276,22 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
       const expectedError = 'Boo!';
 
       const expectedContext = {
         branch: branchName,
         url: repoUrl,
-        gitFolder: expectedConfigDir,
-        github: githubUrl
+        pathToRepo,
+        github: githubUrl,
+        relativePathToRepo,
+        absolutePathToRepos
       };
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const getGithubUrlDescriptorStub = this.stub(utils, 'getGithubUrlDescriptor').returns(expectedContext);
       const updateRepoStateStub = this.stub(utils, 'updateRepoState').callsArgWithAsync(1, expectedError);
 
@@ -325,7 +302,7 @@ describe('Service: Git flow', function () {
         expect(result).to.not.exist;
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
         assert.calledOnce(getGithubUrlDescriptorStub);
         assert.calledWithExactly(getGithubUrlDescriptorStub, githubUrl);
@@ -348,16 +325,18 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
       const expectedDate = Date.now();
       const detailedCommitsList = [
         {
-          hash: '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2',
+          hash: '5166a22',
           message: 'Test message',
           date: expectedDate + 1
         }, {
-          hash: '37f87b6383bb8c0e416f275b79b351dab0881925',
+          hash: '37f87b6',
           message: 'Test message 2',
           date: expectedDate
         }
@@ -377,11 +356,13 @@ describe('Service: Git flow', function () {
       const expectedContext = {
         branch: branchName,
         url: repoUrl,
-        gitFolder: expectedConfigDir,
-        github: githubUrl
+        pathToRepo,
+        github: githubUrl,
+        absolutePathToRepos,
+        relativePathToRepo
       };
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const getGithubUrlDescriptorStub = this.stub(utils, 'getGithubUrlDescriptor').returns(expectedContext);
       const updateRepoStateStub = this.stub(utils, 'updateRepoState').callsArgWithAsync(1, null, expectedContext);
       const gitLogStub = this.stub(utils, 'gitLog').callsArgWithAsync(1, null, _.defaults({detailedCommitsList}, expectedContext));
@@ -393,7 +374,7 @@ describe('Service: Git flow', function () {
         expect(result).to.be.deep.equal(expectedCommitsList);
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
         assert.calledOnce(getGithubUrlDescriptorStub);
         assert.calledWithExactly(getGithubUrlDescriptorStub, githubUrl);
@@ -404,7 +385,7 @@ describe('Service: Git flow', function () {
         assert.calledOnce(gitLogStub);
         assert.calledWithExactly(gitLogStub, expectedContext, match.func);
 
-        assert.callOrder(configDirStub, getGithubUrlDescriptorStub, updateRepoStateStub, gitLogStub);
+        assert.callOrder(getGithubUrlDescriptorStub, configDirStub, updateRepoStateStub, gitLogStub);
 
         return done();
       });
@@ -417,18 +398,22 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
       const expectedError = 'Boo!';
 
       const expectedContext = {
         branch: branchName,
         url: repoUrl,
-        gitFolder: expectedConfigDir,
-        github: githubUrl
+        pathToRepo,
+        github: githubUrl,
+        absolutePathToRepos,
+        relativePathToRepo
       };
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const getGithubUrlDescriptorStub = this.stub(utils, 'getGithubUrlDescriptor').returns(expectedContext);
       const updateRepoStateStub = this.stub(utils, 'updateRepoState').callsArgWithAsync(1, expectedError);
       const gitLogStub = this.stub(utils, 'gitLog').callsArgWithAsync(1);
@@ -440,7 +425,7 @@ describe('Service: Git flow', function () {
         expect(result).to.not.exist;
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
         assert.calledOnce(getGithubUrlDescriptorStub);
         assert.calledWithExactly(getGithubUrlDescriptorStub, githubUrl);
@@ -450,7 +435,7 @@ describe('Service: Git flow', function () {
 
         assert.notCalled(gitLogStub);
 
-        assert.callOrder(configDirStub, getGithubUrlDescriptorStub, updateRepoStateStub);
+        assert.callOrder(getGithubUrlDescriptorStub, configDirStub, updateRepoStateStub);
 
         return done();
       });
@@ -463,18 +448,22 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
       const expectedError = 'Boo!';
 
       const expectedContext = {
         branch: branchName,
         url: repoUrl,
-        gitFolder: expectedConfigDir,
-        github: githubUrl
+        pathToRepo,
+        github: githubUrl,
+        absolutePathToRepos,
+        relativePathToRepo
       };
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const getGithubUrlDescriptorStub = this.stub(utils, 'getGithubUrlDescriptor').returns(expectedContext);
       const updateRepoStateStub = this.stub(utils, 'updateRepoState').callsArgWithAsync(1, null, expectedContext);
       const gitLogStub = this.stub(utils, 'gitLog').callsArgWithAsync(1, expectedError);
@@ -486,7 +475,7 @@ describe('Service: Git flow', function () {
         expect(result).to.not.exist;
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
         assert.calledOnce(getGithubUrlDescriptorStub);
         assert.calledWithExactly(getGithubUrlDescriptorStub, githubUrl);
@@ -497,7 +486,7 @@ describe('Service: Git flow', function () {
         assert.calledOnce(gitLogStub);
         assert.calledWithExactly(gitLogStub, expectedContext, match.func);
 
-        assert.callOrder(configDirStub, getGithubUrlDescriptorStub, updateRepoStateStub, gitLogStub);
+        assert.callOrder(getGithubUrlDescriptorStub, configDirStub, updateRepoStateStub, gitLogStub);
 
         return done();
       });
@@ -514,8 +503,10 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
 
       const gitDiffFileList = [
         'ddf--concepts.csv',
@@ -550,7 +541,7 @@ describe('Service: Git flow', function () {
         }
       };
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const updateRepoStateStub = this.stub(utils, 'updateRepoState').callsArgWithAsync(1, null, {});
       const getFileStatusesDiffStub = this.stub(utils, 'getFileStatusesDiff').callsArgWithAsync(1, null, {});
       const checkoutHashStub = this.stub(utils, 'checkoutHash').callsArgWithAsync(2, null, {});
@@ -559,13 +550,15 @@ describe('Service: Git flow', function () {
         .onSecondCall().callsArgWithAsync(2, null, {gitDiffFileStatus: gitDiffFileStatus, metadata});
 
       // *** Act
-      return gitFlow.getFileDiffByHashes({github: githubUrl, hashFrom, hashTo}, (error, result) => {
+      const context = {github: githubUrl, hashFrom, hashTo, absolutePathToRepos, relativePathToRepo};
+
+      return gitFlow.getFileDiffByHashes(context, (error, result) => {
         // *** Assert
         expect(error).to.not.exist;
         expect(result).to.be.deep.equal({gitDiffFileList, gitDiffFileStatus, metadata});
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
         assert.calledOnce(updateRepoStateStub);
         assert.calledOnce(getFileStatusesDiffStub);
@@ -600,11 +593,13 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
       const expectedError = 'Boo!';
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const updateRepoStateStub = this.stub(utils, 'updateRepoState').callsArgWithAsync(1, null, {});
       const getFileStatusesDiffStub = this.stub(utils, 'getFileStatusesDiff').callsArgWithAsync(1, null, {});
       const checkoutHashStub = this.stub(utils, 'checkoutHash').callsArgWithAsync(2, null, {});
@@ -613,13 +608,14 @@ describe('Service: Git flow', function () {
         .onSecondCall().callsArgWithAsync(2, expectedError);
 
       // *** Act
-      return gitFlow.getFileDiffByHashes({github: githubUrl, hashFrom, hashTo}, (error, result) => {
+      const context = {github: githubUrl, hashFrom, hashTo, absolutePathToRepos, relativePathToRepo};
+      return gitFlow.getFileDiffByHashes(context, (error, result) => {
         // *** Assert
         expect(error).to.be.equal(expectedError);
         expect(result).to.not.exist;
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
         assert.calledOnce(updateRepoStateStub);
         assert.calledOnce(getFileStatusesDiffStub);
@@ -657,30 +653,33 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
       const expectedResult = {from: 'from', to: 'to'};
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const gitShowStub = this.stub(utils, 'gitShow')
         .onFirstCall().callsArgWithAsync(3, null, {})
-        .onSecondCall().callsArgWithAsync(3, null, _.defaults({gitFolder: expectedConfigDir}, expectedResult));
+        .onSecondCall().callsArgWithAsync(3, null, _.defaults(expectedConfigDir, expectedResult));
 
       // *** Act
-      return gitFlow.showFileStateByHash({github: githubUrl, hashFrom, hashTo}, filename, (error, result) => {
+      const context = {github: githubUrl, hashFrom, hashTo, absolutePathToRepos, relativePathToRepo, pathToRepo};
+      return gitFlow.showFileStateByHash(context, filename, (error, result) => {
         // *** Assert
         expect(error).to.not.exist;
         expect(result).to.be.deep.equal(expectedResult);
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
         assert.calledTwice(gitShowStub);
         assert.calledWithExactly(
           gitShowStub,
           match('from').or(match('to')),
           match(hashFrom).or(match(hashTo)),
-          match({gitFolder: expectedConfigDir}),
+          match(context).or({}),
           match.func
         );
 
@@ -701,11 +700,13 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
       const expectedError = 'Boo!';
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const gitShowStub = this.stub(utils, 'gitShow')
         .onFirstCall().callsArgWithAsync(3, null, {})
         .onSecondCall().callsArgWithAsync(3, expectedError);
@@ -717,14 +718,15 @@ describe('Service: Git flow', function () {
         expect(result).to.not.exist;
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
+        // TODO: Check that everything is ok
         assert.calledTwice(gitShowStub);
         assert.calledWithExactly(
           gitShowStub,
           match('from').or(match('to')),
           match(hashFrom).or(match(hashTo)),
-          match({gitFolder: expectedConfigDir}),
+          match.any,
           match.func
         );
 
@@ -744,10 +746,12 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const checkoutHashStub = this.stub(utils, 'checkoutHash').callsArgWithAsync(2, null, {});
       const validateDatasetStub = this.stub(utils, 'validateDataset').callsArgWithAsync(1);
 
@@ -758,10 +762,10 @@ describe('Service: Git flow', function () {
         expect(result).to.not.exist;
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
         assert.calledOnce(checkoutHashStub);
-        assert.calledWithExactly(checkoutHashStub, commit, {gitFolder: expectedConfigDir}, match.func);
+        assert.calledWithExactly(checkoutHashStub, commit, match(expectedConfigDir), match.func);
 
         assert.calledOnce(validateDatasetStub);
         assert.calledWithExactly(validateDatasetStub, match.object, match.func);
@@ -780,11 +784,13 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
       const expectedError = 'Boo!';
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const checkoutHashStub = this.stub(utils, 'checkoutHash').callsArgWithAsync(2, null, {});
       const validateDatasetStub = this.stub(utils, 'validateDataset').callsArgWithAsync(1, expectedError);
 
@@ -795,10 +801,10 @@ describe('Service: Git flow', function () {
         expect(result).to.not.exist;
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
         assert.calledOnce(checkoutHashStub);
-        assert.calledWithExactly(checkoutHashStub, commit, {gitFolder: expectedConfigDir}, match.func);
+        assert.calledWithExactly(checkoutHashStub, commit, match(expectedConfigDir), match.func);
 
         assert.calledOnce(validateDatasetStub);
         assert.calledWithExactly(validateDatasetStub, match.object, match.func);
@@ -817,11 +823,13 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const expectedRelativeRepoFolder = 'VS-work/ddf--ws-testing';
-      const expectedConfigDir = path.resolve(`./repos/${expectedRelativeRepoFolder}`) + '/';
+      const absolutePathToRepos = process.cwd();
+      const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
+      const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
+      const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
       const expectedIssues = [{name: 'issue'}];
 
-      const configDirStub = this.stub(gitFlow, 'configDir').returns(expectedConfigDir);
+      const configDirStub = this.stub(gitFlow, 'configDir').callsArgWithAsync(1, null, expectedConfigDir);
       const checkoutHashStub = this.stub(utils, 'checkoutHash').callsArgWithAsync(2, null, {});
       const validateDatasetStub = this.stub(utils, 'validateDataset').callsArgWithAsync(1, expectedIssues);
 
@@ -832,10 +840,10 @@ describe('Service: Git flow', function () {
         expect(result).to.not.exist;
 
         assert.calledOnce(configDirStub);
-        assert.calledWithExactly(configDirStub, githubUrl);
+        assert.calledWithExactly(configDirStub, githubUrl, match.func);
 
         assert.calledOnce(checkoutHashStub);
-        assert.calledWithExactly(checkoutHashStub, commit, {gitFolder: expectedConfigDir}, match.func);
+        assert.calledWithExactly(checkoutHashStub, commit, match(expectedConfigDir), match.func);
 
         assert.calledOnce(validateDatasetStub);
         assert.calledWithExactly(validateDatasetStub, match.object, match.func);
@@ -901,73 +909,54 @@ describe('Service: Git flow', function () {
 
     it('should remove all repositories in folder repos', sinon.test(function () {
       const gitFlow = require('../../../service/git-flow');
-      const pathToRepos = '/test';
-      const fsStub = this.stub(fs, 'existsSync').returns(true);
+      const pathToRepo = '/test';
       const cliUiStub = this.stub(cliUi, 'state');
-      const shellRmStub = this.stub(shell, 'rm');
-      const shellErrorStub = this.stub(shell, 'error').returns(null);
+      const removeDirForceStub = this.stub(reposService, 'removeDirForce').callsArgWithAsync(1);
 
-      return gitFlow.reposClean(pathToRepos, (error) => {
+      return gitFlow.reposClean(pathToRepo, (error) => {
         expect(error).to.not.exist;
 
-        assert.calledOnce(fsStub);
-        assert.alwaysCalledWithExactly(fsStub, pathToRepos);
+        assert.calledOnce(removeDirForceStub);
+        assert.alwaysCalledWithExactly(removeDirForceStub, pathToRepo, match.func);
 
         assert.calledOnce(cliUiStub);
-        assert.alwaysCalledWithExactly(cliUiStub, match(pathToRepos));
-
-        assert.calledOnce(shellRmStub);
-        assert.alwaysCalledWithExactly(shellRmStub, match.string, match(pathToRepos));
-
-        assert.calledOnce(shellErrorStub);
-        assert.alwaysCalledWithExactly(shellErrorStub);
+        assert.alwaysCalledWithExactly(cliUiStub, match(pathToRepo));
       })
     }));
 
     it('should return error if path to repos isn\'t exists', sinon.test(function () {
       const gitFlow = require('../../../service/git-flow');
       const pathToRepos = '/test';
-      const fsStub = this.stub(fs, 'existsSync').returns(false);
+      const expectedError = `Directory '${pathToRepos}' is not exist!`;
       const cliUiStub = this.stub(cliUi, 'state');
-      const shellRmStub = this.stub(shell, 'rm');
-      const shellErrorStub = this.stub(shell, 'error').returns(null);
+      const removeDirForceStub = this.stub(reposService, 'removeDirForce').callsArgWithAsync(1, expectedError);
 
       return gitFlow.reposClean(pathToRepos, (error) => {
-        expect(error).to.be.equal(`Directory '${pathToRepos}' is not exist!`);
+        expect(error).to.be.equal(expectedError);
 
-        assert.calledOnce(fsStub);
-        assert.alwaysCalledWithExactly(fsStub, pathToRepos);
+        assert.calledOnce(removeDirForceStub);
+        assert.alwaysCalledWithExactly(removeDirForceStub, pathToRepo, match.func);
 
         assert.notCalled(cliUiStub);
-        assert.notCalled(shellRmStub);
-        assert.notCalled(shellErrorStub);
       })
     }));
 
     it('should return error if it happens during cleaning repos folder', sinon.test(function () {
       const gitFlow = require('../../../service/git-flow');
       const pathToRepos = '/test';
-      const fsStub = this.stub(fs, 'existsSync').returns(true);
       const cliUiStub = this.stub(cliUi, 'state');
-      const shellRmStub = this.stub(shell, 'rm');
 
       const expectedError = 'Boo!';
-      const shellErrorStub = this.stub(shell, 'error').returns(expectedError);
+      const removeDirForceStub = this.stub(reposService, 'removeDirForce').callsArgWithAsync(1, expectedError);
 
       return gitFlow.reposClean(pathToRepos, (error) => {
         expect(error).to.be.equal(expectedError);
 
-        assert.calledOnce(fsStub);
-        assert.alwaysCalledWithExactly(fsStub, pathToRepos);
+        assert.calledOnce(removeDirForceStub);
+        assert.alwaysCalledWithExactly(removeDirForceStub, pathToRepo, match.func);
 
         assert.calledOnce(cliUiStub);
         assert.alwaysCalledWithExactly(cliUiStub, match(pathToRepos));
-
-        assert.calledOnce(shellRmStub);
-        assert.alwaysCalledWithExactly(shellRmStub, match.string, match(pathToRepos));
-
-        assert.calledOnce(shellErrorStub);
-        assert.alwaysCalledWithExactly(shellErrorStub);
       })
     }));
 

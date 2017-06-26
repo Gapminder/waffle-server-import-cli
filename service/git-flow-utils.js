@@ -5,13 +5,12 @@ const fs = require('fs');
 const path = require('path');
 const hi = require('highland');
 const async = require('async');
-const shell = require('shelljs');
 const JSONStream = require('JSONStream');
 const cliUi = require('./../service/cli-ui');
 const utils = require('./git-flow-utils');
-
-const simpleGit = require('simple-git');
-const GIT_SILENT = true;
+const {reposService} = require('waffle-server-repo-service');
+const envConst = require('./../model/env-const');
+const logger = require('../config/logger');
 
 const ddfValidation = require('ddf-validation');
 const StreamValidator = ddfValidation.StreamValidator;
@@ -23,19 +22,13 @@ module.exports = {
   gitReset,
   gitLog,
   gitShow,
-  getFileNamesDiff,
   getFileStatusesDiff,
   checkoutHash,
   validateDataset,
   readJsonFileAsJsonStream,
   getDatapackage,
-  getGithubUrlDescriptor,
-  gitw
+  getGithubUrlDescriptor
 };
-
-function gitw(pathToGit) {
-  return simpleGit(pathToGit).silent(GIT_SILENT);
-}
 
 function updateRepoState(externalContext, done) {
   return async.waterfall([
@@ -52,23 +45,29 @@ function updateRepoState(externalContext, done) {
 function checkSshKey(externalContext, done) {
   cliUi.state('ssh, check ssh-key');
 
-  shell.exec(`ssh -T git@github.com`, {silent: true}, (code, stdout, stderr) => {
-    if (code > 1) {
-      const error = `${cliUi.CONST_FONT_RED}* [code=${code}] ERROR: ${cliUi.CONST_FONT_YELLOW}${stderr}${cliUi.CONST_FONT_BLUE}\n\tPlease, follow the detailed instruction 'https://github.com/Gapminder/waffle-server-import-cli#ssh-key' for continue working with CLI tool.${cliUi.CONST_FONT_WHITE}`;
-      return done(error);
+  reposService.checkSshKey({silent: true}, (error) => {
+    if (error) {
+      const [code, message, proposal] = error.split('\n');
+      const prettifiedError = `${cliUi.CONST_FONT_RED}* [code=${code}] ERROR: ${cliUi.CONST_FONT_YELLOW}${message}${cliUi.CONST_FONT_BLUE}\n\t${proposal}${cliUi.CONST_FONT_WHITE}`;
+      return done(prettifiedError);
     }
 
     return done(null, externalContext);
   });
 }
 
-function gitShow(field, gitHash, externalContext, done) {
-  const {gitFolder} = externalContext;
+function gitShow(field, commit, externalContext, done) {
+  const {pathToRepo, relativeFilePath} = externalContext;
 
   cliUi.state('git, get repo notes');
 
-  return gitw(gitFolder).show([gitHash], function (error, result) {
+  if (typeof relativeFilePath === 'undefined') {
+    logger.error({source: 'import-cli', message: 'undefined', field, commit, pathToRepo, relativeFilePath, externalContext});
+  }
+
+  return reposService.show({commit, relativeFilePath, pathToRepo}, function (error, result) {
     externalContext[field] = !!error ? '' : result;
+    logger.info({source: 'import-cli', field, commit, relativeFilePath, pathToRepo, result});
 
     if (_.some(['exists on disk, but not in','does not exist in'], (message) => _.includes(error, message))) {
       return done(null, externalContext);
@@ -79,113 +78,83 @@ function gitShow(field, gitHash, externalContext, done) {
 }
 
 function gitCloneIfRepoNotExists(externalContext, done) {
-  const {gitFolder, url, branch} = externalContext;
+  const {absolutePathToRepos, relativePathToRepo, url: githubUrl, branch} = externalContext;
 
   cliUi.state('git, clone repo');
 
-  return gitw(gitFolder).clone(url, gitFolder, ['-b', branch], (error) => {
-    // Specified cloning error shouldn't be throw exception in case repo was already cloned
-    if (_.includes(error,  'already exists and is not an empty directory')) {
-      return done(null, externalContext);
-    }
-
-    return done(error, externalContext);
-  });
+  return reposService.silentClone({absolutePathToRepos, relativePathToRepo, githubUrl, branch}, (error) => done(error, externalContext));
 }
 
 function gitFetch(externalContext, done) {
-  const {gitFolder, branch} = externalContext;
+  const {pathToRepo, branch} = externalContext;
 
   cliUi.state('git, fetch updates');
 
-  return gitw(gitFolder).fetch('origin', branch, (error) => done(error, externalContext));
+  return reposService.fetch({pathToRepo, branch}, (error) => done(error, externalContext));
 }
 
 function gitReset(externalContext, done) {
-  const {gitFolder, branch} = externalContext;
+  const {pathToRepo, branch} = externalContext;
 
   cliUi.state('git, reset changes');
 
-  return gitw(gitFolder).reset(['--hard', 'origin/' + branch], (error) => done(error, externalContext));
+  return reposService.reset({pathToRepo, branch}, (error) => done(error, externalContext));
 }
 
 function gitLog(externalContext, done) {
-  const {gitFolder} = externalContext;
+  const {pathToRepo, branch} = externalContext;
 
   cliUi.state('git, get commits log');
 
-  return gitw(gitFolder).log((error, result) => {
-    externalContext.detailedCommitsList = _.get(result, 'all', null);
-    return done(error, externalContext);
+  const prettifyResult = (stdout) => _.split(stdout, '\n\n').filter(commitDescriptor => !!commitDescriptor).map(commitDescriptor => {
+    const [hash, date, fullDate, message] = _.chain(commitDescriptor).trim('\n').split('\n').value();
+    return {hash, date, fullDate, message};
   });
-}
 
-function getFileNamesDiff(externalContext, done) {
-  const {gitFolder, hashFrom, hashTo} = externalContext;
+  return reposService.log({pathToRepo, branch, prettifyResult}, (error, result) => {
 
-  cliUi.state('git, get diff file names only');
+    externalContext.detailedCommitsList = result;
 
-  return gitw(gitFolder).diff([hashFrom + '..' + hashTo, '--name-only'], (error, resultGitDiff) => {
-    if (error) {
-      return done(error);
-    }
-
-    externalContext.gitDiffFileList = _.chain(resultGitDiff)
-      .split('\n')
-      .filter(value => !!value && value.indexOf('.csv') !== -1)
-      .value();
-
-    return done(null, externalContext);
+    return done(error, externalContext);
   });
 }
 
 function getFileStatusesDiff(externalContext, done) {
   cliUi.state('git, get diff file names with states');
 
-  const {gitFolder, hashFrom, hashTo} = externalContext;
+  const {pathToRepo, hashFrom: commitFrom, hashTo: commitTo} = externalContext;
 
-  return gitw(gitFolder).diff([hashFrom + '..' + hashTo, '--name-status', '--no-renames'], function (error, resultGitDiff) {
-    if (error) {
-      return done(error);
-    }
+  const prettifyResult = (resultGitDiff) =>  _.chain(resultGitDiff)
+    .split('\n')
+    .reduce((result, rawFile) => {
+      const [status, filename] = rawFile.split('\t');
+      result[filename] = status;
+      return result;
+    }, {})
+    .value();
 
-    externalContext.gitDiffFileStatus = _.chain(resultGitDiff)
-      .split('\n')
-      .reduce((result, rawFile) => {
+  return reposService.diff({pathToRepo, commitFrom, commitTo, prettifyResult}, (error, gitDiffFileStatus = {}) => {
+    externalContext.gitDiffFileStatus = gitDiffFileStatus;
 
-        if (!!rawFile && rawFile.indexOf('.csv') != -1) {
-          const fileStat = rawFile.split('\t');
-          result[_.last(fileStat)] = _.first(fileStat);
-        }
-
-        return result;
-      }, {})
-      .value();
-
-    return done(null, externalContext);
+    return done(error, externalContext);
   });
 }
 
-function checkoutHash(hash, externalContext, done) {
-  const {gitFolder} = externalContext;
+function checkoutHash(commit, externalContext, done) {
+  const {pathToRepo} = externalContext;
 
-  cliUi.state(`git, checkout to '${hash}'`);
+  cliUi.state(`git, checkout to '${commit}'`);
 
-  return gitw(gitFolder).checkout(hash, function (error) {
-    if (error) {
-      return done(error);
-    }
+  return reposService.checkoutToCommit({pathToRepo, commit}, (error) => done(error, externalContext));
 
-    return done(null, externalContext);
-  });
 }
 
 function validateDataset(externalContext, done) {
-  const {gitFolder} = externalContext;
+  const {pathToRepo} = externalContext;
 
   cliUi.state('validator, check dataset validity');
 
-  const streamValidator = new StreamValidator(gitFolder, {
+  const streamValidator = new StreamValidator(pathToRepo, {
     excludeRules: 'WRONG_DATA_POINT_HEADER',
     excludeDirs: '.gitingore, .git',
     isCheckHidden: true,
@@ -225,7 +194,7 @@ function readJsonFileAsJsonStream(pathToFile) {
 function getDatapackage(propertyName, externalContext, done) {
   cliUi.state(`stream, read file 'datapackage.json'`);
 
-  const datapackagePath = externalContext.gitFolder + 'datapackage.json';
+  const datapackagePath = externalContext.pathToRepo + 'datapackage.json';
 
   if (fs.existsSync(datapackagePath)) {
     return readJsonFileAsJsonStream(datapackagePath)
