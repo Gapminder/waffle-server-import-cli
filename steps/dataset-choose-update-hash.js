@@ -31,7 +31,6 @@ const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
 const csvDiff = require('./../service/csv-diff');
 const longPolling = require('./../service/request-polling');
-const shell = require('shelljs');
 
 const NEXT_STEP_PATH = 'choose-flow';
 const HOLDER_KEY_DATASET_UPDATE = 'dataset-choose-update';

@@ -134,6 +134,8 @@ function getFileStatusesDiff(externalContext, done) {
     .value();
 
   return reposService.diff({pathToRepo, commitFrom, commitTo, prettifyResult}, (error, gitDiffFileStatus = {}) => {
+    logger.info({obj: {source: 'import-cli', gitDiffFileStatus, pathToRepo, commitFrom, commitTo, prettifyResult}});
+
     externalContext.gitDiffFileStatus = gitDiffFileStatus;
 
     return done(error, externalContext);
@@ -180,6 +182,10 @@ function validateDataset(externalContext, done) {
 
     cliUi.stop().success('* Validation completed!');
     return done();
+  });
+
+  streamValidator.on('error', function (error) {
+    logger.error({obj: {error, externalContext, issues}});
   });
 
   return ddfValidation.validate(streamValidator);

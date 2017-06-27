@@ -585,7 +585,7 @@ describe('Git flow utils', function () {
 
         assert.calledOnce(streamValidatorStub.validate);
         assert.calledOnce(streamValidatorStub.emit);
-        assert.calledTwice(streamValidatorStub.on);
+        assert.calledThrice(streamValidatorStub.on);
         assert.calledTwice(stopStub);
         assert.calledWithExactly(stopStub);
         assert.calledOnce(successStub);
@@ -636,7 +636,7 @@ describe('Git flow utils', function () {
 
         assert.calledOnce(streamValidatorStub.validate);
         assert.calledTwice(streamValidatorStub.emit);
-        assert.calledTwice(streamValidatorStub.on);
+        assert.calledThrice(streamValidatorStub.on);
         assert.calledTwice(stopStub);
         assert.calledWithExactly(stopStub);
         assert.calledOnce(errorStub);
@@ -686,7 +686,7 @@ describe('Git flow utils', function () {
 
         assert.calledOnce(streamValidatorStub.validate);
         assert.calledOnce(streamValidatorStub.emit);
-        assert.calledTwice(streamValidatorStub.on);
+        assert.calledThrice(streamValidatorStub.on);
         assert.calledTwice(stopStub);
         assert.calledWithExactly(stopStub);
         assert.calledOnce(errorStub);
