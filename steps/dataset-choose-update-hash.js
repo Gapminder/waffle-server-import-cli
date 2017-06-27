@@ -8,6 +8,7 @@ const inquirer = require('inquirer');
 const stepBase = require('./../model/base-step');
 const {reposService} = require('waffle-server-repo-service');
 const logger = require('../config/logger');
+const path = require('path')
 
 function step() {
   stepBase.apply(this, arguments);
@@ -164,7 +165,7 @@ step.prototype.process = function (inputValue) {
           }
 
           const prettifyResult = (stdout) => parseInt(stdout);
-          const pathsToFiles = _.map(repoDiffDescriptor.fileList, (fileName) => pathToRepo + '/' + fileName).join(" ");
+          const pathsToFiles = _.map(repoDiffDescriptor.fileList, (fileName) => path.resolve(pathToRepo, fileName));
 
           reposService.getLinesAmount({pathToRepo, files: pathsToFiles, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
             if (linesAmountError) {

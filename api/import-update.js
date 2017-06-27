@@ -13,6 +13,8 @@ const wsRequest = require('./../service/request-ws');
 const longPolling = require('./../service/request-polling');
 const logger = require('../config/logger');
 const {reposService} = require('waffle-server-repo-service');
+const path = require('path')
+
 
 /**
  *
@@ -266,7 +268,7 @@ function incrementalUpdate(item, callback) {
             logger.warn(repoError);
           }
 
-          const pathsToFiles = _.map(result.fileList, fileName => pathToRepo + '/' + fileName).join(" ");
+          const pathsToFiles = _.map(result.fileList, fileName => path.resolve(pathToRepo, fileName));
           const prettifyResult = (stdout) => parseInt(stdout);
 
           reposService.getLinesAmount({pathToRepo, files: pathsToFiles, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
