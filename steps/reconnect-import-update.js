@@ -80,7 +80,7 @@ step.prototype.process = function (github) {
     return done(null, true);
   }
 
-  gitFlow.getRepoFolder(github, (repoError, pathToRepo) => {
+  gitFlow.getRepoFolder(github, (repoError, {pathToRepo}) => {
     if (repoError) {
       logger.warn(repoError);
     }

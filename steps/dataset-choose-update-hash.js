@@ -158,7 +158,7 @@ step.prototype.process = function (inputValue) {
           logger.warn(updateError);
         }
 
-        gitFlow.getRepoFolder(data.github, (repoError, pathToRepo) => {
+        gitFlow.getRepoFolder(data.github, (repoError, {pathToRepo}) => {
           if (repoError) {
             logger.warn(repoError);
           }

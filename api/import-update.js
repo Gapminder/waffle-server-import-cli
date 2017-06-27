@@ -147,7 +147,7 @@ function repoImport(callback) {
         logger.warn(importError);
       }
 
-      gitFlow.getRepoFolder(data.github, (repoError, pathToRepo) => {
+      gitFlow.getRepoFolder(data.github, (repoError, {pathToRepo}) => {
         if (repoError) {
           logger.warn(repoError);
         }
@@ -261,7 +261,7 @@ function incrementalUpdate(item, callback) {
           logger.warn(updateError);
         }
 
-        gitFlow.getRepoFolder(data.github, (repoError, pathToRepo) => {
+        gitFlow.getRepoFolder(data.github, (repoError, {pathToRepo}) => {
           if (repoError) {
             logger.warn(repoError);
           }
