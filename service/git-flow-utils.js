@@ -128,7 +128,11 @@ function getFileStatusesDiff(externalContext, done) {
     .split('\n')
     .reduce((result, rawFile) => {
       const [status, filename] = rawFile.split('\t');
-      result[filename] = status;
+
+      if (typeof filename !== 'undefined') {
+        result[filename] = status;
+      }
+
       return result;
     }, {})
     .value();

@@ -2,13 +2,11 @@
 
 const _ = require('lodash');
 const util = require('util');
-const envConst = require('./../model/env-const');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
 const stepBase = require('./../model/base-step');
-const {reposService} = require('waffle-server-repo-service');
 const logger = require('../config/logger');
-const path = require('path')
+const path = require('path');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -29,7 +27,6 @@ let question = {
 
 const wsRequest = require('./../service/request-ws');
 const gitFlow = require('./../service/git-flow');
-const csvDiff = require('./../service/csv-diff');
 const longPolling = require('./../service/request-polling');
 
 const NEXT_STEP_PATH = 'choose-flow';
@@ -143,67 +140,44 @@ step.prototype.process = function (inputValue) {
       'github': datasetData.github
     };
 
-    cliUi.state("processing Update Dataset, generate diff");
-    csvDiff.process(diffOptions, function (error, repoDiffDescriptor) {
-      if (error) {
-        cliUi.stop().logStart().error(error).logEnd();
 
-        // return done(errorMsg); :: inquirer bug, update after fix
+    if (error) {
+      cliUi.stop().logStart().error(error).logEnd();
+
+      // return done(errorMsg); :: inquirer bug, update after fix
+      return done(null, true);
+    }
+
+    cliUi.state("processing Update Dataset, send request");
+    wsRequest.updateDataset(diffOptions, function (updateError, wsResponse) {
+      if (updateError) {
+        logger.error({obj: {source:'import-cli', error: updateError, wsResponse}});
+      }
+
+      const errorMsg = updateError ? updateError.toString() : wsResponse.getError();
+
+      if (errorMsg) {
+        cliUi.stop().logStart().error(errorMsg).logEnd();
         return done(null, true);
       }
 
-      cliUi.state("processing Update Dataset, send request");
-      wsRequest.updateDataset(diffOptions, function (updateError, wsResponse) {
-        if (updateError) {
-          logger.warn(updateError);
+      let dataState = {
+        'datasetName': gitFlow.getRepoName(datasetData.github)
+      };
+
+      longPolling.checkDataSet(dataState, function (state) {
+
+        // state.success
+        if (!state.success) {
+          cliUi.stop().logStart().error(state.message).logEnd();
+        } else {
+          cliUi.stop().logPrint([state.message]);
         }
-
-        gitFlow.getRepoFolder(data.github, (repoError, {pathToRepo}) => {
-          if (repoError) {
-            logger.warn(repoError);
-          }
-
-          const prettifyResult = (stdout) => parseInt(stdout);
-          const pathsToFiles = _.map(repoDiffDescriptor.fileList, (fileName) => path.resolve(pathToRepo, fileName));
-
-          reposService.getLinesAmount({pathToRepo, files: pathsToFiles, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
-            if (linesAmountError) {
-              logger.warn(linesAmountError);
-            }
-
-            const errorMsg = updateError ? updateError.toString() : wsResponse.getError();
-
-            if (errorMsg) {
-              cliUi.stop().logStart().error(errorMsg).logEnd();
-              // return done(errorMsg); :: inquirer bug, update after fix
-              return done(null, true);
-            }
-
-            let operationMsg = wsResponse.getMessage();
-
-            let dataState = {
-              'datasetName': gitFlow.getRepoName(datasetData.github)
-            };
-
-            longPolling.setTimeStart(numberOfRows);
-            longPolling.checkDataSet(dataState, function (state) {
-
-              // state.success
-              if (!state.success) {
-                cliUi.stop().logStart().error(state.message).logEnd();
-              } else {
-                cliUi.stop().logPrint([state.message]);
-              }
-              return done(null, true);
-            });
-
-          });
-        });
-
+        return done(null, true);
       });
 
-    });
 
+    });
   });
 
 };
