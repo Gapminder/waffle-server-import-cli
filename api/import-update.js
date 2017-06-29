@@ -137,7 +137,7 @@ function repoImport(callback) {
   gitFlow.validateDataset(data, function (error) {
 
     if (error) {
-      cliUi.stop().error("Validation Error");
+      cliUi.stop().error("Import Dataset: Validation Error");
       return callback(error);
     }
 
@@ -240,8 +240,9 @@ function incrementalUpdate(item, callback) {
   gitFlow.validateDataset(data, function (error) {
 
     if (error) {
-      cliUi.stop().error("Validation Error");
-      return callback('validation error');
+      cliUi.stop().error("Update Dataset: Validation Error");
+      logger.error({obj: {source: 'import-cli', error}});
+      return callback(error);
     }
 
     const diffOptions = {
@@ -254,7 +255,7 @@ function incrementalUpdate(item, callback) {
 
     wsRequest.updateDataset(diffOptions, function (updateError, wsResponse) {
       if (updateError) {
-        logger.error(updateError);
+        logger.error({obj: {source: 'import-cli', error: updateError}});
       }
 
       const errorMsg = updateError ? updateError.toString() : wsResponse.getError();

@@ -37,13 +37,17 @@ describe('Git flow utils', function () {
       const absolutePathToRepos = process.cwd();
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
-      const externalContext = {github, absolutePathToRepos, relativePathToRepo, pathToRepo, branch, url};
+      const externalContext = {github, absolutePathToRepos, relativePathToRepo, pathToRepo, githubUrlDescriptor: {branch, url}};
 
       const cliUiStub = this.stub(cliUi, 'state');
       const checkSshKeyStub = this.stub(reposService, 'checkSshKey').callsArgWithAsync(1);
       const silentCloneStub = this.stub(reposService, 'silentClone').callsArgWithAsync(1);
       const fetchStub = this.stub(reposService, 'fetch').callsArgWithAsync(1);
       const resetStub = this.stub(reposService, 'reset').callsArgWithAsync(1);
+      const checkoutToBranchStub = this.stub(reposService, 'checkoutToBranch').callsArgWithAsync(1);
+      const pullStub = this.stub(reposService, 'pull').callsArgWithAsync(1);
+      const cleanStub = this.stub(reposService, 'clean').callsArgWithAsync(1);
+      const checkoutToCommitStub = this.stub(reposService, 'checkoutToCommit').callsArgWithAsync(1);
 
       // *** Act
       return utils.updateRepoState(externalContext, (error, result) => {
@@ -63,12 +67,22 @@ describe('Git flow utils', function () {
         assert.calledOnce(resetStub);
         assert.calledWithExactly(resetStub, match({pathToRepo, branch}), match.func);
 
-        assert.callCount(cliUiStub, 4);
+        assert.calledOnce(checkoutToBranchStub);
+        assert.calledWithExactly(resetStub, match({pathToRepo, branch}), match.func);
+
+        assert.calledOnce(pullStub);
+        assert.calledWithExactly(resetStub, match({pathToRepo, branch}), match.func);
+
+        assert.calledOnce(cleanStub);
+        assert.calledWithExactly(resetStub, match({pathToRepo, branch}), match.func);
+
+        assert.calledOnce(checkoutToCommitStub);
+        assert.calledWithExactly(resetStub, match({pathToRepo, branch}), match.func);
+
+        assert.calledTwice(cliUiStub);
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
-          .subsequently.calledWithExactly('git, clone repo')
-          .subsequently.calledWithExactly('git, fetch updates')
-          .subsequently.calledWithExactly('git, reset changes');
+          .subsequently.calledWithExactly('git, clone repo if it doesn\'t exist');
 
         return done();
       });
@@ -87,13 +101,17 @@ describe('Git flow utils', function () {
       const errorDescription = 'Please, follow the detailed instruction \'https://github.com/Gapminder/waffle-server-import-cli#ssh-key\' for continue working with CLI tool.';
       const actualError = [expectedCode, expectedStderr, errorDescription].join('\n');
       const expectedError = `${cliUi.CONST_FONT_RED}* [code=${expectedCode}] ERROR: ${cliUi.CONST_FONT_YELLOW}${expectedStderr}${cliUi.CONST_FONT_BLUE}\n\t${errorDescription}${cliUi.CONST_FONT_WHITE}`;
-      const externalContext = {github, pathToRepo, branch, url};
+      const externalContext = {github, pathToRepo, githubUrlDescriptor: {branch, url}};
 
       const cliUiStub = this.stub(cliUi, 'state');
       const checkSshKeyStub = this.stub(reposService, 'checkSshKey').callsArgWithAsync(1, actualError);
       const silentCloneStub = this.stub(reposService, 'silentClone').callsArgWithAsync(1);
       const fetchStub = this.stub(reposService, 'fetch').callsArgWithAsync(1);
       const resetStub = this.stub(reposService, 'reset').callsArgWithAsync(1);
+      const checkoutToBranchStub = this.stub(reposService, 'checkoutToBranch').callsArgWithAsync(1);
+      const pullStub = this.stub(reposService, 'pull').callsArgWithAsync(1);
+      const cleanStub = this.stub(reposService, 'clean').callsArgWithAsync(1);
+      const checkoutToCommitStub = this.stub(reposService, 'checkoutToCommit').callsArgWithAsync(1);
 
       return utils.updateRepoState(externalContext, (error, result) => {
         expect(error).to.be.equal(expectedError);
@@ -108,6 +126,10 @@ describe('Git flow utils', function () {
         assert.notCalled(silentCloneStub);
         assert.notCalled(fetchStub);
         assert.notCalled(resetStub);
+        assert.notCalled(checkoutToBranchStub);
+        assert.notCalled(pullStub);
+        assert.notCalled(cleanStub);
+        assert.notCalled(checkoutToCommitStub);
 
         return done();
       });
@@ -120,7 +142,7 @@ describe('Git flow utils', function () {
       const absolutePathToRepos = process.cwd();
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
-      const externalContext = {github, pathToRepo, branch, url};
+      const externalContext = {github, pathToRepo, githubUrlDescriptor: {branch, url}};
 
       const expectedError = 'Boo!';
 
@@ -129,6 +151,11 @@ describe('Git flow utils', function () {
       const silentCloneStub = this.stub(reposService, 'silentClone').callsArgWithAsync(1, expectedError);
       const fetchStub = this.stub(reposService, 'fetch').callsArgWithAsync(1);
       const resetStub = this.stub(reposService, 'reset').callsArgWithAsync(1);
+      const checkoutToBranchStub = this.stub(reposService, 'checkoutToBranch').callsArgWithAsync(1);
+      const pullStub = this.stub(reposService, 'pull').callsArgWithAsync(1);
+      const cleanStub = this.stub(reposService, 'clean').callsArgWithAsync(1);
+      const checkoutToCommitStub = this.stub(reposService, 'checkoutToCommit').callsArgWithAsync(1);
+
 
       return utils.updateRepoState(externalContext, (error, result) => {
         expect(error).to.be.equal(expectedError);
@@ -142,11 +169,15 @@ describe('Git flow utils', function () {
 
         assert.notCalled(fetchStub);
         assert.notCalled(resetStub);
+        assert.notCalled(checkoutToBranchStub);
+        assert.notCalled(pullStub);
+        assert.notCalled(cleanStub);
+        assert.notCalled(checkoutToCommitStub);
 
         assert.calledTwice(cliUiStub);
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
-          .subsequently.calledWithExactly('git, clone repo');
+          .subsequently.calledWithExactly('git, clone repo if it doesn\'t exist');
 
         return done();
       });
@@ -159,7 +190,7 @@ describe('Git flow utils', function () {
       const absolutePathToRepos = process.cwd();
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
-      const externalContext = {absolutePathToRepos, relativePathToRepo, pathToRepo, github, branch, url};
+      const externalContext = {absolutePathToRepos, relativePathToRepo, pathToRepo, github, githubUrlDescriptor: {branch, url}};
 
       const expectedError = 'Boo!';
 
@@ -168,6 +199,10 @@ describe('Git flow utils', function () {
       const silentCloneStub = this.stub(reposService, 'silentClone').callsArgWithAsync(1);
       const fetchStub = this.stub(reposService, 'fetch').callsArgWithAsync(1, expectedError);
       const resetStub = this.stub(reposService, 'reset').callsArgWithAsync(1);
+      const checkoutToBranchStub = this.stub(reposService, 'checkoutToBranch').callsArgWithAsync(1);
+      const pullStub = this.stub(reposService, 'pull').callsArgWithAsync(1);
+      const cleanStub = this.stub(reposService, 'clean').callsArgWithAsync(1);
+      const checkoutToCommitStub = this.stub(reposService, 'checkoutToCommit').callsArgWithAsync(1);
 
       return utils.updateRepoState(externalContext, (error) => {
         expect(error).to.be.equal(expectedError);
@@ -182,12 +217,15 @@ describe('Git flow utils', function () {
         assert.calledWithExactly(fetchStub, match({pathToRepo, branch}), match.func);
 
         assert.notCalled(resetStub);
+        assert.notCalled(checkoutToBranchStub);
+        assert.notCalled(pullStub);
+        assert.notCalled(cleanStub);
+        assert.notCalled(checkoutToCommitStub);
 
-        assert.callCount(cliUiStub, 3);
+        assert.callCount(cliUiStub, 2);
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
-          .subsequently.calledWithExactly('git, clone repo')
-          .subsequently.calledWithExactly('git, fetch updates');
+          .subsequently.calledWithExactly('git, clone repo if it doesn\'t exist');
 
         return done();
       });
@@ -200,7 +238,7 @@ describe('Git flow utils', function () {
       const absolutePathToRepos = process.cwd();
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
-      const externalContext = {absolutePathToRepos, relativePathToRepo, pathToRepo, github, branch, url};
+      const externalContext = {absolutePathToRepos, relativePathToRepo, pathToRepo, github, githubUrlDescriptor: {branch, url}};
 
       const expectedError = 'Boo!';
 
@@ -209,6 +247,10 @@ describe('Git flow utils', function () {
       const silentCloneStub = this.stub(reposService, 'silentClone').callsArgWithAsync(1);
       const fetchStub = this.stub(reposService, 'fetch').callsArgWithAsync(1);
       const resetStub = this.stub(reposService, 'reset').callsArgWithAsync(1, expectedError);
+      const checkoutToBranchStub = this.stub(reposService, 'checkoutToBranch').callsArgWithAsync(1);
+      const pullStub = this.stub(reposService, 'pull').callsArgWithAsync(1);
+      const cleanStub = this.stub(reposService, 'clean').callsArgWithAsync(1);
+      const checkoutToCommitStub = this.stub(reposService, 'checkoutToCommit').callsArgWithAsync(1);
 
       return utils.updateRepoState(externalContext, (error) => {
         expect(error).to.be.equal(expectedError);
@@ -225,13 +267,15 @@ describe('Git flow utils', function () {
         assert.calledOnce(resetStub);
         assert.calledWithExactly(resetStub, match({pathToRepo, branch}), match.func);
 
+        assert.notCalled(checkoutToBranchStub);
+        assert.notCalled(pullStub);
+        assert.notCalled(cleanStub);
+        assert.notCalled(checkoutToCommitStub);
 
-        assert.callCount(cliUiStub, 4);
+        assert.callCount(cliUiStub, 2);
         expect(cliUiStub).inOrder
           .to.have.been.calledWithExactly('ssh, check ssh-key')
-          .subsequently.calledWithExactly('git, clone repo')
-          .subsequently.calledWithExactly('git, fetch updates')
-          .subsequently.calledWithExactly('git, reset changes');
+          .subsequently.calledWithExactly('git, clone repo if it doesn\'t exist');
 
         return done();
       });
@@ -245,7 +289,7 @@ describe('Git flow utils', function () {
     const absolutePathToRepos = process.cwd();
     const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
     const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
-    const externalContext = {github, pathToRepo, branch, url};
+    const externalContext = {github, pathToRepo, githubUrlDescriptor: {branch, url}};
     const expectedDate = Date.now();
     const detailedCommitsList = [
       {
@@ -285,7 +329,7 @@ describe('Git flow utils', function () {
     const absolutePathToRepos = process.cwd();
     const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
     const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
-    const externalContext = {github, pathToRepo, branch, url};
+    const externalContext = {github, pathToRepo, githubUrlDescriptor: {branch, url}};
     const expectedError = 'Boo!';
 
     const logStub = this.stub(reposService, 'log').callsArgWithAsync(1, expectedError, null);
@@ -314,7 +358,7 @@ describe('Git flow utils', function () {
     const absolutePathToRepos = process.cwd();
     const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
     const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
-    const externalContext = {github, pathToRepo, branch, url};
+    const externalContext = {github, pathToRepo, githubUrlDescriptor: {branch, url}};
     const field = 'from';
     const hash = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
     const expectedResult = {
@@ -351,7 +395,7 @@ describe('Git flow utils', function () {
     const absolutePathToRepos = process.cwd();
     const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
     const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
-    const externalContext = {github, pathToRepo, branch, url};
+    const externalContext = {github, pathToRepo, githubUrlDescriptor: {branch, url}};
     const field = 'to';
     const hash = '5166a22e66b5b8bb9f95c6581179dee4e4e8eeb2';
     const expectedResult = {

@@ -10,18 +10,31 @@ const utils = require('./git-flow-utils');
 const cliUi = require('./../service/cli-ui');
 const {reposService} = require('waffle-server-repo-service');
 
-function gitFlow() {
-}
+// Export Module
+module.exports = {
+  getShortHash,
+  configDir,
+  getRepoName,
+  getRepoPath,
+  getRepoFolder,
+  registerRepo,
+  getCommitList,
+  getFileDiffByHashes,
+  showFileStateByHash,
+  validateDataset,
+  getDiffFileNameResult,
+  reposClean
+};
 
-gitFlow.prototype.getShortHash = function (commit) {
+function getShortHash(commit) {
   return !!commit ? commit.substring(0, 7) : '';
 };
 
-gitFlow.prototype.configDir = function (github, callback) {
+function configDir(github, callback) {
   return this.getRepoFolder(github, callback);
 };
 
-gitFlow.prototype.getRepoName = function (github) {
+function getRepoName(github) {
   const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
 
   if (!githubUrlDescriptor.account || !githubUrlDescriptor.repo) {
@@ -34,7 +47,7 @@ gitFlow.prototype.getRepoName = function (github) {
   return isBranchSpecified ? `${accountAndRepo}#${githubUrlDescriptor.branch}` : accountAndRepo;
 };
 
-gitFlow.prototype.getRepoPath = function (github) {
+function getRepoPath(github) {
   const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
 
   if (githubUrlDescriptor.account && githubUrlDescriptor.repo) {
@@ -44,7 +57,7 @@ gitFlow.prototype.getRepoPath = function (github) {
   return '';
 };
 
-gitFlow.prototype.getRepoFolder = function (github, callback) {
+function getRepoFolder(github, callback) {
   const absolutePathToRepos = envConst.PATH_REPOS;
   const relativePathToRepo = this.getRepoPath(github);
   const pathToDir = path.resolve(absolutePathToRepos, relativePathToRepo);
@@ -60,7 +73,7 @@ gitFlow.prototype.getRepoFolder = function (github, callback) {
   });
 };
 
-gitFlow.prototype.registerRepo = function (github, callback) {
+function registerRepo(github, callback) {
 
   return this.configDir(github, (error, {pathToRepo, relativePathToRepo, absolutePathToRepos}) => {
     if (error) {
@@ -68,35 +81,34 @@ gitFlow.prototype.registerRepo = function (github, callback) {
     }
 
     const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
-    const context = {github, pathToRepo, relativePathToRepo, absolutePathToRepos, branch: githubUrlDescriptor.branch, url: githubUrlDescriptor.url};
+    const context = {github, pathToRepo, relativePathToRepo, absolutePathToRepos, githubUrlDescriptor};
 
     cliUi.state("git, register repo");
 
-    return utils.updateRepoState(context, callback)
+    return utils.updateRepoState(context, callback);
   });
 };
 
-gitFlow.prototype.getCommitList = function (github, done) {
-
+function getCommitList(github, done) {
   const self = this;
   const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
-  const context = {github, branch: githubUrlDescriptor.branch, url: githubUrlDescriptor.url};
+  const context = {github, githubUrlDescriptor};
 
   cliUi.state("git, get commits list");
 
   return async.waterfall([
     async.constant(context),
-    (externalContext, done) => {
+    (externalContext, callback) => {
       self.configDir(externalContext.github, (error, {pathToRepo, relativePathToRepo, absolutePathToRepos}) => {
         if (error) {
-          return done(error);
+          return callback(error);
         }
 
         externalContext.pathToRepo = pathToRepo;
         externalContext.relativePathToRepo = relativePathToRepo;
         externalContext.absolutePathToRepos = absolutePathToRepos;
 
-        return done(null, externalContext);
+        return callback(null, externalContext);
       });
     },
     utils.updateRepoState,
@@ -113,7 +125,7 @@ gitFlow.prototype.getCommitList = function (github, done) {
   });
 };
 
-gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
+function getFileDiffByHashes(externalContext, callback) {
 
   const self = this;
 
@@ -125,8 +137,7 @@ gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
   const githubUrlDescriptor = utils.getGithubUrlDescriptor(externalContext.github);
 
   const context = _.extend({
-    branch: githubUrlDescriptor.branch,
-    url: githubUrlDescriptor.url,
+    githubUrlDescriptor,
     gitDiffFileStatus: [],
     gitDiffFileList: [],
     metadata
@@ -169,7 +180,7 @@ gitFlow.prototype.getFileDiffByHashes = function (externalContext, callback) {
   });
 };
 
-gitFlow.prototype.showFileStateByHash = function (data, fileName, done) {
+function showFileStateByHash(data, fileName, done) {
 
   const self = this;
   const context = _.extend({relativeFilePath: fileName}, data);
@@ -202,32 +213,33 @@ gitFlow.prototype.showFileStateByHash = function (data, fileName, done) {
   });
 };
 
-gitFlow.prototype.validateDataset = function (data, done) {
-
+function validateDataset(externalContext, onValidationComplete) {
   const self = this;
-  const gitCommit = data.commit;
+  const {github, commit = 'HEAD'} = externalContext;
+  const githubUrlDescriptor = utils.getGithubUrlDescriptor(github);
+  const options = {githubUrlDescriptor, github, commit: commit || 'HEAD'};
 
   return async.waterfall([
-    async.constant(data),
-    (externalContext, done) => {
-      self.configDir(externalContext.github, (error, {pathToRepo, relativePathToRepo, absolutePathToRepos}) => {
+    async.constant(options),
+    (options, done) => {
+      self.configDir(options.github, (error, {pathToRepo, relativePathToRepo, absolutePathToRepos}) => {
         if (error) {
           return done(error);
         }
 
-        externalContext.pathToRepo = pathToRepo;
-        externalContext.relativePathToRepo = relativePathToRepo;
-        externalContext.absolutePathToRepos = absolutePathToRepos;
+        options.pathToRepo = pathToRepo;
+        options.relativePathToRepo = relativePathToRepo;
+        options.absolutePathToRepos = absolutePathToRepos;
 
-        return done(null, externalContext);
+        return done(null, options);
       });
     },
-    async.apply(utils.checkoutHash, gitCommit),
+    utils.updateRepoState,
     utils.validateDataset
-  ], done);
+  ], onValidationComplete);
 };
 
-gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github, additional) {
+function getDiffFileNameResult(pathFolder, github, additional) {
   const filePath = utils.getGithubUrlDescriptor(github);
 
   const filePartsResult = [];
@@ -244,7 +256,7 @@ gitFlow.prototype.getDiffFileNameResult = function (pathFolder, github, addition
   return path.resolve(pathFolder, filePartsResult.join('--'));
 };
 
-gitFlow.prototype.reposClean = function (pathToCleaning, onReposCleaned) {
+function reposClean(pathToCleaning, onReposCleaned) {
   reposService.removeDirForce(pathToCleaning, (error) => {
     if (error) {
       return onReposCleaned(error);
@@ -255,6 +267,3 @@ gitFlow.prototype.reposClean = function (pathToCleaning, onReposCleaned) {
     return onReposCleaned();
   });
 };
-
-// Export Module
-module.exports = new gitFlow();

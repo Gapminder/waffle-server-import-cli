@@ -31,12 +31,27 @@ module.exports = {
 };
 
 function updateRepoState(externalContext, done) {
-  return async.waterfall([
-    async.constant(externalContext),
-    checkSshKey,
-    gitCloneIfRepoNotExists,
-    gitFetch,
-    gitReset
+  const {githubUrlDescriptor: {branch, url: githubUrl}, absolutePathToRepos, relativePathToRepo, pathToRepo, commit = 'HEAD'} = externalContext;
+  const options = {
+    branch,
+    commit,
+    absolutePathToRepos,
+    relativePathToRepo,
+    pathToRepo,
+    githubUrl,
+    silent: true,
+    async: true
+  };
+
+  return async.series([
+    async.apply(checkSshKey, options),
+    async.apply(gitCloneIfRepoNotExists, options),
+    async.apply(reposService.fetch.bind(reposService), options),
+    async.apply(reposService.reset.bind(reposService), options),
+    async.apply(reposService.checkoutToBranch.bind(reposService), options),
+    async.apply(reposService.pull.bind(reposService), options),
+    async.apply(reposService.clean.bind(reposService), options),
+    async.apply(reposService.checkoutToCommit.bind(reposService), options)
   ], (error) => {
     return done(error, externalContext);
   });
@@ -47,7 +62,7 @@ function checkSshKey(externalContext, done) {
 
   reposService.checkSshKey({silent: true}, (error) => {
     if (error) {
-      const [code, message, proposal] = error.split('\n');
+      const [ code, message, proposal ] = error.split('\n');
       const prettifiedError = `${cliUi.CONST_FONT_RED}* [code=${code}] ERROR: ${cliUi.CONST_FONT_YELLOW}${message}${cliUi.CONST_FONT_BLUE}\n\t${proposal}${cliUi.CONST_FONT_WHITE}`;
       return done(prettifiedError);
     }
@@ -61,15 +76,23 @@ function gitShow(field, commit, externalContext, done) {
 
   cliUi.state('git, get repo notes');
 
-  if (typeof relativeFilePath === 'undefined') {
-    logger.error({source: 'import-cli', message: 'undefined', field, commit, pathToRepo, relativeFilePath, externalContext});
+  if (_.isNil(relativeFilePath) || _.isNil(pathToRepo)) {
+    logger.error({
+      source: 'import-cli',
+      error: 'relativeFilePath or pathToRepo is undefined',
+      field,
+      commit,
+      pathToRepo,
+      relativeFilePath,
+      externalContext
+    });
   }
 
   return reposService.show({commit, relativeFilePath, pathToRepo}, function (error, result) {
-    externalContext[field] = !!error ? '' : result;
+    externalContext[ field ] = !!error ? '' : result;
     logger.info({source: 'import-cli', field, commit, relativeFilePath, pathToRepo, result});
 
-    if (_.some(['exists on disk, but not in','does not exist in'], (message) => _.includes(error, message))) {
+    if (_.some([ 'exists on disk, but not in', 'does not exist in' ], (message) => _.includes(error, message))) {
       return done(null, externalContext);
     }
 
@@ -78,11 +101,12 @@ function gitShow(field, commit, externalContext, done) {
 }
 
 function gitCloneIfRepoNotExists(externalContext, done) {
-  const {absolutePathToRepos, relativePathToRepo, url: githubUrl, branch} = externalContext;
+  const {absolutePathToRepos, relativePathToRepo, githubUrl, branch} = externalContext;
 
-  cliUi.state('git, clone repo');
+  cliUi.state('git, clone repo if it doesn\'t exist');
 
-  return reposService.silentClone({absolutePathToRepos, relativePathToRepo, githubUrl, branch}, (error) => done(error, externalContext));
+  const options = {absolutePathToRepos, relativePathToRepo, githubUrl, branch};
+  return reposService.silentClone(options, done);
 }
 
 function gitFetch(externalContext, done) {
@@ -106,10 +130,11 @@ function gitLog(externalContext, done) {
 
   cliUi.state('git, get commits log');
 
-  const prettifyResult = (stdout) => _.split(stdout, '\n\n').filter(commitDescriptor => !!commitDescriptor).map(commitDescriptor => {
-    const [hash, date, fullDate, message] = _.chain(commitDescriptor).trim('\n').split('\n').value();
-    return {hash, date, fullDate, message};
-  });
+  const prettifyResult = (stdout) => _.split(stdout, '\n\n').filter(commitDescriptor => !!commitDescriptor).map(
+    commitDescriptor => {
+      const [ hash, date, fullDate, message ] = _.chain(commitDescriptor).trim('\n').split('\n').value();
+      return {hash, date, fullDate, message};
+    });
 
   return reposService.log({pathToRepo, branch, prettifyResult}, (error, result) => {
 
@@ -124,13 +149,13 @@ function getFileStatusesDiff(externalContext, done) {
 
   const {pathToRepo, hashFrom: commitFrom, hashTo: commitTo} = externalContext;
 
-  const prettifyResult = (resultGitDiff) =>  _.chain(resultGitDiff)
+  const prettifyResult = (resultGitDiff) => _.chain(resultGitDiff)
     .split('\n')
     .reduce((result, rawFile) => {
-      const [status, filename] = rawFile.split('\t');
+      const [ status, filename ] = rawFile.split('\t');
 
       if (typeof filename !== 'undefined') {
-        result[filename] = status;
+        result[ filename ] = status;
       }
 
       return result;
@@ -176,6 +201,7 @@ function validateDataset(externalContext, done) {
   streamValidator.on('finish', function (error) {
     if (error) {
       cliUi.stop().error(`* Validation Error: ${error}`);
+      logger.error({obj: {source: 'import-cli', error, externalContext, issues}});
       return done(error);
     }
 
@@ -189,7 +215,7 @@ function validateDataset(externalContext, done) {
   });
 
   streamValidator.on('error', function (error) {
-    logger.error({obj: {error, externalContext, issues}});
+    logger.error({obj: {source: 'import-cli', error, externalContext, issues}});
   });
 
   return ddfValidation.validate(streamValidator);
@@ -214,7 +240,7 @@ function getDatapackage(propertyName, externalContext, done) {
           return done(error);
         }
 
-        externalContext.metadata[propertyName] = datapackageContent;
+        externalContext.metadata[ propertyName ] = datapackageContent;
 
         return done(null, externalContext);
       });
