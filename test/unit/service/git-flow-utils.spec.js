@@ -34,7 +34,7 @@ describe('Git flow utils', function () {
       const branch = 'branch';
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const externalContext = {github, absolutePathToRepos, relativePathToRepo, pathToRepo, githubUrlDescriptor: {branch, url}};
@@ -92,7 +92,7 @@ describe('Git flow utils', function () {
       const branch = 'branch';
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedCode = 2;
@@ -139,7 +139,7 @@ describe('Git flow utils', function () {
       const branch = 'branch';
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const externalContext = {github, pathToRepo, githubUrlDescriptor: {branch, url}};
@@ -187,7 +187,7 @@ describe('Git flow utils', function () {
       const branch = 'branch';
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const externalContext = {absolutePathToRepos, relativePathToRepo, pathToRepo, github, githubUrlDescriptor: {branch, url}};
@@ -235,7 +235,7 @@ describe('Git flow utils', function () {
       const branch = 'branch';
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const externalContext = {absolutePathToRepos, relativePathToRepo, pathToRepo, github, githubUrlDescriptor: {branch, url}};
@@ -286,7 +286,7 @@ describe('Git flow utils', function () {
     const branch = 'branch';
     const url = 'git@github.com:VS-work/ddf--ws-testing.git';
     const github = `${url}#${branch}`;
-    const absolutePathToRepos = process.cwd();
+    const absolutePathToRepos = path.resolve(__dirname, '../../../');
     const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
     const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
     const externalContext = {github, pathToRepo, githubUrlDescriptor: {branch, url}};
@@ -326,7 +326,7 @@ describe('Git flow utils', function () {
     const branch = 'branch';
     const url = 'git@github.com:VS-work/ddf--ws-testing.git';
     const github = `${url}#${branch}`;
-    const absolutePathToRepos = process.cwd();
+    const absolutePathToRepos = path.resolve(__dirname, '../../../');
     const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
     const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
     const externalContext = {github, pathToRepo, githubUrlDescriptor: {branch, url}};
@@ -355,7 +355,7 @@ describe('Git flow utils', function () {
     const branch = 'branch';
     const url = 'git@github.com:VS-work/ddf--ws-testing.git';
     const github = `${url}#${branch}`;
-    const absolutePathToRepos = process.cwd();
+    const absolutePathToRepos = path.resolve(__dirname, '../../../');
     const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
     const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
     const externalContext = {github, pathToRepo, githubUrlDescriptor: {branch, url}};
@@ -392,7 +392,7 @@ describe('Git flow utils', function () {
     const branch = 'branch';
     const url = 'git@github.com:VS-work/ddf--ws-testing.git';
     const github = `${url}#${branch}`;
-    const absolutePathToRepos = process.cwd();
+    const absolutePathToRepos = path.resolve(__dirname, '../../../');
     const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
     const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
     const externalContext = {github, pathToRepo, githubUrlDescriptor: {branch, url}};
@@ -428,7 +428,7 @@ describe('Git flow utils', function () {
       const branch = 'branch';
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const commitFrom = '66a50bb25be90d69a94a3904611363ee20a87848';
@@ -458,7 +458,7 @@ describe('Git flow utils', function () {
       const branch = 'branch';
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const commitFrom = '66a50bb25be90d69a94a3904611363ee20a87848';
@@ -502,7 +502,7 @@ describe('Git flow utils', function () {
       const branch = 'branch';
       const url = 'git@github.com:VS-work/ddf--ws-testing.git';
       const github = `${url}#${branch}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const commitFrom = '66a50bb25be90d69a94a3904611363ee20a87848';
@@ -545,7 +545,7 @@ describe('Git flow utils', function () {
   });
 
   it('should checkout to certain hash without error', sinon.test(function (done) {
-    const absolutePathToRepos = process.cwd();
+    const absolutePathToRepos = path.resolve(__dirname, '../../../');
     const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
     const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
     const externalContext = {pathToRepo};
@@ -570,7 +570,7 @@ describe('Git flow utils', function () {
   }));
 
   it('should return error when it happens during git checkout command', sinon.test(function (done) {
-    const absolutePathToRepos = process.cwd();
+    const absolutePathToRepos = path.resolve(__dirname, '../../../');
     const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
     const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
     const externalContext = {pathToRepo};
@@ -598,7 +598,7 @@ describe('Git flow utils', function () {
 
   describe('#validateDataset', function() {
     it('should validate dataset without error', sinon.test(function (done) {
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const issue = {description: 'Error'};
@@ -648,7 +648,7 @@ describe('Git flow utils', function () {
     }));
 
     it('should validate dataset with one issue', sinon.test(function (done) {
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const issue = {description: 'Error'};
@@ -699,7 +699,7 @@ describe('Git flow utils', function () {
     }));
 
     it('should validate dataset with error from validator, without issue', sinon.test(function (done) {
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedError = 'Boo!';
@@ -769,7 +769,7 @@ describe('Git flow utils', function () {
 
   describe('#getDatapackage', function() {
     it('should get all data from datapackage file', sinon.test(function (done) {
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const externalContext = {pathToRepo, metadata: {}};
@@ -800,7 +800,7 @@ describe('Git flow utils', function () {
     }));
 
     it('should get error if file doesn\'t exist', sinon.test(function (done) {
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const externalContext = {pathToRepo, metadata: {}};
@@ -828,7 +828,7 @@ describe('Git flow utils', function () {
     }));
 
     it('should get error if it happens during reading stream', sinon.test(function (done) {
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const externalContext = {pathToRepo, metadata: {}};
