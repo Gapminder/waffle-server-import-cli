@@ -46,7 +46,7 @@ describe('Service: Git flow', function () {
     it('should get absolute path to the repository', sinon.test(function (done) {
       const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const gitFlow = require('../../../service/git-flow');
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(relativePathToRepo);
       const expectedConfigDir = {pathToRepo: pathToRepo + '/', absolutePathToRepos, relativePathToRepo};
@@ -171,7 +171,7 @@ describe('Service: Git flow', function () {
     it('should get absolute path to the repository, if it was already created', sinon.test(function (done) {
       const giturl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const gitFlow = require('../../../service/git-flow');
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(relativePathToRepo);
       const expectedConfigDir = {pathToRepo: pathToRepo + '/', absolutePathToRepos, relativePathToRepo};
@@ -199,7 +199,7 @@ describe('Service: Git flow', function () {
       const gitFlow = require('../../../service/git-flow');
 
       const expectedError = `Something went wrong during creation directory process`;
-       const absolutePathToRepos = process.cwd();
+       const absolutePathToRepos = path.resolve(__dirname, '../../../');
        const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
        const pathToRepo = path.resolve(relativePathToRepo);
        const expectedConfigDir = {pathToRepo: pathToRepo + '/', absolutePathToRepos, relativePathToRepo};
@@ -231,7 +231,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
@@ -281,7 +281,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
@@ -335,7 +335,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
@@ -413,7 +413,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
@@ -468,7 +468,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
@@ -528,7 +528,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
@@ -618,7 +618,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
@@ -678,7 +678,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
@@ -725,7 +725,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos};
@@ -771,7 +771,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos, commit};
@@ -809,7 +809,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos, commit};
@@ -848,7 +848,7 @@ describe('Service: Git flow', function () {
       const branchName = 'branch';
       const repoUrl = 'git@github.com:VS-work/ddf--ws-testing.git';
       const githubUrl = `${repoUrl}#${branchName}`;
-      const absolutePathToRepos = process.cwd();
+      const absolutePathToRepos = path.resolve(__dirname, '../../../');
       const relativePathToRepo = 'repos/VS-work/ddf--ws-testing';
       const pathToRepo = path.resolve(absolutePathToRepos, relativePathToRepo) + '/';
       const expectedConfigDir = {pathToRepo, relativePathToRepo, absolutePathToRepos, commit};
