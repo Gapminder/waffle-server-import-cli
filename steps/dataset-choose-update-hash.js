@@ -5,8 +5,9 @@ const util = require('util');
 const cliUi = require('./../service/cli-ui');
 const inquirer = require('inquirer');
 const stepBase = require('./../model/base-step');
-const logger = require('../config/logger');
 const path = require('path');
+const {reposService} = require('waffle-server-repo-service');
+const logger = require('../config/logger');
 
 function step() {
   stepBase.apply(this, arguments);
@@ -154,29 +155,42 @@ step.prototype.process = function (inputValue) {
         logger.error({obj: {source:'import-cli', error: updateError, wsResponse}});
       }
 
-      const errorMsg = updateError ? updateError.toString() : wsResponse.getError();
-
-      if (errorMsg) {
-        cliUi.stop().logStart().error(errorMsg).logEnd();
-        return done(null, true);
-      }
-
-      let dataState = {
-        'datasetName': gitFlow.getRepoName(datasetData.github)
-      };
-
-      longPolling.checkDataSet(dataState, function (state) {
-
-        // state.success
-        if (!state.success) {
-          cliUi.stop().logStart().error(state.message).logEnd();
-        } else {
-          cliUi.stop().logPrint([state.message]);
+      gitFlow.getRepoFolder(data.github, (repoError, {pathToRepo}) => {
+        if (repoError) {
+          logger.warn(repoError);
         }
-        return done(null, true);
+
+        const prettifyResult = (stdout) => parseInt(stdout);
+
+        reposService.getLinesAmount({pathToRepo, silent: true, prettifyResult}, (linesAmountError, numberOfRows) => {
+          if (linesAmountError) {
+            logger.warn(linesAmountError);
+          }
+
+          const errorMsg = updateError ? updateError.toString() : wsResponse.getError();
+
+          if (errorMsg) {
+            cliUi.stop().logStart().error(errorMsg).logEnd();
+            return done(null, true);
+          }
+
+          let dataState = {
+            'datasetName': gitFlow.getRepoName(datasetData.github)
+          };
+
+          longPolling.setTimeStart(numberOfRows);
+          longPolling.checkDataSet(dataState, function (state) {
+
+            // state.success
+            if (!state.success) {
+              cliUi.stop().logStart().error(state.message).logEnd();
+            } else {
+              cliUi.stop().logPrint([ state.message ]);
+            }
+            return done(null, true);
+          });
+        });
       });
-
-
     });
   });
 
