@@ -186,10 +186,9 @@ function validateDataset(externalContext, done) {
   cliUi.state('validator, check dataset validity');
 
   const streamValidator = new StreamValidator(pathToRepo, {
-    excludeRules: 'WRONG_DATA_POINT_HEADER',
+    excludeRules: 'WRONG_DATA_POINT_HEADER NON_UNIQUE_ENTITY_VALUE',
     excludeDirs: '.gitingore, .git',
-    isCheckHidden: true,
-    isMultithread: true
+    isCheckHidden: true
   });
 
   const issues = [];
