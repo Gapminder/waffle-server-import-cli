@@ -1,6 +1,7 @@
 # WebStroms project files
 .idea
 *.log
+logs/*.log
 node_modules
 requests/*
 repos/*
