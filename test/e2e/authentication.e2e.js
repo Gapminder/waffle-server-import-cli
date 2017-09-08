@@ -35,10 +35,9 @@ const {
   getExpectedErrorSteps,
   setupResponseHandler,
   prettifyStdout,
-  checkExpectedSteps
+  checkExpectedSteps,
+  cliPath
 } = require('./common');
-
-const cliPath = path.resolve(__dirname, '../../');
 
 describe('Authentication', () => {
   const expectedDefaultSteps = [

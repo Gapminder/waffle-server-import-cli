@@ -1,17 +1,23 @@
 'use strict';
 
+const async = require('async');
 const _ = require('lodash');
+const fs = require('fs');
+const path = require('path');
 const chai = require('chai');
 const expect = chai.expect;
 const assert = chai.assert;
 
 const fixtures = require('./fixtures');
+const cliPath = path.resolve(__dirname, '../../');
 
 module.exports = {
   getExpectedErrorSteps,
   setupResponseHandler,
   checkExpectedSteps,
-  prettifyStdout
+  prettifyStdout,
+  clearFileFromTestedData,
+  cliPath
 };
 
 function getExpectedErrorSteps(errorMatcher) {
@@ -131,4 +137,49 @@ function prettifyStdout(stdoutData) {
   }
 
   return prettifiedData;
+}
+
+function _readFile(externalContext, cb) {
+  const {pathToFile} = externalContext;
+
+  fs.readFile(pathToFile, 'utf8', (err, data) => {
+      if (err) {
+          return cb(err);
+      }
+
+      externalContext.data = JSON.parse(data);
+
+      cb(null, externalContext);
+  });
+}
+
+function _filterTestData(externalContext, cb) {
+  const {data, filteredObject} = externalContext;
+  const filterIndex = _.findIndex(data, filteredObject);
+
+  if (filterIndex >= 0 ) {
+      data.splice(filterIndex, 1);
+  }
+
+  return async.setImmediate(() => cb(null, externalContext));
+}
+
+function _writeFile(externalContext, cb) {
+  const {data, pathToFile} = externalContext;
+  const endpoints = JSON.stringify(data);
+
+  return fs.writeFile(pathToFile, endpoints, 'utf8', err => {
+      return cb(err);
+  });
+}
+
+function clearFileFromTestedData(externalContext, done) {
+    async.waterfall([
+        async.constant(externalContext),
+        _readFile,
+        _filterTestData,
+        _writeFile
+    ], err => {
+        done(err)
+    });
 }
