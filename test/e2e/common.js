@@ -1,17 +1,24 @@
 'use strict';
 
+const async = require('async');
 const _ = require('lodash');
+const fs = require('fs');
 const chai = require('chai');
 const expect = chai.expect;
 const assert = chai.assert;
 
 const fixtures = require('./fixtures');
 
+const ENDPOINTS_LIST_PATH = 'config/waffle-server.json';
+
 module.exports = {
   getExpectedErrorSteps,
   setupResponseHandler,
   checkExpectedSteps,
-  prettifyStdout
+  prettifyStdout,
+  writeEndpoints,
+  filterTestEndpoint,
+  readEndpoints
 };
 
 function getExpectedErrorSteps(errorMatcher) {
@@ -131,4 +138,35 @@ function prettifyStdout(stdoutData) {
   }
 
   return prettifiedData;
+}
+
+function readEndpoints(externalContext, cb) {
+  fs.readFile(ENDPOINTS_LIST_PATH, 'utf8', (err, data) => {
+      if (err) {
+          return cb(err);
+      }
+
+      externalContext.data = JSON.parse(data);
+
+      cb(null, externalContext);
+  });
+}
+
+function filterTestEndpoint(externalContext, cb) {
+  const {data, filteredObject} = externalContext;
+  const filterIndex = _.findIndex(data, filteredObject);
+  if (filterIndex >= 0 ) {
+      data.splice(filterIndex, 1);
+  }
+
+  return async.setImmediate(() => cb(null, externalContext));
+}
+
+function writeEndpoints(externalContext, cb) {
+  const {data} = externalContext;
+  const endpoints = JSON.stringify(data);
+
+  return fs.writeFile(ENDPOINT_LIST_PATH, endpoints, 'utf8', err => {
+      return cb(err);
+  });
 }

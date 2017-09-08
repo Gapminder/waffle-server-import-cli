@@ -4,6 +4,7 @@ const _ = require('lodash');
 const messages = {
   answers: {
     ANSWER__WAFFLE_SERVER_ENDPOINT__SELECT_FROM_THE_LIST: /^\? Waffle Server Endpoint Select from the List/,
+    ANSWER__WAFFLE_SERVER_ENDPOINT__ADD_NEW_ENDPOINT: /^\? Waffle Server Endpoint Add new Endpoint/,
     ANSWER__WAFFLE_SERVER_SELECT_ENDPOINT__LOCAL: /^\? Select Waffle Server Endpoint local \(http\:\/\/localhost\:3000\)/,
     ANSWER__WAFFLE_SERVER_AUTHENTICATION_LOGIN__DEV_GAPMINDER_ORG: /^\? Authentication\, Login dev\@gapminder\.org/,
     ANSWER__WAFFLE_SERVER_AUTHENTICATION_LOGIN__EMPTY: /^\? Authentication\, Login $/,
@@ -18,6 +19,8 @@ const messages = {
   questions: {
     WAFFLE_SERVER_ENDPOINT: /^\? Waffle Server Endpoint/,
     WAFFLE_SERVER_SELECT_ENDPOINT: /^\? Select Waffle Server Endpoint/,
+    WAFFLE_SERVER_ADD_NEW_ENDPOINT: /^\? Add new Waffle Server Endpoint/,
+    WAFFLE_SERVER_ADD_NEW_ENDPOINT_SELECTED:  /❯ Add new Endpoint/gm,
     WAFFLE_SERVER_AUTHENTICATION_LOGIN: /^\? Authentication\, Login/,
     WAFFLE_SERVER_AUTHENTICATION_PASSWORD: /^\? Authentication\, Password/,
     WAFFLE_SERVER_CHOOSE_FLOW: /^\? Choose Flow \(Use arrow keys\)$/,
@@ -29,6 +32,7 @@ const messages = {
     WAFFLE_SERVER_DEFAULT_DATASET_VERSIONS_LIST: /^\? Choose Default DataSet Version \(Use arrow keys\)\s+[\u276f]\s+((aaaaaaa|bbbbbbb)\s+\(\d{4}\-\d{2}\-\d{2}\s+\d{2}\:\d{2}\:\d{2}\)\s+)*/gm
   },
   errors: {
+    ERROR__WAFFLE_SERVER_ENDPOINT__ADD_NEW_ENDPOINT: /Invalid endpoint URL/gm,
     ERROR__CONNECTION_REFUSED: /\-*\*\s+ERROR:\s+Error:\s+connect\s+ECONNREFUSED\s+\d{1,3}\.\d{1,3}.\d{1,3}.\d{1,3}:\d{2,4}\-*/gm,
     ERROR__NO_EMAIL_WAS_PROVIDED: /\-*\*\s+ERROR:\s+User\s+with\s+an\s+email\:\s+\'false\'\s+was\s+not\s+found\-*/gm,
     ERROR__NO_PASSWORD_WAS_PROVIDED: /\-*\*\s+ERROR:\s+Password\s+was\s+not\s+provided\-*/gm,
