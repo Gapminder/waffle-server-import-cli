@@ -44,10 +44,9 @@ const {
   setupResponseHandler,
   getExpectedErrorSteps,
   prettifyStdout,
-  checkExpectedSteps
+  checkExpectedSteps,
+  cliPath
 } = require('./common');
-
-const cliPath = path.resolve(__dirname, '../../');
 
 describe('Set Default Dataset', () => {
   const expectedDefaultSteps = [

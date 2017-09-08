@@ -1,12 +1,11 @@
 'use strict';
 
 const _ = require('lodash');
-const async = require('async');
 const run = require('inquirer-test');
 const {UP, DOWN, ENTER} = run;
-const path = require('path');
 
 const fixtures = require('./fixtures');
+const ENDPOINTS_LIST_PATH = 'config/waffle-server.json';
 
 const {
   errors: {ERROR__WAFFLE_SERVER_ENDPOINT__ADD_NEW_ENDPOINT},
@@ -25,16 +24,12 @@ const {
   getExpectedErrorSteps,
   prettifyStdout,
   checkExpectedSteps,
-  readEndpoints,
-  filterTestEndpoint,
-  writeEndpoints
+  clearFileFromTestedData,
+  cliPath
 } = require('./common');
-
-const cliPath = path.resolve(__dirname, '../../');
 
 describe('Add new Endpoint', () => {
    const newValidEndpoint ='http://valid-endpoint.new:1234';
-   const newInvalidEndpoint ='invalidEndpoint';
    const defaultAddNewEndpointSteps = [
        {
            keys: [ DOWN, ENTER ],
@@ -59,29 +54,16 @@ describe('Add new Endpoint', () => {
    ];
 
    beforeEach((done) => {
-       async.waterfall([
-           async.constant({filteredObject: {url: newValidEndpoint}}),
-           readEndpoints,
-           filterTestEndpoint,
-           writeEndpoints
-       ], err => {
-           done(err)
-       });
+       clearFileFromTestedData({pathToFile: ENDPOINTS_LIST_PATH, filteredObject: {url: newValidEndpoint}}, done);
    });
 
    after((done) => {
-       async.waterfall([
-           async.constant({filteredObject: {url: newValidEndpoint}}),
-           readEndpoints,
-           filterTestEndpoint,
-           writeEndpoints
-       ], err => {
-           done(err)
-       });
+       clearFileFromTestedData({pathToFile: ENDPOINTS_LIST_PATH, filteredObject: {url: newValidEndpoint}}, done);
    });
 
    it('should respond with an error', async () => {
        // ARRANGE
+       const newInvalidEndpoint ='invalidEndpoint';
        const expectedSteps = [
            ...defaultAddNewEndpointSteps,
            {
