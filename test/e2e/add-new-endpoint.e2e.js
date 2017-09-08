@@ -11,12 +11,14 @@ const {
   errors: {ERROR__WAFFLE_SERVER_ENDPOINT__ADD_NEW_ENDPOINT},
   questions: {
       WAFFLE_SERVER_ENDPOINT,
-      WAFFLE_SERVER_ADD_NEW_ENDPOINT,
-      WAFFLE_SERVER_ADD_NEW_ENDPOINT_SELECTED
+      WAFFLE_SERVER_ADD_NEW_ENDPOINT
   },
   answers: {
       ANSWER__WAFFLE_SERVER_ENDPOINT__SELECT_FROM_THE_LIST,
       ANSWER__WAFFLE_SERVER_ENDPOINT__ADD_NEW_ENDPOINT
+  },
+  menuItems: {
+      MENU_ITEM__WAFFLE_SERVER_ADD_NEW_ENDPOINT
   }
 } = fixtures.messages;
 
@@ -40,7 +42,7 @@ describe('Add new Endpoint', () => {
        },
        {
            list: true,
-           messageRegex:  WAFFLE_SERVER_ADD_NEW_ENDPOINT_SELECTED
+           messageRegex:  MENU_ITEM__WAFFLE_SERVER_ADD_NEW_ENDPOINT
        },
        {
            messageRegex: ANSWER__WAFFLE_SERVER_ENDPOINT__ADD_NEW_ENDPOINT

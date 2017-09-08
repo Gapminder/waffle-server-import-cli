@@ -20,7 +20,6 @@ const messages = {
     WAFFLE_SERVER_ENDPOINT: /^\? Waffle Server Endpoint/,
     WAFFLE_SERVER_SELECT_ENDPOINT: /^\? Select Waffle Server Endpoint/,
     WAFFLE_SERVER_ADD_NEW_ENDPOINT: /^\? Add new Waffle Server Endpoint/,
-    WAFFLE_SERVER_ADD_NEW_ENDPOINT_SELECTED:  /❯ Add new Endpoint/gm,
     WAFFLE_SERVER_AUTHENTICATION_LOGIN: /^\? Authentication\, Login/,
     WAFFLE_SERVER_AUTHENTICATION_PASSWORD: /^\? Authentication\, Password/,
     WAFFLE_SERVER_CHOOSE_FLOW: /^\? Choose Flow \(Use arrow keys\)$/,
@@ -30,6 +29,9 @@ const messages = {
     WAFFLE_SERVER_DEFAULT_DATASET_EMPTY_LIST: /^\? Choose Default DataSet \(Use arrow keys\)\-*$/gm,
     WAFFLE_SERVER_DEFAULT_DATASET_LIST: /^\? Choose Default DataSet \(Use arrow keys\)\s+[\u276f]\s+([a-z0-9_\/\-#]*\s?)*\-*/gm,
     WAFFLE_SERVER_DEFAULT_DATASET_VERSIONS_LIST: /^\? Choose Default DataSet Version \(Use arrow keys\)\s+[\u276f]\s+((aaaaaaa|bbbbbbb)\s+\(\d{4}\-\d{2}\-\d{2}\s+\d{2}\:\d{2}\:\d{2}\)\s+)*/gm
+  },
+  menuItems: {
+    MENU_ITEM__WAFFLE_SERVER_ADD_NEW_ENDPOINT:  /❯ Add new Endpoint/,
   },
   errors: {
     ERROR__WAFFLE_SERVER_ENDPOINT__ADD_NEW_ENDPOINT: /Invalid endpoint URL/gm,
