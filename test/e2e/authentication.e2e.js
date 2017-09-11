@@ -3,7 +3,6 @@
 const _ = require('lodash');
 const run = require('inquirer-test');
 const {UP, DOWN, ENTER} = run;
-const path = require('path');
 const sinon = require('sinon');
 const express = require('express');
 

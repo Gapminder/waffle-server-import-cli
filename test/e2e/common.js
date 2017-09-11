@@ -16,6 +16,7 @@ module.exports = {
   setupResponseHandler,
   checkExpectedSteps,
   prettifyStdout,
+  readFile,
   clearFileFromTestedData,
   cliPath
 };
@@ -50,7 +51,7 @@ function checkExpectedSteps(expectedSteps, prettifiedSteps) {
   expect(expectedMessages).to.not.empty;
 
   _.forEach(expectedSteps, (expectedStep, index) => {
-    const actualStep = prettifiedSteps[ index ];
+    const actualStep = prettifiedSteps[index];
     const expectedMessageRegex = expectedStep.messageRegex;
 
     if (_.isEmpty(actualStep)) {
@@ -121,9 +122,9 @@ function prettifyStdout(stdoutData) {
       if (isFirstStep || isOnlyOneMessageInStep) {
         result.push(splittedStepLines);
       } else {
-        const [ previousStepResult, ...restLines ] = splittedStepLines;
+        const [previousStepResult, ...restLines] = splittedStepLines;
         if (previousStepResult) {
-          result.push([ previousStepResult ]);
+          result.push([previousStepResult]);
         }
         result.push(restLines);
       }
@@ -139,17 +140,17 @@ function prettifyStdout(stdoutData) {
   return prettifiedData;
 }
 
-function _readFile(externalContext, cb) {
+function readFile(externalContext, cb) {
   const {pathToFile} = externalContext;
 
-  fs.readFile(pathToFile, 'utf8', (err, data) => {
-      if (err) {
-          return cb(err);
-      }
+  return fs.readFile(pathToFile, 'utf8', (err, data) => {
+    if (err) {
+      return cb(err);
+    }
 
-      externalContext.data = JSON.parse(data);
+    externalContext.data = JSON.parse(data);
 
-      cb(null, externalContext);
+    return cb(null, externalContext);
   });
 }
 
@@ -157,8 +158,8 @@ function _filterTestData(externalContext, cb) {
   const {data, filteredObject} = externalContext;
   const filterIndex = _.findIndex(data, filteredObject);
 
-  if (filterIndex >= 0 ) {
-      data.splice(filterIndex, 1);
+  if (filterIndex >= 0) {
+    data.splice(filterIndex, 1);
   }
 
   return async.setImmediate(() => cb(null, externalContext));
@@ -169,17 +170,17 @@ function _writeFile(externalContext, cb) {
   const endpoints = JSON.stringify(data);
 
   return fs.writeFile(pathToFile, endpoints, 'utf8', err => {
-      return cb(err);
+    return cb(err);
   });
 }
 
 function clearFileFromTestedData(externalContext, done) {
-    async.waterfall([
-        async.constant(externalContext),
-        _readFile,
-        _filterTestData,
-        _writeFile
-    ], err => {
-        done(err)
-    });
+  return async.waterfall([
+    async.constant(externalContext),
+    readFile,
+    _filterTestData,
+    _writeFile
+  ], err => {
+    return done(err);
+  });
 }

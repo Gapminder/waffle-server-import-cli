@@ -198,13 +198,13 @@ describe('Set Default Dataset', () => {
       const expectedSteps = [
         ...expectedDefaultSteps,
         {
-          keys: [ ENTER ],
+          keys: [ENTER],
           list: true,
           messageRegex: WAFFLE_SERVER_DEFAULT_DATASET_LIST
         }, {
           messageRegex: ANSWER__WAFFLE_SERVER_DEFAULT_DATASET_LIST
         }, {
-          keys: [ {key: ENTER, timeout: 2000} ],
+          keys: [{key: ENTER, timeout: 2000}],
           list: true,
           messageRegex: WAFFLE_SERVER_DEFAULT_DATASET_VERSIONS_LIST
         }, {
