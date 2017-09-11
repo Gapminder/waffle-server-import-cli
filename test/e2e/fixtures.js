@@ -13,6 +13,7 @@ const messages = {
 
     ANSWER__WAFFLE_SERVER_DEFAULT_DATASET_LIST: /^\? Choose Default DataSet [a-z0-9_\/\-#]*$/,
     ANSWER__WAFFLE_SERVER_DEFAULT_DATASET_VERSIONS_LIST: /^Default DataSet was set \:\: open\-numbers\/ddf\-\-gapminder\-\-systema_globalis \/ aaaaaaa \/ 2017\-06\-27 00\:00\:00\s+\-+\s+\? Choose Default DataSet Version (aaaaaaa|bbbbbbb)\s+\(\d{4}\-\d{2}\-\d{2}\s+\d{2}\:\d{2}\:\d{2}\)\s+\? Choose Flow \(Use arrow keys\)/gm,
+    ANSWER__WAFFLE_SERVER_REGISTER_NEW_REPO: /^\? Register Repository/,
 
     ANSWER__ANYTHING: /^.*$/gm
   },
@@ -20,10 +21,13 @@ const messages = {
     WAFFLE_SERVER_ENDPOINT: /^\? Waffle Server Endpoint/,
     WAFFLE_SERVER_SELECT_ENDPOINT: /^\? Select Waffle Server Endpoint/,
     WAFFLE_SERVER_ADD_NEW_ENDPOINT: /^\? Add new Waffle Server Endpoint/,
+    WAFFLE_SERVER_REGISTER_REPO: /^\? Register Repository/,
     WAFFLE_SERVER_AUTHENTICATION_LOGIN: /^\? Authentication\, Login/,
     WAFFLE_SERVER_AUTHENTICATION_PASSWORD: /^\? Authentication\, Password/,
-    WAFFLE_SERVER_CHOOSE_FLOW: /^\? Choose Flow \(Use arrow keys\)$/,
+    WAFFLE_SERVER_CHOOSE_FLOW: /^\? Choose Flow (\(Use arrow keys\))?$/,
     WAFFLE_SERVER_CHOOSE_FLOW_DEFAULT_DATASET: /^\? Choose Flow Default DataSet/,
+    WAFFLE_SERVER_CHOOSE_FLOW_REGISTER_REPO: /^\? Choose Flow Register Repository/,
+    WAFFLE_SERVER_CHOOSE_FLOW_IMPORT_DATASET: /^\? Choose Flow Import DataSet/,
     WAFFLE_SERVER_SET_DEFAULT_DATASET: /^\? Choose Default DataSet/,
 
     WAFFLE_SERVER_DEFAULT_DATASET_EMPTY_LIST: /^\? Choose Default DataSet \(Use arrow keys\)\-*$/gm,
@@ -31,10 +35,13 @@ const messages = {
     WAFFLE_SERVER_DEFAULT_DATASET_VERSIONS_LIST: /^\? Choose Default DataSet Version \(Use arrow keys\)\s+[\u276f]\s+((aaaaaaa|bbbbbbb)\s+\(\d{4}\-\d{2}\-\d{2}\s+\d{2}\:\d{2}\:\d{2}\)\s+)*/gm
   },
   menuItems: {
-    MENU_ITEM__WAFFLE_SERVER_ADD_NEW_ENDPOINT:  /❯ Add new Endpoint/,
+    MENU_ITEM__WAFFLE_SERVER_ADD_NEW_ENDPOINT: /❯ Add new Endpoint/,
+    MENU_ITEM__WAFFLE_SERVER_REGISTER_NEW_REPO: /❯ Register Repository/,
+    MENU_ITEM__WAFFLE_SERVER_IMPORT_DATASET: /❯ Import DataSet/,
   },
   errors: {
     ERROR__WAFFLE_SERVER_ENDPOINT__ADD_NEW_ENDPOINT: /Invalid endpoint URL/gm,
+    ERROR__WAFFLE_SERVER_ENDPOINT__ADD_NEW_REPO: /Invalid repo URL/gm,
     ERROR__CONNECTION_REFUSED: /\-*\*\s+ERROR:\s+Error:\s+connect\s+ECONNREFUSED\s+\d{1,3}\.\d{1,3}.\d{1,3}.\d{1,3}:\d{2,4}\-*/gm,
     ERROR__NO_EMAIL_WAS_PROVIDED: /\-*\*\s+ERROR:\s+User\s+with\s+an\s+email\:\s+\'false\'\s+was\s+not\s+found\-*/gm,
     ERROR__NO_PASSWORD_WAS_PROVIDED: /\-*\*\s+ERROR:\s+Password\s+was\s+not\s+provided\-*/gm,
@@ -51,7 +58,7 @@ module.exports.getAppropriateSteps = ({UP, DOWN, ENTER}) => {
   return {
     waffleServerEndpoint: [
       {
-        keys: [ ENTER ],
+        keys: [ENTER],
         messageRegex: messages.questions.WAFFLE_SERVER_ENDPOINT
       }, {
         messageRegex: messages.answers.ANSWER__WAFFLE_SERVER_ENDPOINT__SELECT_FROM_THE_LIST
@@ -59,7 +66,7 @@ module.exports.getAppropriateSteps = ({UP, DOWN, ENTER}) => {
     ],
     waffleServerSelectEndpoint: [
       {
-        keys: [ ENTER ],
+        keys: [ENTER],
         messageRegex: messages.questions.WAFFLE_SERVER_SELECT_ENDPOINT
       }, {
         messageRegex: messages.answers.ANSWER__WAFFLE_SERVER_SELECT_ENDPOINT__LOCAL
@@ -70,7 +77,7 @@ module.exports.getAppropriateSteps = ({UP, DOWN, ENTER}) => {
         messageRegex: messages.questions.WAFFLE_SERVER_AUTHENTICATION_LOGIN
       },
       {
-        keys: [ 'dev@gapminder.org', ENTER ],
+        keys: ['dev@gapminder.org', ENTER],
         homotypic: true,
         messageRegex: messages.questions.WAFFLE_SERVER_AUTHENTICATION_LOGIN
       }
@@ -85,7 +92,7 @@ module.exports.getAppropriateSteps = ({UP, DOWN, ENTER}) => {
         messageRegex: messages.questions.WAFFLE_SERVER_AUTHENTICATION_LOGIN
       },
       {
-        keys: [ ENTER ],
+        keys: [ENTER],
         homotypic: true,
         messageRegex: messages.questions.WAFFLE_SERVER_AUTHENTICATION_LOGIN
       }
@@ -95,7 +102,7 @@ module.exports.getAppropriateSteps = ({UP, DOWN, ENTER}) => {
         messageRegex: messages.questions.WAFFLE_SERVER_AUTHENTICATION_PASSWORD
       },
       {
-        keys: [ '123', ENTER ],
+        keys: ['123', ENTER],
         homotypic: true,
         messageRegex: messages.questions.WAFFLE_SERVER_AUTHENTICATION_PASSWORD
       }
@@ -118,13 +125,13 @@ module.exports.getAppropriateSteps = ({UP, DOWN, ENTER}) => {
     setDefaultDataset: [
       ...makeDefaultSteps(getKeys(8, DOWN)),
       {
-        keys: [ ENTER ],
+        keys: [ENTER],
         messageRegex: messages.questions.WAFFLE_SERVER_CHOOSE_FLOW_DEFAULT_DATASET
       }
     ],
     delimiter: [
       {
-        keys: [ ENTER ],
+        keys: [ENTER],
         messageRegex: messages.others.CLI_RESULT_DELIMITER
       }
     ],
@@ -140,7 +147,6 @@ module.exports.getAppropriateSteps = ({UP, DOWN, ENTER}) => {
   }
 
   function makeDefaultSteps(keys = [ENTER]) {
-
     return _.flatMap(keys, (key) => {
       return [
         {
