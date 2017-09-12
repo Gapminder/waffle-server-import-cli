@@ -257,7 +257,7 @@ function getDiffFileNameResult(pathFolder, github, additional) {
 };
 
 function reposClean(pathToCleaning, onReposCleaned) {
-  reposService.removeDirForce(pathToCleaning, (error) => {
+  reposService.removeDirForce({pathToDir: pathToCleaning}, (error) => {
     if (error) {
       return onReposCleaned(error);
     }
