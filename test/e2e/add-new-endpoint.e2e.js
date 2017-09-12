@@ -52,9 +52,6 @@ describe('Add new Endpoint', () => {
     },
     {
       messageRegex: WAFFLE_SERVER_ADD_NEW_ENDPOINT
-    },
-    {
-      messageRegex: WAFFLE_SERVER_ADD_NEW_ENDPOINT
     }
   ];
 
@@ -73,7 +70,10 @@ describe('Add new Endpoint', () => {
       ...defaultAddNewEndpointSteps,
       {
         keys: [newInvalidEndpoint, ENTER],
-        homotypic: true,
+        sameType: true,
+        messageRegex: WAFFLE_SERVER_ADD_NEW_ENDPOINT
+      },
+      {
         messageRegex: WAFFLE_SERVER_ADD_NEW_ENDPOINT
       },
       ...getExpectedErrorSteps(ERROR__WAFFLE_SERVER_ENDPOINT__ADD_NEW_ENDPOINT)
@@ -95,7 +95,10 @@ describe('Add new Endpoint', () => {
       ...defaultAddNewEndpointSteps,
       {
         keys: [newValidEndpoint, ENTER],
-        homotypic: true,
+        sameType: true,
+        messageRegex: WAFFLE_SERVER_ADD_NEW_ENDPOINT
+      },
+      {
         messageRegex: WAFFLE_SERVER_ADD_NEW_ENDPOINT
       },
       {
@@ -127,7 +130,7 @@ describe('Add new Endpoint', () => {
       ...defaultAddNewEndpointSteps,
       {
         keys: [existedEndpoint, ENTER],
-        homotypic: true,
+        sameType: true,
         messageRegex: WAFFLE_SERVER_ADD_NEW_ENDPOINT
       }
     ];
@@ -138,15 +141,7 @@ describe('Add new Endpoint', () => {
     
     //  ASSERT
     const prettifiedSteps = prettifyStdout(stdout);
-    const fileContent = await new Promise((resolve, reject) => {
-      readFile({pathToFile: ENDPOINTS_LIST_PATH}, (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-        
-        return resolve(result.data);
-      });
-    });
+    const fileContent = await readFile(ENDPOINTS_LIST_PATH);
     
     const existedListLength = _.filter(fileContent, {url: existedEndpoint}).length;
     

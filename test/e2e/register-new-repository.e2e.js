@@ -114,7 +114,7 @@ describe('Register new repository', () => {
       ...expectedDefaultSteps,
       {
         keys: [newInvalidRepository, ENTER],
-        homotypic: true,
+        sameType: true,
         messageRegex: WAFFLE_SERVER_REGISTER_REPO
       },
       {
@@ -139,7 +139,7 @@ describe('Register new repository', () => {
       ...expectedDefaultSteps,
       {
         keys: [newValidRepo, ENTER],
-        homotypic: true,
+        sameType: true,
         messageRegex: WAFFLE_SERVER_REGISTER_REPO
       },
       {
@@ -189,7 +189,7 @@ describe('Register new repository', () => {
       ...expectedDefaultSteps,
       {
         keys: [existedRepo, ENTER],
-        homotypic: true,
+        sameType: true,
         messageRegex: WAFFLE_SERVER_REGISTER_REPO
       }
     ];
@@ -200,15 +200,7 @@ describe('Register new repository', () => {
     
     //  ASSERT
     const prettifiedSteps = prettifyStdout(stdout);
-    const fileContent = await new Promise((resolve, reject) => {
-      readFile({pathToFile: REPO_LIST_PATH}, (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-        
-        return resolve(result.data);
-      });
-    });
+    const fileContent = await readFile(REPO_LIST_PATH);
     
     const existedListLength = _.filter(fileContent, {github: existedRepo}).length;
     
