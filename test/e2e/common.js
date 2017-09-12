@@ -76,7 +76,7 @@ function checkExpectedSteps(expectedSteps, prettifiedSteps) {
         }
       } else {
         _.forEach(actualStep, (actualMessage, messageIndex) => {
-          if (!expectedStep.homotypic && messageIndex) {
+          if (!expectedStep.sameType && messageIndex) {
             return;
           }
 
@@ -140,7 +140,7 @@ function prettifyStdout(stdoutData) {
   return prettifiedData;
 }
 
-function readFile(externalContext, cb) {
+function _readFile(externalContext, cb) {
   const {pathToFile} = externalContext;
 
   return fs.readFile(pathToFile, 'utf8', (err, data) => {
@@ -151,6 +151,18 @@ function readFile(externalContext, cb) {
     externalContext.data = JSON.parse(data);
 
     return cb(null, externalContext);
+  });
+}
+
+function readFile(pathToFile) {
+  return new Promise((resolve, reject) => {
+    _readFile({pathToFile}, (err, result) => {
+      if (err) {
+        return reject(err);
+      }
+    
+      return resolve(result.data);
+    });
   });
 }
 
@@ -177,7 +189,7 @@ function _writeFile(externalContext, cb) {
 function clearFileFromTestedData(externalContext, done) {
   return async.waterfall([
     async.constant(externalContext),
-    readFile,
+    _readFile,
     _filterTestData,
     _writeFile
   ], err => {

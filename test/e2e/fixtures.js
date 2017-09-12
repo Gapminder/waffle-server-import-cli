@@ -78,7 +78,7 @@ module.exports.getAppropriateSteps = ({UP, DOWN, ENTER}) => {
       },
       {
         keys: ['dev@gapminder.org', ENTER],
-        homotypic: true,
+        sameType: true,
         messageRegex: messages.questions.WAFFLE_SERVER_AUTHENTICATION_LOGIN
       }
     ],
@@ -93,7 +93,7 @@ module.exports.getAppropriateSteps = ({UP, DOWN, ENTER}) => {
       },
       {
         keys: [ENTER],
-        homotypic: true,
+        sameType: true,
         messageRegex: messages.questions.WAFFLE_SERVER_AUTHENTICATION_LOGIN
       }
     ],
@@ -103,7 +103,7 @@ module.exports.getAppropriateSteps = ({UP, DOWN, ENTER}) => {
       },
       {
         keys: ['123', ENTER],
-        homotypic: true,
+        sameType: true,
         messageRegex: messages.questions.WAFFLE_SERVER_AUTHENTICATION_PASSWORD
       }
     ],
