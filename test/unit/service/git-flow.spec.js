@@ -942,7 +942,7 @@ describe('Service: Git flow', function () {
         expect(error).to.not.exist;
 
         assert.calledOnce(removeDirForceStub);
-        assert.alwaysCalledWithExactly(removeDirForceStub, pathToRepo, match.func);
+        assert.alwaysCalledWithExactly(removeDirForceStub, {pathToDir: pathToRepo}, match.func);
 
         assert.calledOnce(cliUiStub);
         assert.alwaysCalledWithExactly(cliUiStub, match(pathToRepo));
@@ -960,7 +960,7 @@ describe('Service: Git flow', function () {
         expect(error).to.be.equal(expectedError);
 
         assert.calledOnce(removeDirForceStub);
-        assert.alwaysCalledWithExactly(removeDirForceStub, pathToRepo, match.func);
+        assert.alwaysCalledWithExactly(removeDirForceStub, {pathToDir: pathToRepo}, match.func);
 
         assert.notCalled(cliUiStub);
       })
@@ -978,7 +978,7 @@ describe('Service: Git flow', function () {
         expect(error).to.be.equal(expectedError);
 
         assert.calledOnce(removeDirForceStub);
-        assert.alwaysCalledWithExactly(removeDirForceStub, pathToRepo, match.func);
+        assert.alwaysCalledWithExactly(removeDirForceStub, {pathToDir: pathToRepo}, match.func);
 
         assert.calledOnce(cliUiStub);
         assert.alwaysCalledWithExactly(cliUiStub, match(pathToRepos));
