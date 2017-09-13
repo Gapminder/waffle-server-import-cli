@@ -150,11 +150,12 @@ describe('Register new repository', () => {
       },
       {
         keys: [DOWN],
-        messageRegex: ANSWER__ANYTHING
+        messageRegex: WAFFLE_SERVER_CHOOSE_FLOW
       },
       {
         keys: [DOWN],
-        messageRegex: ANSWER__ANYTHING
+        list: true,
+        messageRegex: MENU_ITEM__WAFFLE_SERVER_REGISTER_NEW_REPO
       },
       {
         messageRegex: WAFFLE_SERVER_CHOOSE_FLOW

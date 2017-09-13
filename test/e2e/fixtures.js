@@ -24,7 +24,7 @@ const messages = {
     WAFFLE_SERVER_REGISTER_REPO: /^\? Register Repository/,
     WAFFLE_SERVER_AUTHENTICATION_LOGIN: /^\? Authentication\, Login/,
     WAFFLE_SERVER_AUTHENTICATION_PASSWORD: /^\? Authentication\, Password/,
-    WAFFLE_SERVER_CHOOSE_FLOW: /^\? Choose Flow (\(Use arrow keys\))?$/,
+    WAFFLE_SERVER_CHOOSE_FLOW: /^\? Choose Flow/,
     WAFFLE_SERVER_CHOOSE_FLOW_DEFAULT_DATASET: /^\? Choose Flow Default DataSet/,
     WAFFLE_SERVER_CHOOSE_FLOW_REGISTER_REPO: /^\? Choose Flow Register Repository/,
     WAFFLE_SERVER_CHOOSE_FLOW_IMPORT_DATASET: /^\? Choose Flow Import DataSet/,
