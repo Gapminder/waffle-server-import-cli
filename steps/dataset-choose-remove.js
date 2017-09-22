@@ -66,7 +66,7 @@ step.prototype.preProcess = function (done) {
 };
 
 step.prototype.process = function (inputValue) {
-
+  cliUi.resetTime(false);
   let done = this.async();
   cliUi.state("processing selected repo for removing dataset");
 
