@@ -86,7 +86,7 @@ step.prototype.preProcess  = function (done) {
 };
 
 step.prototype.process = function (inputValue) {
-
+  cliUi.resetTime(false);
   const done = this.async();
   cliUi.state("processing selected repo for update");
 
