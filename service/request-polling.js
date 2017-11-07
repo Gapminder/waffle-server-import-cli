@@ -11,6 +11,7 @@ const ERROR_DATASET_WAS_NOT_FOUND = `Dataset was not found for the given name`;
 const ERROR_DATASET_REMOVAL_IS_CORRUPTED = `Dataset removal is corrupted. Try to start removal again.`;
 const OPERATION_IS_COMPLETED = 'Operation is completed successfully';
 const OPERATION_IS_IN_PROGRESS = 'Operation is in progress';
+const TRANSACTION_FAILED = 'Transaction failed. Please rollback transaction.';
 
 let longPolling = function () {
   this.responseLimit = 3;
@@ -259,6 +260,8 @@ longPolling.prototype.checkDataSet = function (data, callback) {
     async.apply(getDatasetState, self, data),
     self._checkDatasetStateResult.bind(self),
     (error, result) => {
+      const transactionError = _.get(result, 'transaction.lastError', false);
+      
       if (error) {
         return callback(self._completeRequest(false, error));
       }
@@ -266,7 +269,11 @@ longPolling.prototype.checkDataSet = function (data, callback) {
       if (!result) {
         return callback(self._completeRequest(false, 'no result'));
       }
-
+      
+      if(transactionError) {
+        return callback(self._completeRequest(false, `${TRANSACTION_FAILED}\n${transactionError}`));
+      }
+      
       return callback(self._completeRequest(true, OPERATION_IS_COMPLETED));
     }
   );
