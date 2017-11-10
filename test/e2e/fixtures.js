@@ -28,11 +28,14 @@ const messages = {
     WAFFLE_SERVER_CHOOSE_FLOW_DEFAULT_DATASET: /^\? Choose Flow Default DataSet/,
     WAFFLE_SERVER_CHOOSE_FLOW_REGISTER_REPO: /^\? Choose Flow Register Repository/,
     WAFFLE_SERVER_CHOOSE_FLOW_IMPORT_DATASET: /^\? Choose Flow Import DataSet/,
+    WAFFLE_SERVER_CHOOSE_FLOW_ROLLBACK_TRANSACTION: /^\? Choose Flow RollBack Transaction/,
     WAFFLE_SERVER_SET_DEFAULT_DATASET: /^\? Choose Default DataSet/,
 
     WAFFLE_SERVER_DEFAULT_DATASET_EMPTY_LIST: /^\? Choose Default DataSet \(Use arrow keys\)\-*$/gm,
     WAFFLE_SERVER_DEFAULT_DATASET_LIST: /^\? Choose Default DataSet \(Use arrow keys\)\s+[\u276f]\s+([a-z0-9_\/\-#]*\s?)*\-*/gm,
-    WAFFLE_SERVER_DEFAULT_DATASET_VERSIONS_LIST: /^\? Choose Default DataSet Version \(Use arrow keys\)\s+[\u276f]\s+((aaaaaaa|bbbbbbb)\s+\(\d{4}\-\d{2}\-\d{2}\s+\d{2}\:\d{2}\:\d{2}\)\s+)*/gm
+    WAFFLE_SERVER_DEFAULT_DATASET_VERSIONS_LIST: /^\? Choose Default DataSet Version \(Use arrow keys\)\s+[\u276f]\s+((aaaaaaa|bbbbbbb)\s+\(\d{4}\-\d{2}\-\d{2}\s+\d{2}\:\d{2}\:\d{2}\)\s+)*/gm,
+  
+    WAFFLE_SERVER_ROLLBACK_TRANSACTION_REPO_LIST: /^\? List of DataSet Repositories/,
   },
   menuItems: {
     MENU_ITEM__WAFFLE_SERVER_ADD_NEW_ENDPOINT: /❯ Add new Endpoint/,
@@ -42,6 +45,7 @@ const messages = {
   errors: {
     ERROR__WAFFLE_SERVER_ENDPOINT__ADD_NEW_ENDPOINT: /Invalid endpoint URL/gm,
     ERROR__WAFFLE_SERVER_ENDPOINT__ADD_NEW_REPO: /Invalid repo URL/gm,
+    ERROR__WAFFLE_SERVER_ROLLBACK_TRANSACTION__NOT_FOUND_DATASET: /Dataset was not found for the given name/,
     ERROR__CONNECTION_REFUSED: /\-*\*\s+ERROR:\s+Error:\s+connect\s+ECONNREFUSED\s+\d{1,3}\.\d{1,3}.\d{1,3}.\d{1,3}:\d{2,4}\-*/gm,
     ERROR__NO_EMAIL_WAS_PROVIDED: /\-*\*\s+ERROR:\s+User\s+with\s+an\s+email\:\s+\'false\'\s+was\s+not\s+found\-*/gm,
     ERROR__NO_PASSWORD_WAS_PROVIDED: /\-*\*\s+ERROR:\s+Password\s+was\s+not\s+provided\-*/gm,
@@ -127,6 +131,13 @@ module.exports.getAppropriateSteps = ({UP, DOWN, ENTER}) => {
       {
         keys: [ENTER],
         messageRegex: messages.questions.WAFFLE_SERVER_CHOOSE_FLOW_DEFAULT_DATASET
+      }
+    ],
+    rollbackTransactionForDataset: [
+      ...makeDefaultSteps(getKeys(4, DOWN)),
+      {
+        keys: [ENTER],
+        messageRegex: messages.questions.WAFFLE_SERVER_CHOOSE_FLOW_ROLLBACK_TRANSACTION
       }
     ],
     delimiter: [
