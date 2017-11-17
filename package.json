@@ -1,6 +1,6 @@
 {
   "name": "waffle-server-import-cli",
-  "version": "2.6.22",
+  "version": "2.6.23",
   "description": "WS import CLI",
   "main": "index.api.js",
   "bin": {
