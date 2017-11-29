@@ -32,7 +32,7 @@ function createDiffStreams(context, done) {
    
     mkdirp(dirPath,  function (err) {
       if (err) {
-        done(err)
+        return done(err);
       }
       
       context.streams = {
