@@ -3,6 +3,7 @@
 const _ = require('lodash');
 const fs = require('fs');
 const async = require('async');
+const mkdirp = require('mkdirp');
 
 const gitFlow = require('./git-flow');
 const cliUi = require('./cli-ui');
@@ -21,20 +22,26 @@ function createDiffStreams(context, done) {
     }
 
     const {gitDiffFileStatus, metadata, gitDiffFileList} = filesDiff;
+    const dirPath = gitFlow.getDiffDirPath(sourceFolderPath, github);
 
-    context.resultFileName = gitFlow.getDiffFileNameResult(sourceFolderPath, github);
-    context.resultFileLangName = gitFlow.getDiffFileNameResult(sourceFolderPath, github, 'lang');
-
+    context.resultFileName = `${dirPath}/output.txt`;
+    context.resultFileLangName = `${dirPath}/lang--output.txt`;
     context.gitDiffFileStatus = gitDiffFileStatus;
     context.gitDiffFileList = gitDiffFileList;
     context.metadata = metadata;
-
-    context.streams = {
-      diff: fs.createWriteStream(context.resultFileName),
-      lang: fs.createWriteStream(context.resultFileLangName)
-    };
-
-    return done(null, context);
+   
+    mkdirp(dirPath,  function (err) {
+      if (err) {
+        done(err)
+      }
+      
+      context.streams = {
+        diff: fs.createWriteStream(context.resultFileName),
+        lang: fs.createWriteStream(context.resultFileLangName)
+      };
+  
+      return done(null, context);
+    });
   });
 }
 

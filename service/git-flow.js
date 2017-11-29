@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const async = require('async');
 const JSONStream = require('JSONStream');
+const mkdirp = require('mkdirp');
 const envConst = require('./../model/env-const');
 const utils = require('./git-flow-utils');
 const cliUi = require('./../service/cli-ui');
@@ -22,7 +23,7 @@ module.exports = {
   getFileDiffByHashes,
   showFileStateByHash,
   validateDataset,
-  getDiffFileNameResult,
+  getDiffDirPath,
   reposClean
 };
 
@@ -239,21 +240,11 @@ function validateDataset(externalContext, onValidationComplete) {
   ], onValidationComplete);
 };
 
-function getDiffFileNameResult(pathFolder, github, additional) {
+function getDiffDirPath(pathFolder, github) {
   const filePath = utils.getGithubUrlDescriptor(github);
-
-  const filePartsResult = [];
-  filePartsResult.push('result');
-  filePartsResult.push(filePath.account);
-  filePartsResult.push(filePath.repo);
-  filePartsResult.push(filePath.branch);
-
-  if (additional) {
-    filePartsResult.push(additional);
-  }
-
-  filePartsResult.push('output.txt');
-  return path.resolve(pathFolder, filePartsResult.join('--'));
+  const { account, repo, branch } = filePath;
+  
+  return path.resolve(`${pathFolder}/${account}/${repo}/${branch}`);
 };
 
 function reposClean(pathToCleaning, onReposCleaned) {

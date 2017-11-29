@@ -53,9 +53,9 @@ describe('Service: CSV diff', function () {
     };
 
     const expectedResultFiles = {
-      diff: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'),
+      diff: path.resolve('./requests/VS-work/ddf--ws-testing/master/output.txt'),
       fileList: expectedGitDiffFileList,
-      lang: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt')
+      lang: path.resolve('./requests/VS-work/ddf--ws-testing/master/lang--output.txt')
     };
 
     const expectedDataDiff = {
@@ -99,8 +99,8 @@ describe('Service: CSV diff', function () {
       hashFrom,
       hashTo,
       github,
-      resultFileName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'),
-      resultFileLangName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'),
+      resultFileName: path.resolve('./requests/VS-work/ddf--ws-testing/master/output.txt'),
+      resultFileLangName: path.resolve('./requests/VS-work/ddf--ws-testing/master/lang--output.txt'),
       gitDiffFileStatus: expectedGitDiffFileStatus,
       gitDiffFileList: expectedGitDiffFileList,
       metadata: expectedMetadata,
@@ -125,11 +125,10 @@ describe('Service: CSV diff', function () {
 
     const getFileDiffByHashesStub = this.stub(gitFlow, 'getFileDiffByHashes').callsArgWithAsync(1, expectedError, getFileDiffByHashesResult);
 
-    const getDiffFileNameResultStub = this.stub(gitFlow, 'getDiffFileNameResult');
-    getDiffFileNameResultStub
-      .onFirstCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'))
-      .onSecondCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'));
-    getDiffFileNameResultStub.threw('Should be never called');
+    const getDiffDirPathStub = this.stub(gitFlow, 'getDiffDirPath');
+    getDiffDirPathStub
+      .onFirstCall().returns(path.resolve('./requests/VS-work/ddf--ws-testing/master'))
+    getDiffDirPathStub.threw('Should be never called');
 
     const showFileStateByHashStub = this.stub(gitFlow, 'showFileStateByHash');
     showFileStateByHashStub.onFirstCall().callsArgWithAsync(2, expectedError, expectedDataDiff);
@@ -153,9 +152,8 @@ describe('Service: CSV diff', function () {
       sinon.assert.calledOnce(getFileDiffByHashesStub);
       sinon.assert.calledWithExactly(getFileDiffByHashesStub, sinon.match(expectedContext), sinon.match.func);
 
-      sinon.assert.calledTwice(getDiffFileNameResultStub);
-      expect(getDiffFileNameResultStub).inOrder.to.have.been.calledWithExactly(expectedSourceFolderPath, github)
-        .subsequently.calledWithExactly(expectedSourceFolderPath, github, 'lang');
+      sinon.assert.calledOnce(getDiffDirPathStub);
+      expect(getDiffDirPathStub).inOrder.to.have.been.calledWithExactly(expectedSourceFolderPath, github);
 
       sinon.assert.callCount(showFileStateByHashStub, 6);
       expect(showFileStateByHashStub).inOrder.to.have.been.calledWithExactly(expectedContext, expectedGitDiffFileList[0], sinon.match.func)
@@ -308,8 +306,8 @@ describe('Service: CSV diff', function () {
       hashFrom,
       hashTo,
       github,
-      resultFileName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'),
-      resultFileLangName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'),
+      resultFileName: path.resolve('./requests/result/VS-work/ddf--ws-testing/master/output.txt'),
+      resultFileLangName: path.resolve('./requests/result/VS-work/ddf--ws-testing/master/lang--output.txt'),
       gitDiffFileStatus: expectedGitDiffFileStatus,
       gitDiffFileList: expectedGitDiffFileList,
       metadata: expectedMetadata,
@@ -320,11 +318,10 @@ describe('Service: CSV diff', function () {
 
     const getFileDiffByHashesStub = this.stub(gitFlow, 'getFileDiffByHashes').callsArgWithAsync(1, null, getFileDiffByHashesResult);
 
-    const getDiffFileNameResultStub = this.stub(gitFlow, 'getDiffFileNameResult');
-    getDiffFileNameResultStub
-      .onFirstCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'))
-      .onSecondCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'));
-    getDiffFileNameResultStub.threw('Should be never called');
+    const getDiffDirPathStub = this.stub(gitFlow, 'getDiffDirPath');
+    getDiffDirPathStub
+      .onFirstCall().returns(path.resolve('./requests/result/VS-work/ddf--ws-testing/master'));
+    getDiffDirPathStub.threw('Should be never called');
 
     const showFileStateByHashStub = this.stub(gitFlow, 'showFileStateByHash');
     showFileStateByHashStub.onFirstCall().callsArgWithAsync(2, expectedError);
@@ -347,10 +344,9 @@ describe('Service: CSV diff', function () {
       sinon.assert.calledOnce(getFileDiffByHashesStub);
       sinon.assert.calledWithExactly(getFileDiffByHashesStub, sinon.match(expectedContext), sinon.match.func);
 
-      sinon.assert.calledTwice(getDiffFileNameResultStub);
-      expect(getDiffFileNameResultStub).inOrder
+      sinon.assert.calledOnce(getDiffDirPathStub);
+      expect(getDiffDirPathStub).inOrder
         .to.have.been.calledWithExactly(expectedSourceFolderPath, github)
-        .subsequently.calledWithExactly(expectedSourceFolderPath, github, 'lang');
 
       sinon.assert.calledOnce(showFileStateByHashStub);
       sinon.assert.calledWithExactly(showFileStateByHashStub, expectedContext, expectedGitDiffFileList[0], sinon.match.func);
@@ -395,9 +391,9 @@ describe('Service: CSV diff', function () {
     };
 
     const expectedResultFiles = {
-      diff: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'),
+      diff: path.resolve('./requests/VS-work/ddf--ws-testing/master/output.txt'),
       fileList: expectedGitDiffFileList,
-      lang: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt')
+      lang: path.resolve('./requests/VS-work/ddf--ws-testing/master/lang--output.txt')
     };
 
     const expectedDataDiff = {
@@ -441,8 +437,8 @@ describe('Service: CSV diff', function () {
       hashFrom,
       hashTo,
       github,
-      resultFileName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'),
-      resultFileLangName: path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'),
+      resultFileName: path.resolve('./requests/VS-work/ddf--ws-testing/master/output.txt'),
+      resultFileLangName: path.resolve('./requests/VS-work/ddf--ws-testing/master/lang--output.txt'),
       gitDiffFileStatus: expectedGitDiffFileStatus,
       gitDiffFileList: expectedGitDiffFileList,
       metadata: expectedMetadata,
@@ -467,11 +463,10 @@ describe('Service: CSV diff', function () {
 
     const getFileDiffByHashesStub = this.stub(gitFlow, 'getFileDiffByHashes').callsArgWithAsync(1, expectedError, getFileDiffByHashesResult);
 
-    const getDiffFileNameResultStub = this.stub(gitFlow, 'getDiffFileNameResult');
-    getDiffFileNameResultStub
-      .onFirstCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--output.txt'))
-      .onSecondCall().returns(path.resolve('./requests/result--VS-work--ddf--ws-testing--master--lang--output.txt'));
-    getDiffFileNameResultStub.threw('Should be never called');
+    const getDiffDirPathStub = this.stub(gitFlow, 'getDiffDirPath');
+    getDiffDirPathStub
+      .onFirstCall().returns(path.resolve('./requests/VS-work/ddf--ws-testing/master'));
+    getDiffDirPathStub.threw('Should be never called');
 
     const showFileStateByHashStub = this.stub(gitFlow, 'showFileStateByHash');
     showFileStateByHashStub.onFirstCall().callsArgWithAsync(2, expectedError, expectedDataDiff);
@@ -501,9 +496,8 @@ describe('Service: CSV diff', function () {
       sinon.assert.calledOnce(getFileDiffByHashesStub);
       sinon.assert.calledWithExactly(getFileDiffByHashesStub, sinon.match(expectedContext), sinon.match.func);
 
-      sinon.assert.calledTwice(getDiffFileNameResultStub);
-      expect(getDiffFileNameResultStub).inOrder.to.have.been.calledWithExactly(expectedSourceFolderPath, github)
-        .subsequently.calledWithExactly(expectedSourceFolderPath, github, 'lang');
+      sinon.assert.calledOnce(getDiffDirPathStub);
+      expect(getDiffDirPathStub).inOrder.to.have.been.calledWithExactly(expectedSourceFolderPath, github);
 
       sinon.assert.callCount(showFileStateByHashStub, 6);
       expect(showFileStateByHashStub).inOrder.to.have.been.calledWithExactly(expectedContext, expectedGitDiffFileList[0], sinon.match.func)
