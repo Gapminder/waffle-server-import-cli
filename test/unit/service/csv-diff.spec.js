@@ -125,11 +125,7 @@ describe('Service: CSV diff', function () {
 
     const getFileDiffByHashesStub = this.stub(gitFlow, 'getFileDiffByHashes').callsArgWithAsync(1, expectedError, getFileDiffByHashesResult);
 
-    const getDiffDirPathStub = this.stub(gitFlow, 'getDiffDirPath');
-    getDiffDirPathStub
-      .onFirstCall().returns(path.resolve('./requests/VS-work/ddf--ws-testing/master'))
-    getDiffDirPathStub.threw('Should be never called');
-
+    const getDiffDirPathStub = this.stub(gitFlow, 'getDiffDirPath').returns(path.resolve('./requests/VS-work/ddf--ws-testing/master'));
     const showFileStateByHashStub = this.stub(gitFlow, 'showFileStateByHash');
     showFileStateByHashStub.onFirstCall().callsArgWithAsync(2, expectedError, expectedDataDiff);
     showFileStateByHashStub.callsArgWithAsync(2, null, expectedEmptyDataDiff);
@@ -153,7 +149,7 @@ describe('Service: CSV diff', function () {
       sinon.assert.calledWithExactly(getFileDiffByHashesStub, sinon.match(expectedContext), sinon.match.func);
 
       sinon.assert.calledOnce(getDiffDirPathStub);
-      expect(getDiffDirPathStub).inOrder.to.have.been.calledWithExactly(expectedSourceFolderPath, github);
+      sinon.assert.calledWithExactly(getDiffDirPathStub, expectedSourceFolderPath, github);
 
       sinon.assert.callCount(showFileStateByHashStub, 6);
       expect(showFileStateByHashStub).inOrder.to.have.been.calledWithExactly(expectedContext, expectedGitDiffFileList[0], sinon.match.func)
@@ -318,10 +314,7 @@ describe('Service: CSV diff', function () {
 
     const getFileDiffByHashesStub = this.stub(gitFlow, 'getFileDiffByHashes').callsArgWithAsync(1, null, getFileDiffByHashesResult);
 
-    const getDiffDirPathStub = this.stub(gitFlow, 'getDiffDirPath');
-    getDiffDirPathStub
-      .onFirstCall().returns(path.resolve('./requests/result/VS-work/ddf--ws-testing/master'));
-    getDiffDirPathStub.threw('Should be never called');
+    const getDiffDirPathStub = this.stub(gitFlow, 'getDiffDirPath').returns(path.resolve('./requests/result/VS-work/ddf--ws-testing/master'));
 
     const showFileStateByHashStub = this.stub(gitFlow, 'showFileStateByHash');
     showFileStateByHashStub.onFirstCall().callsArgWithAsync(2, expectedError);
@@ -345,8 +338,7 @@ describe('Service: CSV diff', function () {
       sinon.assert.calledWithExactly(getFileDiffByHashesStub, sinon.match(expectedContext), sinon.match.func);
 
       sinon.assert.calledOnce(getDiffDirPathStub);
-      expect(getDiffDirPathStub).inOrder
-        .to.have.been.calledWithExactly(expectedSourceFolderPath, github)
+      sinon.assert.calledWithExactly(getDiffDirPathStub, expectedSourceFolderPath, github);
 
       sinon.assert.calledOnce(showFileStateByHashStub);
       sinon.assert.calledWithExactly(showFileStateByHashStub, expectedContext, expectedGitDiffFileList[0], sinon.match.func);
@@ -463,10 +455,7 @@ describe('Service: CSV diff', function () {
 
     const getFileDiffByHashesStub = this.stub(gitFlow, 'getFileDiffByHashes').callsArgWithAsync(1, expectedError, getFileDiffByHashesResult);
 
-    const getDiffDirPathStub = this.stub(gitFlow, 'getDiffDirPath');
-    getDiffDirPathStub
-      .onFirstCall().returns(path.resolve('./requests/VS-work/ddf--ws-testing/master'));
-    getDiffDirPathStub.threw('Should be never called');
+    const getDiffDirPathStub = this.stub(gitFlow, 'getDiffDirPath').returns(path.resolve('./requests/VS-work/ddf--ws-testing/master'));
 
     const showFileStateByHashStub = this.stub(gitFlow, 'showFileStateByHash');
     showFileStateByHashStub.onFirstCall().callsArgWithAsync(2, expectedError, expectedDataDiff);
@@ -497,7 +486,7 @@ describe('Service: CSV diff', function () {
       sinon.assert.calledWithExactly(getFileDiffByHashesStub, sinon.match(expectedContext), sinon.match.func);
 
       sinon.assert.calledOnce(getDiffDirPathStub);
-      expect(getDiffDirPathStub).inOrder.to.have.been.calledWithExactly(expectedSourceFolderPath, github);
+      sinon.assert.calledWithExactly(getDiffDirPathStub, expectedSourceFolderPath, github);
 
       sinon.assert.callCount(showFileStateByHashStub, 6);
       expect(showFileStateByHashStub).inOrder.to.have.been.calledWithExactly(expectedContext, expectedGitDiffFileList[0], sinon.match.func)
