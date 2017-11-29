@@ -880,50 +880,26 @@ describe('Service: Git flow', function () {
     }));
   });
 
-  describe('#getDiffFileNameResult', () => {
+  describe('#getDiffDirPath', () => {
     it('should get repo name with branch name, when branch was set in giturl', sinon.test(function () {
       // *** Arrange
       const gitFlow = require('../../../service/git-flow');
 
-      const branch = 'branch';
+      const branch = 'branch/feature';
       const account = 'VS-work';
       const repo = 'ddf--ws-testing';
       const url = `git@github.com:${account}/${repo}.git`;
       const github = `${url}#${branch}`;
-      const sourceFolderPath = path.resolve(`./result`) + '/';
+      const sourceFolderPath = path.resolve(`./result`);
       const repoDescriptor = {branch, url, repo, account};
 
       const getGithubUrlDescriptorStub = this.stub(utils, 'getGithubUrlDescriptor').returns(repoDescriptor);
 
       // *** Act
-      const diffFileName = gitFlow.getDiffFileNameResult(sourceFolderPath, github, 'lang');
+      const diffPath = gitFlow.getDiffDirPath(sourceFolderPath, github);
 
       // *** Assert
-      expect(diffFileName).to.be.equal(`${sourceFolderPath}result--${account}--${repo}--${branch}--lang--output.txt`);
-
-      assert.calledOnce(getGithubUrlDescriptorStub);
-      assert.calledWithExactly(getGithubUrlDescriptorStub, github);
-    }));
-
-    it('should get repo name with branch name, when branch was set in giturl', sinon.test(function () {
-      // *** Arrange
-      const gitFlow = require('../../../service/git-flow');
-
-      const branch = 'branch';
-      const account = 'VS-work';
-      const repo = 'ddf--ws-testing';
-      const url = `git@github.com:${account}/${repo}.git`;
-      const github = `${url}#${branch}`;
-      const sourceFolderPath = path.resolve(`./result`) + '/';
-      const repoDescriptor = {branch, url, repo, account};
-
-      const getGithubUrlDescriptorStub = this.stub(utils, 'getGithubUrlDescriptor').returns(repoDescriptor);
-
-      // *** Act
-      const diffFileName = gitFlow.getDiffFileNameResult(sourceFolderPath, github);
-
-      // *** Assert
-      expect(diffFileName).to.be.equal(`${sourceFolderPath}result--${account}--${repo}--${branch}--output.txt`);
+      expect(diffPath).to.be.equal(`${sourceFolderPath}/${account}/${repo}/${branch}`);
 
       assert.calledOnce(getGithubUrlDescriptorStub);
       assert.calledWithExactly(getGithubUrlDescriptorStub, github);
