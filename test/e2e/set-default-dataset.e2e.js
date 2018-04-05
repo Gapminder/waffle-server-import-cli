@@ -104,7 +104,8 @@ describe('Set Default Dataset', () => {
 
       //  ASSERT
       const prettifiedSteps = prettifyStdout(stdout);
-      checkExpectedSteps(expectedSteps, prettifiedSteps);
+
+      return checkExpectedSteps(expectedSteps, prettifiedSteps);
     });
   });
 

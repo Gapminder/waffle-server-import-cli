@@ -257,8 +257,6 @@ describe(`Unit Test: ${testFile}`, function () {
     });
 
     it("should be executed with correct flow, without additional methods", function (done) {
-
-      this.timeout(5000);
       const holder = {set: sinon.stub()};
       const runner = {};
 
@@ -284,8 +282,6 @@ describe(`Unit Test: ${testFile}`, function () {
     });
 
     it("should be executed with correct flow, with additional method backDirect", function (done) {
-
-      this.timeout(5000);
       const holder = {set: sinon.stub()};
       const runner = {};
 
@@ -313,8 +309,6 @@ describe(`Unit Test: ${testFile}`, function () {
     });
 
     it("should be executed with correct flow, with additional method nextDirect", function (done) {
-
-      this.timeout(5000);
       const holder = {set: sinon.stub()};
       const runner = {};
 
@@ -342,8 +336,6 @@ describe(`Unit Test: ${testFile}`, function () {
     });
 
     it("should be executed with correct flow, with additional method nextStrategy", function (done) {
-
-      this.timeout(5000);
       const holder = {set: sinon.stub()};
       const runner = {};
 
