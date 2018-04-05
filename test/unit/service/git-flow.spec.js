@@ -20,9 +20,9 @@ const sinonChaiInOrder = require('sinon-chai-in-order');
 chai.use(sinonChai);
 chai.use(sinonChaiInOrder.default);
 
+const cliUi = require('../../../service/cli-ui');
 const envConst = require('../../../model/env-const');
 const utils = require('../../../service/git-flow-utils');
-const cliUi = require('../../../service/cli-ui');
 const {reposService} = require('waffle-server-repo-service');
 
 describe('Service: Git flow', function () {
@@ -936,7 +936,7 @@ describe('Service: Git flow', function () {
         expect(error).to.be.equal(expectedError);
 
         assert.calledOnce(removeDirForceStub);
-        assert.alwaysCalledWithExactly(removeDirForceStub, {pathToDir: pathToRepo}, match.func);
+        assert.alwaysCalledWithExactly(removeDirForceStub, {pathToDir: pathToRepos}, match.func);
 
         assert.notCalled(cliUiStub);
       })
@@ -954,7 +954,7 @@ describe('Service: Git flow', function () {
         expect(error).to.be.equal(expectedError);
 
         assert.calledOnce(removeDirForceStub);
-        assert.alwaysCalledWithExactly(removeDirForceStub, {pathToDir: pathToRepo}, match.func);
+        assert.alwaysCalledWithExactly(removeDirForceStub, {pathToDir: pathToRepos}, match.func);
 
         assert.calledOnce(cliUiStub);
         assert.alwaysCalledWithExactly(cliUiStub, match(pathToRepos));

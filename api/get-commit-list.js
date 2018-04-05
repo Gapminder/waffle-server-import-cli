@@ -4,6 +4,7 @@ const _ = require('lodash');
 require('./../service/env-init');
 
 const gitFlow = require('../service/git-flow');
+const cliUi = require('./../service/cli-ui');
 
 function CliToolApiGetCommitList(githubUrl, onComplete) {
 
@@ -13,14 +14,16 @@ function CliToolApiGetCommitList(githubUrl, onComplete) {
   }
 
   gitFlow.getCommitList(githubUrl, function (error, commits) {
-
     if (error) {
       return onComplete(error);
     }
 
     const sortedCommitsByDate = _.sortBy(commits, 'date');
+    const sortedHashesByDate = _.map(sortedCommitsByDate, 'hash');
 
-    return onComplete(null, _.map(sortedCommitsByDate, 'hash'));
+    cliUi.stop().success(`* Hashes list: ${sortedHashesByDate.join(', ')}`);
+
+    return onComplete(null, sortedHashesByDate);
   });
 }
 
